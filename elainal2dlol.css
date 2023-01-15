@@ -15,7 +15,7 @@
    /* Client Background */
    /* 1055 x 718 */
    /* Support jpg,jpeg,png,gif (or more, idk ¯\_(ツ)_/¯ ) */
-   --background: url('https://cdn.discordapp.com/attachments/883495046689718302/1064155753163784372/BG-L2d.gif'); 
+   --background: url('https://raw.githubusercontent.com/Roydevil/Elaina-theme/main/L2D/BG-L2d.gif'); 
 }
 
 
@@ -32,7 +32,7 @@
    border-radius: 0.5rem;
 }
 
-div[class="vng-age-rating ember-view"] {
+.div[class="vng-age-rating ember-view"] {
 	display: none;
 }
 
@@ -116,7 +116,7 @@ div[class="vng-age-rating ember-view"] {
    -webkit-user-drag: none;
    background-color: transparent !important;
    /*225 x 720 */
-   background:url('https://cdn.discordapp.com/attachments/883495046689718302/1064100200051920896/Social-BG.jpg')!important;
+   background:url('https://raw.githubusercontent.com/Roydevil/Elaina-theme/main/L2D/Social-BG.jpg')!important;
   *box-shadow: inset 0px 0px 1278px  rgba(220, 20, 60, 0.2) ;        
    *border-radius:20px 20px 0px 0px;
 }
@@ -131,12 +131,12 @@ div[class="vng-age-rating ember-view"] {
 /* Icons */
 /* THL icon */
 .currency-be-icon-static {
-  background-image: url('https://cdn.discordapp.com/attachments/883495046689718302/1064100199376633946/BlueE_Amiya.png') !important;
+  background-image: url('https://raw.githubusercontent.com/Roydevil/Elaina-theme/main/L2D/BlueE_Amiya.png') !important;
 }
 
 /* RP icon */
 .currency-rp {
-  background-image: url('https://cdn.discordapp.com/attachments/883495046689718302/1064100199854772274/Rp_Old.png') !important;
+  background-image: url('https://raw.githubusercontent.com/Roydevil/Elaina-theme/main/L2D/Rp_Old.png') !important;
 }
 
 
