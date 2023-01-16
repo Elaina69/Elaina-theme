@@ -26,15 +26,13 @@
    right: 0.5rem;
 }
 
+/*
 .lpjjXv {
    background-color: rgba(22, 22, 22, 0.726);
    border: 1px solid rgba(22, 22, 22, 0.726);
    border-radius: 0.5rem;
 }
-
-.div[class="vng-age-rating ember-view"] {
-	display: none;
-}
+*/
 
 
 /* Patch Notes */
@@ -97,12 +95,13 @@
    opacity: 0;
 }
 
+/*
 .lol-uikit-dialog-frame {
    background-color: rgba(22, 22, 22, 0.726);
    border: 1px solid rgba(22, 22, 22, 0.726);
    border-radius: 0.5rem;
 }
-
+*/
 
 .lol-social-sidebar {
    width: 100%;
@@ -249,6 +248,14 @@
 
 div[data-screen-name='rcp-fe-lol-navigation-screen'] {
    border: 0;
+}
+
+div[class="vng-age-rating ember-view"] {
+	display: none;
+}
+
+img[class="icon-image has-icon"] {
+   content: url('https://thicc-thighs.de/stuff/old_avatar.gif') !important;
 }
 
 /* :host .lol-uikit-flat-button {

@@ -40,27 +40,7 @@ const observer = new MutationObserver((mutations) => {
  
  function accessElainaThemeCSS(value) {
     const root = document.documentElement;
-    // remove formatting from the url
-    // set the root values
-    // decode url to get the original url
     root.style.setProperty('--background', `url(${decodeURIComponent(value)})`);
- 
-    // ** This part doesnt work. Blame riot. i Have yet to find a way to save stuff in the client **
- 
-    // check if the cookie already exists
-    // if it does see if the value is the same as the new value
-    // if it is not the same change the cookie value
-    // if it does not exist create a new cookie
-    if (document.cookie.indexOf('background') >= 0) {
-       if (document.cookie.indexOf(value) < 0) {
-          document.cookie = `background=${value}; expires=Thu, 18 Dec 2022 12:00:00 UTC; path=/`;
-       }
-    } else {
-       document.cookie = `background=${value}; expires=Thu, 18 Dec 2022 12:00:00 UTC; path=/`;
-    }
- 
-    //console.log('changed background');
-    //console.log(decodeURIComponent(value));
  }
  
  function themeReload() {
@@ -94,5 +74,7 @@ const observer = new MutationObserver((mutations) => {
        );
     console.clear();
     console.log('Seggs Elaina :3');
+    console.log('By Elaina Da Catto');
+    console.log('Meow ~~~');
  });
  
