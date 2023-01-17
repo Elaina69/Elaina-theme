@@ -1,21 +1,23 @@
 /* Source: Elaina Da Catto */ /* This theme based on "Cute" theme by @PrincessAkira */
-
+/* Special Thanks Thinhthui */
 /* Meow :3 */
 
 /* Imports */
-/* @import url('https://fonts.googleapis.com/css2?family=Dosis&display=swap'); */
-
+/* @font-face {
+    font-family: '';
+    src: url('') format("opentype");
+} */
 
 :root {
    /* Font */
-   /* --font-display: 'Dosis', sans-serif !important;
-   --font-body: 'Dosis', sans-serif !important; */
+   /* --font-display: '', sans-serif !important;
+   --font-body: '', sans-serif !important; */
 
 
    /* Client Background */
    /* 1055 x 718 */
    /* Support jpg,jpeg,png,gif (or more, idk ¯\_(ツ)_/¯ ) */
-   --background: url('https://raw.githubusercontent.com/Roydevil/Elaina-theme/main/L2D/BG-L2d.gif'); 
+   --background: url(''); 
 }
 
 
@@ -25,15 +27,6 @@
    left: 0;
    right: 0.5rem;
 }
-
-/*
-.lpjjXv {
-   background-color: rgba(22, 22, 22, 0.726);
-   border: 1px solid rgba(22, 22, 22, 0.726);
-   border-radius: 0.5rem;
-}
-*/
-
 
 /* Patch Notes */
 .article-scrollable-body {
@@ -57,8 +50,7 @@
    bottom: 0;
    left: 0;
 }
-/* Player icon (Only change by using Dev tools) */
-/* Fine this shjt "icon-image has-icon" */
+
 .clash-root-background-landing,
 .hold-leave,
 .collections-application,
@@ -68,23 +60,20 @@
 .personalized-offers-root,
 .parties-view,
 .yourshop-root,
-.clash-root-background /* .champion-splash-background */ {
+.clash-root-background {
    background: var(--background) !important;
    background-position: center;
    background-repeat: no-repeat;
    background-size: cover;
+   background-color: transparent !important;
 }
 
 .loot-backdrop .lol-uikit-video-content {
-   display: block;
-   box-sizing: border-box;
    background: var(--background) !important;
-   width: 1055px;
-   height: 718px;
-   padding-left: 180px;
    background-position: center;
    background-repeat: no-repeat;
    background-size: cover;
+   background-color: transparent !important;
 }
 
 .rcp-fe-viewport-sidebar {
@@ -94,14 +83,6 @@
 .parties-view .parties-background {
    opacity: 0;
 }
-
-/*
-.lol-uikit-dialog-frame {
-   background-color: rgba(22, 22, 22, 0.726);
-   border: 1px solid rgba(22, 22, 22, 0.726);
-   border-radius: 0.5rem;
-}
-*/
 
 .lol-social-sidebar {
    width: 100%;
@@ -119,15 +100,12 @@
   *box-shadow: inset 0px 0px 1278px  rgba(220, 20, 60, 0.2) ;        
    *border-radius:20px 20px 0px 0px;
 }
-/* Hide VNG Age Ratings (Only change by using Dev tools) */
-/* Find this shjt ofc ".vng-age-rating-container" */
+
 .lol-uikit-dialog-frame.top,
 .lol-uikit-dialog-frame.bottom {
    border: 2px white solid;
 }
 
-
-/* Icons */
 /* THL icon */
 .currency-be-icon-static {
   background-image: url('https://raw.githubusercontent.com/Roydevil/Elaina-theme/main/L2D/BlueE_Amiya.png') !important;
@@ -164,14 +142,6 @@
    width: 100%;
    background: transparent;
 }
-
-/* .navbar-blur {
-    position: absolute;
-    top: 0;
-    height: 79px;
-    width: 100%;
-    background: transparent;
-} */
 
 .navbar_backdrop,
 .clash-tab-hub,
@@ -232,16 +202,6 @@
    left: 1rem !important;
 }
 
-/* 
-.play-button-content {
-   width: unset !important;
-   left: unset !important;
-}
-.play-button-content,
-.play-button-frame {
-   background-image: none !important;
-} */
-
 .v2-header-component {
    margin: 0;
 }
@@ -254,15 +214,23 @@ div[class="vng-age-rating ember-view"] {
 	display: none;
 }
 
+div[class="clash-aram-intro-modal ember-view"] {
+	display: none;
+}
+
+
+div[class="store-backdrop"] {
+   background: var(--background) !important;
+   background-position: center;
+   background-repeat: no-repeat;
+   background-size: cover;
+   background-color: transparent !important;
+
+}
+
 img[class="icon-image has-icon"] {
    content: url('https://raw.githubusercontent.com/Roydevil/Elaina-theme/main/L2D/Avatar.gif') !important;
 }
-
-/* :host .lol-uikit-flat-button {
-   background-color: rgba(22, 22, 22, 0.726);
-   border: 1px solid white;
-   border-radius: 0.5rem;
-} */
 
 .purchase-history-page-content-wrapper {
    background-color: rgba(212, 27, 119, 0.726);
