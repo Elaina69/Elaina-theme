@@ -218,6 +218,9 @@ div[class="clash-aram-intro-modal ember-view"] {
 	display: none;
 }
 
+div[class="style-profile-backdrop-component ember-view"] {
+	display: none;
+}
 
 div[class="store-backdrop"] {
    background: var(--background) !important;
@@ -230,10 +233,6 @@ div[class="store-backdrop"] {
 
 img[class="icon-image has-icon"] {
    content: url('https://raw.githubusercontent.com/Roydevil/Elaina-theme/main/L2D/Avatar.gif') !important;
-}
-
-img[class="lol-uikit-background-switcher-image fade"] {
-   display: none;
 }
 
 .purchase-history-page-content-wrapper {
