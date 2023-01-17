@@ -232,6 +232,10 @@ img[class="icon-image has-icon"] {
    content: url('https://raw.githubusercontent.com/Roydevil/Elaina-theme/main/L2D/Avatar.gif') !important;
 }
 
+img[class="lol-uikit-background-switcher-image fade"] {
+   display: none;
+}
+
 .purchase-history-page-content-wrapper {
    background-color: rgba(212, 27, 119, 0.726);
 }
