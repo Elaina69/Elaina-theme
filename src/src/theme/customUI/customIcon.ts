@@ -1,13 +1,13 @@
 import utils from '../../utils/utils.ts'
 import * as upl from 'pengu-upl';
-import { getThemeName } from "../../otherThings"
+import { pluginUrl } from "../../otherThings"
 import { log, warn, error } from '../../utils/themeLog.ts';
 import { friendIconList, resolveSyncedUserTargetByDisplayName } from '../../plugins/syncUserIcons.ts';
 
-const icdata = (await import(`//plugins/${getThemeName()}/config/icons.js`)).default;
+const icdata = (await import(pluginUrl("config/icons.js"))).default;
 
-const datapath = `//plugins/${getThemeName()}/`
-const iconFolder  = `${datapath}assets/icon/`
+const iconUrl = (...parts: unknown[]) => pluginUrl("assets/icon", ...parts);
+const cssIconUrl = (...parts: unknown[]) => utils.cssUrl(iconUrl(...parts));
 
 type SyncedIconType = "avatar" | "border" | "banner" | "emblem" | "hoverCardBackdrop";
 type ApplyResult = boolean | Promise<boolean>;
@@ -74,7 +74,7 @@ function findSyncedUserTargetFromElement(element: Element | null): UserIconTarge
 }
 
 function getOwnAvatarUrl(): string {
-	return `${iconFolder}${icdata["Avatar"]}`;
+	return iconUrl(icdata["Avatar"]);
 }
 
 function getNestedShadowRoots(element: Element): ShadowRoot[] {
@@ -258,7 +258,7 @@ class CustomAvatar {
 		await ensureSyncedElementIcons(element, "avatar");
 		const avatar = findSyncedUserIcon(element.getAttribute("summoner-id"), "avatar");
 		if (avatar) {
-			return this.applyAvatarBackground(iconElement, `url(${avatar})`);
+			return this.applyAvatarBackground(iconElement, utils.cssUrl(avatar));
 		}
 		return false;
 	}
@@ -566,7 +566,7 @@ class CustomBorder {
 		await ensureSyncedElementIcons(element, "border");
 		const border = findSyncedUserIcon(element.getAttribute("summoner-id"), "border");
 		if (border) {
-			return this.applyBorderTargets(this.getBorderTargets(element), `url(${border})`);
+			return this.applyBorderTargets(this.getBorderTargets(element), utils.cssUrl(border));
 		}
 		return false;
 	}
@@ -618,7 +618,7 @@ class CustomBanner {
 
 	changeBanner = (banner: HTMLImageElement | null): boolean => {
 		if (!banner) return false;
-		banner.src = `${iconFolder}Regalia-Banners/${ElainaData.get("CurrentBanner")}`
+		banner.src = iconUrl("Regalia-Banners", ElainaData.get("CurrentBanner"))
 		utils.freezeProperties(banner,["src"])
 		return true;
 	}
@@ -683,7 +683,7 @@ class CustomHoverCardBackdrop {
 		if (backdrop) {
 			let hoverCardBackdrop = document.querySelector("#hover-card-backdrop") as HTMLElement;
 			if (hoverCardBackdrop) {
-				hoverCardBackdrop.style.backgroundImage = `url(${backdrop})`;
+				hoverCardBackdrop.style.backgroundImage = utils.cssUrl(backdrop);
 				return true;
 			}
 		}
@@ -750,8 +750,8 @@ class CustomGamemodeIcon {
 	gameModeIcon_active(obj: any, name: any) {
 		try {
 			let a: any = document.querySelector(`${obj} lol-uikit-video-state[state='active'] lol-uikit-video`)
-			a.setAttribute("src", `${iconFolder}gamemodes/${name}`)
-			a.querySelector("video").setAttribute("src", `${iconFolder}gamemodes/${name}`)
+			a.setAttribute("src", iconUrl("gamemodes", name))
+			a.querySelector("video").setAttribute("src", iconUrl("gamemodes", name))
 		}
 		catch { 
 			//warn("Can't find the target") 
@@ -774,7 +774,7 @@ class CustomGamemodeIcon {
 
 class CustomEmblemIcon {
 	changeEmblemIcon = (element: any) => {
-		element.setAttribute("src", `${iconFolder}${icdata["Honor"]}`)
+		element.setAttribute("src", iconUrl(icdata["Honor"]))
 		element.style.visibility = "visible"
 		utils.freezeProperties(element, ["src"])
 	}
@@ -809,7 +809,7 @@ class CustomLoadingIcon {
 							height: 190px;
 							background-image: unset;
 							background-size: unset;
-							content: url("${iconFolder}${icdata["Loading"]}");
+							content: ${cssIconUrl(icdata["Loading"])};
 							-webkit-animation-iteration-count: unset;
 							-webkit-animation-duration: unset;
 							-webkit-animation-timing-function: unset;

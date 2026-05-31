@@ -1,4 +1,4 @@
-import { datapath } from "../settings.ts"
+import { pluginUrl } from "../../otherThings.ts"
 
 class ui {
     /**
@@ -125,7 +125,7 @@ class ui {
     createImage = (localImage: boolean = true, image: string, cls: string, id = "", style = "") => {
         const img = document.createElement('img')
 
-        img.setAttribute("src", localImage? `${datapath}assets/icon/${image}` : image)
+        img.setAttribute("src", localImage? pluginUrl("assets/icon", image) : image)
         img.classList.add(cls)
         img.id = id
         img.style.cssText = style

@@ -1,6 +1,6 @@
-import { getThemeName } from "../otherThings"
+import { pluginUrl } from "../otherThings"
 
-const text = await (await fetch(`//plugins/${getThemeName()}/config/customStatus.txt`)).text()
+const text = await (await fetch(pluginUrl("config/customStatus.txt"))).text()
 
 /**
  * Sets a custom rotating chat status message from a text file.

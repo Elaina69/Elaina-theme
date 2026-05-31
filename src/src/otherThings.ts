@@ -2,6 +2,32 @@ import { cdnImport } from "./theme/Cdn.ts"
 
 var cachedThemeName: string | null = null;
 
+function safeDecodeUrlSegment(segment: string): string {
+    try {
+        return decodeURIComponent(segment);
+    } catch {
+        return segment;
+    }
+}
+
+function splitPluginPath(path: unknown): string[] {
+    return String(path ?? '')
+        .replace(/\\/g, '/')
+        .split('/')
+        .filter(Boolean);
+}
+
+function encodeUrlPathSegment(segment: unknown): string {
+    const rawSegment = String(segment ?? '');
+    if (!rawSegment || rawSegment === '.' || rawSegment === '..' || /[\u0000-\u001f\u007f]/.test(rawSegment)) {
+        return '';
+    }
+
+    return encodeURIComponent(rawSegment)
+        .replace(/[!'()*]/g, (char) => `%${char.charCodeAt(0).toString(16).toUpperCase()}`)
+        .replace(/%40/g, '@');
+}
+
 /**
  * Extract the theme folder name from the call stack.
  */
@@ -9,18 +35,21 @@ function getThemeNameFromStack(): string | null {
     const error = new Error();
     const stackTrace = error.stack;
     const scriptPath = stackTrace
-        ?.match(/(?:http|https):\/\/plugins\/[^\s)]+\.js/g)
+        ?.match(/(?:http|https):\/\/plugins\/.*?\.js/g)
         ?.find((url) => !url.includes('/@/'));
 
     if (!scriptPath) return null;
 
-    // Try scoped path first: //plugins/@Scope/folder-name/
-    const scopedMatch = scriptPath.match(/\/\/plugins\/(@[^/]+\/[^/?#]+)\//);
-    if (scopedMatch) return scopedMatch[1];
+    try {
+        const url = new URL(scriptPath);
+        const segments = url.pathname.split('/').filter(Boolean);
+        if (segments.length < 2) return null;
 
-    // Fallback to unscoped path: //plugins/folder-name/
-    const unscopedMatch = scriptPath.match(/\/\/plugins\/([^/?#]+)\//);
-    return unscopedMatch ? unscopedMatch[1] : null;
+        segments.pop();
+        return segments.map(safeDecodeUrlSegment).join('/');
+    } catch {
+        return null;
+    }
 }
 
 /**
@@ -44,13 +73,16 @@ export function initThemeName(context: any): void {
             // For scoped:  ["@Scope", "folder", "index.js"] → segments[-2] = "folder"
             // For unscoped: ["folder", "index.js"]          → segments[-2] = "folder"
             const pluginFolder = segments.length >= 2 ? segments[segments.length - 2] : null;
-            return pluginFolder === folderName;
+            return pluginFolder !== null && safeDecodeUrlSegment(pluginFolder) === safeDecodeUrlSegment(folderName);
         });
 
         if (match) {
             // Remove the trailing "/index.js" (or similar entry file) to get the plugin path
             const lastSlash = match.lastIndexOf('/');
-            cachedThemeName = lastSlash > 0 ? match.substring(0, lastSlash) : folderName;
+            const pluginPath = lastSlash > 0 ? match.substring(0, lastSlash) : folderName;
+            const segments = splitPluginPath(pluginPath).map(safeDecodeUrlSegment);
+            if (segments.length > 0) segments[segments.length - 1] = folderName;
+            cachedThemeName = segments.join('/');
             return;
         }
     }
@@ -66,6 +98,28 @@ export function getThemeName(): string | null {
     // If initThemeName was never called (old Pengu path), try stack trace
     cachedThemeName = getThemeNameFromStack();
     return cachedThemeName;
+}
+
+/** Build a URL-safe local plugin URL without double-encoding existing theme paths. */
+export function pluginUrl(...pathParts: unknown[]): string {
+    const themeName = getThemeName();
+    const themeSegments = splitPluginPath(themeName);
+    const extraSegments = pathParts.flatMap(splitPluginPath);
+    const encodedSegments = [...themeSegments, ...extraSegments]
+        .map(encodeUrlPathSegment)
+        .filter(Boolean);
+
+    return `//plugins/${encodedSegments.join('/')}`;
+}
+
+/** Build a raw plugin subpath for Pengu filesystem helpers such as openPluginsFolder. */
+export function pluginPath(...pathParts: unknown[]): string {
+    const themeSegments = splitPluginPath(getThemeName());
+    const extraSegments = pathParts.flatMap(splitPluginPath);
+
+    return [...themeSegments, ...extraSegments]
+        .filter((segment) => segment !== '.' && segment !== '..')
+        .join('/');
 }
 
 export { cdnImport }

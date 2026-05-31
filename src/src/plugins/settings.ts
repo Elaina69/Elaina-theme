@@ -1,6 +1,6 @@
 import * as upl from "pengu-upl"
 import { log, error } from "../utils/themeLog.ts";
-import { getThemeName } from '../otherThings.ts'
+import { pluginUrl } from '../otherThings.ts'
 
 import structure from "./settingsGroups/settingsStructure.ts"
 import { settingsUtils } from "../utils/settingsUtils.ts"
@@ -10,7 +10,7 @@ import { pluginsSettings } from "./settingsGroups/pluginsSettings/pluginsSetting
 import { backuprestoretab } from "./settingsGroups/backupRestore/backupRestore.ts"
 import { aboutustab } from "./settingsGroups/aboutUs/aboutUs.ts"
 
-const datapath = `//plugins/${getThemeName()}/`
+const datapath = `${pluginUrl()}/`
 
 function getSettingsBackdrop(): HTMLElement | null {
     const settingsApp = document.querySelector(".rcp-fe-lol-settings") as HTMLElement | null

@@ -1,12 +1,12 @@
-import { getThemeName } from "../otherThings"
+import { pluginUrl } from "../otherThings"
 import { log, warn, error } from '../utils/themeLog';
 import { customAvatar } from "../theme/customUI/customIcon";
 import { fileSystem } from "../utils/fileSystem";
 
-const icdata = (await import(`//plugins/${getThemeName()}/config/icons.js`)).default;
+const icdata = (await import(pluginUrl("config/icons.js"))).default;
 
-const datapath = `//plugins/${getThemeName()}/`
-const iconFolder = `${datapath}assets/icon/`
+const iconFolder = `${pluginUrl("assets/icon")}/`
+const iconUrl = (...parts: unknown[]) => pluginUrl("assets/icon", ...parts);
 
 const syncIconsType = ["avatar", "border", "banner", "emblem", "hoverCardBackdrop"] as const;
 type IconType = typeof syncIconsType[number];
@@ -47,11 +47,11 @@ class SyncUserIcons {
     private getOwnIconMap(): OwnIconEntry[] {
         const currentBanner = ElainaData.get("CurrentBanner");
         return [
-            { url: `${iconFolder}${icdata["Avatar"]}`, type: "avatar" },
-            { url: `${iconFolder}${icdata["Border"]}`, type: "border" },
-            { url: `${iconFolder}Regalia-Banners/${currentBanner}`, type: "banner" },
-            { url: `${iconFolder}${icdata["Hover-card"]}`, type: "hoverCardBackdrop" },
-            { url: `${iconFolder}${icdata["Honor"]}`, type: "emblem" }
+            { url: iconUrl(icdata["Avatar"]), type: "avatar" },
+            { url: iconUrl(icdata["Border"]), type: "border" },
+            { url: iconUrl("Regalia-Banners", currentBanner), type: "banner" },
+            { url: iconUrl(icdata["Hover-card"]), type: "hoverCardBackdrop" },
+            { url: iconUrl(icdata["Honor"]), type: "emblem" }
         ];
     }
 

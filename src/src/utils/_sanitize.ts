@@ -20,6 +20,10 @@ function escapeCssString (value: string): string {
     return String(value).replace(/["\\\n\r\f]/g, "\\$&")
 }
 
+function cssUrl(value: string): string {
+    return `url("${escapeCssString(value)}")`
+}
+
 function getSafeGoogleFont (value: unknown): { url: URL, family: string } | null {
 	const rawValue = String(value ?? "").trim();
 	if (!rawValue || rawValue.length > 2048) return null;
@@ -46,5 +50,6 @@ export {
     sanitizeColor, 
     sanitizeFileName, 
     escapeCssString, 
+    cssUrl,
     getSafeGoogleFont 
 }

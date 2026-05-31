@@ -1,55 +1,57 @@
 import utils from "../utils/utils.ts"
-import { getThemeName } from "../otherThings.ts"
+import { pluginUrl } from "../otherThings.ts"
 
-let icdata: Object = (await import(`//plugins/${getThemeName()}/config/icons.js`)).default;
-let datapath: string = `//plugins/${getThemeName()}/`
+let icdata: Object = (await import(pluginUrl("config/icons.js"))).default;
 
-let iconFolder: string = `${datapath}assets/icon/`
-let bgFolder: string = `${datapath}assets/backgrounds/`
+const assetUrl = (...parts: unknown[]) => pluginUrl(...parts);
+const cssAssetUrl = (...parts: unknown[]) => utils.cssUrl(assetUrl(...parts));
+const iconUrl = (...parts: unknown[]) => assetUrl("assets/icon", ...parts);
+const cssIconUrl = (...parts: unknown[]) => utils.cssUrl(iconUrl(...parts));
+const cssBgUrl = (...parts: unknown[]) => utils.cssUrl(assetUrl("assets/backgrounds", ...parts));
 
 class AddCss {
 	cssVar = () => {
 		utils.addStyleNode(/*css*/`
 			:root {
-				--classic_def: url("${iconFolder}gamemodes/${icdata["classic_def"]}");
-				--classic_act: url("${iconFolder}gamemodes/${icdata["classic_act"]}");
-				--aram_def: url("${iconFolder}gamemodes/${icdata["aram_def"]}");
-				--aram_act: url("${iconFolder}gamemodes/${icdata["aram_act"]}");
-				--tft_def: url("${iconFolder}gamemodes/${icdata["tft_def"]}");
-				--tft_act: url("${iconFolder}gamemodes/${icdata["tft_act"]}");
-				--cherry_def: url("${iconFolder}gamemodes/${icdata["cherry_def"]}");
-				--cherry_act: url("${iconFolder}gamemodes/${icdata["cherry_act"]}");
-				--brawl_def: url("${iconFolder}gamemodes/${icdata["brawl_def"]}");
-				--brawl_act: url("${iconFolder}gamemodes/${icdata["brawl_act"]}");
+				--classic_def: ${cssIconUrl("gamemodes", icdata["classic_def"])};
+				--classic_act: ${cssIconUrl("gamemodes", icdata["classic_act"])};
+				--aram_def: ${cssIconUrl("gamemodes", icdata["aram_def"])};
+				--aram_act: ${cssIconUrl("gamemodes", icdata["aram_act"])};
+				--tft_def: ${cssIconUrl("gamemodes", icdata["tft_def"])};
+				--tft_act: ${cssIconUrl("gamemodes", icdata["tft_act"])};
+				--cherry_def: ${cssIconUrl("gamemodes", icdata["cherry_def"])};
+				--cherry_act: ${cssIconUrl("gamemodes", icdata["cherry_act"])};
+				--brawl_def: ${cssIconUrl("gamemodes", icdata["brawl_def"])};
+				--brawl_act: ${cssIconUrl("gamemodes", icdata["brawl_act"])};
 
-				--pri8000: url("${bgFolder}runes/${icdata['Precision']}");
-				--pri8100: url("${bgFolder}runes/${icdata['Domination']}");
-				--pri8200: url("${bgFolder}runes/${icdata['Sorcery']}");
-				--pri8300: url("${bgFolder}runes/${icdata['Inspiration']}");
-				--pri8400: url("${bgFolder}runes/${icdata['Resolve']}");
+				--pri8000: ${cssBgUrl("runes", icdata['Precision'])};
+				--pri8100: ${cssBgUrl("runes", icdata['Domination'])};
+				--pri8200: ${cssBgUrl("runes", icdata['Sorcery'])};
+				--pri8300: ${cssBgUrl("runes", icdata['Inspiration'])};
+				--pri8400: ${cssBgUrl("runes", icdata['Resolve'])};
 
-				--Loading: url("${iconFolder}${icdata["Loading"]}");
-				--Avatar: url("${iconFolder}${icdata["Avatar"]}");
-				--RP-Icon: url("${iconFolder}${icdata["RP-icon"]}");
-				--BE-Icon: url("${iconFolder}${icdata["BE-icon"]}");
-				--Rank-Icon: url("${iconFolder}${icdata["Rank-icon"]}");
-				--Clash-banner: url("${iconFolder}${icdata["Class-banner"]}");
-				--Ticker: url("${iconFolder}${icdata["Ticker"]}");
-				--Trophy: url("${iconFolder}${icdata["Trophy"]}");
-				--Border: url("${iconFolder}${icdata["Border"]}");
-				--ElainaFly: url("${iconFolder}${icdata["Animation-logo"]}");
-				--ElainaStatic: url("${iconFolder}${icdata["Static-logo"]}");
-				--Hover-card-backdrop: url("${iconFolder}${icdata['Hover-card']}");
+				--Loading: ${cssIconUrl(icdata["Loading"])};
+				--Avatar: ${cssIconUrl(icdata["Avatar"])};
+				--RP-Icon: ${cssIconUrl(icdata["RP-icon"])};
+				--BE-Icon: ${cssIconUrl(icdata["BE-icon"])};
+				--Rank-Icon: ${cssIconUrl(icdata["Rank-icon"])};
+				--Clash-banner: ${cssIconUrl(icdata["Class-banner"])};
+				--Ticker: ${cssIconUrl(icdata["Ticker"])};
+				--Trophy: ${cssIconUrl(icdata["Trophy"])};
+				--Border: ${cssIconUrl(icdata["Border"])};
+				--ElainaFly: ${cssIconUrl(icdata["Animation-logo"])};
+				--ElainaStatic: ${cssIconUrl(icdata["Static-logo"])};
+				--Hover-card-backdrop: ${cssIconUrl(icdata['Hover-card'])};
 			}
 		`)
 	}
 
 	mainThemeCss = () => {
 		utils.addStyleNode(`
-			@import url("${datapath}assets/styles/themes/elaina.css");
+			@import ${cssAssetUrl("assets/styles/themes/elaina.css")};
 			@font-face {
 				font-family: 'Elaina';
-				src: url('${datapath}assets/fonts/beaufortforlol-bold.ttf')
+				src: ${cssAssetUrl("assets/fonts/beaufortforlol-bold.ttf")}
 			}`
 		)
 	}
@@ -160,7 +162,7 @@ class AddCss {
 
 				if ((cssPath && groupKey == "iconCss" && ElainaData.get("Custom-Icon"))
 				||  (cssPath && groupKey == "componentsCss")) {
-					cssImports += `@import url("${datapath}assets/styles/components/${cssPath}");\n`;
+					cssImports += `@import ${cssAssetUrl("assets/styles/components", cssPath)};\n`;
 				}
 			});
 		}
@@ -189,11 +191,11 @@ class AddCss {
 			return;
 		}
 
-		utils.addFont(`${datapath}assets/fonts/${ElainaData.get("CurrentFont")}`,"Custom-font","Custom")
+		utils.addFont(assetUrl("assets/fonts", ElainaData.get("CurrentFont")),"Custom-font","Custom")
 	}
 
 	customCursor = () => {
-		utils.CustomCursor(`url("${iconFolder}${icdata["Mouse-cursor"]}")`,`@import url("${datapath}assets/styles/components/cursor.css")`)
+		utils.CustomCursor(cssIconUrl(icdata["Mouse-cursor"]),`@import ${cssAssetUrl("assets/styles/components/cursor.css")}`)
 	}
 
 	customNicknameColor = () => {

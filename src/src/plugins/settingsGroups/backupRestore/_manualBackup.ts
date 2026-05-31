@@ -2,6 +2,7 @@ import { UI } from "../settingsUI.ts"
 import utils from "../../../utils/utils.ts"
 import { log } from "../../../utils/themeLog.ts"
 import { setDefaultData } from "../../../services/backupAndRestoreDatastore.ts"
+import { pluginUrl } from "../../../otherThings.ts"
 
 export async function manualBackupSection(): Promise<HTMLElement[]> {
     const summonerID = await utils.getSummonerID()
@@ -12,7 +13,7 @@ export async function manualBackupSection(): Promise<HTMLElement[]> {
         UI.createRow("manualRestoreBackupSystemInfo", [
             UI.createRow("manualRestoreBackup", [
                 UI.createButton(await getString("backup-restore.backup-data"), "ManualBackup", async () => {
-                    let datastore_list = (await import(`//plugins/${window.getThemeName()}/config/datastoreDefault.js`)).default
+                    let datastore_list = (await import(pluginUrl("config/datastoreDefault.js"))).default
 
                     ElainaData.set("last-backup-time", new Date())
 

@@ -1,5 +1,4 @@
 import { UI } from "../settingsUI.ts"
-import utils from "../../../utils/utils.ts"
 import { log } from "../../../utils/themeLog.ts"
 import { addCss } from '../../../theme/loadCustomCss';
 
@@ -32,8 +31,7 @@ function createFontDropdown(): HTMLElement {
         datastoreKey: "CurrentFont",
         onChange: (item) => {
             if (ElainaData.get("Custom-Font") && !ElainaData.get("Custom-Font-Google")) {
-                document.querySelector("#Custom-font")?.remove()
-                utils.addFont(ElainaData.get("Font-folder") + item.value, "Custom-font", "Custom")
+                addCss.customFont()
                 log("Font changed to: " + item.value)
             }
         }

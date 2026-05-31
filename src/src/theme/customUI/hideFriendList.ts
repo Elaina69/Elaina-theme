@@ -1,6 +1,6 @@
 import * as upl from "pengu-upl"
 import utils from "../../utils/utils"
-import { getThemeName } from "../../otherThings"
+import { pluginUrl } from "../../otherThings"
 import { error } from "../../utils/themeLog"
 
 /** Adds a toggle button to show or hide the friends sidebar panel. */
@@ -42,12 +42,12 @@ export class HideFriendList {
         const button = document.querySelector(".hideFriendslist > img")
 
         if (!hide) {
-            button?.setAttribute("src", `//plugins/${getThemeName()}/assets/icon/plugins-icons/next_button.png`)
+            button?.setAttribute("src", pluginUrl("assets/icon/plugins-icons/next_button.png"))
             buttonDiv.style.cssText = `transform: translateX(0px);`
         }
         else {
             buttonDiv.style.cssText = `transform: translateX(225px);`
-            button?.setAttribute("src", `//plugins/${getThemeName()}/assets/icon/plugins-icons/prev_button.png`)
+            button?.setAttribute("src", pluginUrl("assets/icon/plugins-icons/prev_button.png"))
         }
     }
 

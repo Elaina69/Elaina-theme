@@ -1,9 +1,9 @@
 import utils from '../utils/utils.ts'
 import * as upl from "pengu-upl"
-import { getThemeName } from "../otherThings"
+import { pluginUrl } from "../otherThings"
 import { log } from '../utils/themeLog.ts'
 
-let datapath = `//plugins/${getThemeName()}/`
+const cssAssetUrl = (...parts: unknown[]) => utils.cssUrl(pluginUrl(...parts));
 
 function AddElement(parent: any, tag: any, params: any[] = [], classes:any[] = [], content: any = null) {
     let element = document.createElement(tag);
@@ -467,17 +467,17 @@ function CreateSkinsInformation() {
 export class LootHelper {
     main = () => {
         utils.addStyleNode(/*css*/`
-            @import url("${datapath}assets/styles/components/loothelper.css");
+            @import ${cssAssetUrl("assets/styles/components/loothelper.css")};
             :root {
-                --OC_button:url("${datapath}assets/icon/plugins-icons/button-open-chests.png");
-                --BE_button:url("${datapath}assets/icon/plugins-icons/button-blue-essence.png");
-                --BE_hover:url("${datapath}assets/icon/plugins-icons/button-blue-essence-hover.png");
-                --BE_active:url("${datapath}assets/icon/plugins-icons/button-blue-essence-click.png");
-                --rbutton:url("${datapath}assets/icon/plugins-icons/button-refresh.png");
-                --rhover:url("${datapath}assets/icon/plugins-icons/button-refresh-hover.png");
-                --ractive:url("${datapath}assets/icon/plugins-icons/button-refresh-click.png");
-                --OC_hover:url("${datapath}assets/icon/plugins-icons/button-open-chests-hover.png");
-                --OC_active:url("${datapath}assets/icon/plugins-icons/button-open-chests-click.png");
+                --OC_button:${cssAssetUrl("assets/icon/plugins-icons/button-open-chests.png")};
+                --BE_button:${cssAssetUrl("assets/icon/plugins-icons/button-blue-essence.png")};
+                --BE_hover:${cssAssetUrl("assets/icon/plugins-icons/button-blue-essence-hover.png")};
+                --BE_active:${cssAssetUrl("assets/icon/plugins-icons/button-blue-essence-click.png")};
+                --rbutton:${cssAssetUrl("assets/icon/plugins-icons/button-refresh.png")};
+                --rhover:${cssAssetUrl("assets/icon/plugins-icons/button-refresh-hover.png")};
+                --ractive:${cssAssetUrl("assets/icon/plugins-icons/button-refresh-click.png")};
+                --OC_hover:${cssAssetUrl("assets/icon/plugins-icons/button-open-chests-hover.png")};
+                --OC_active:${cssAssetUrl("assets/icon/plugins-icons/button-open-chests-click.png")};
             }
         `)
     

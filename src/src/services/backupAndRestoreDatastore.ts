@@ -1,7 +1,7 @@
-import { getThemeName } from "../otherThings.ts"
+import { pluginUrl } from "../otherThings.ts"
 import { log, error } from '../utils/themeLog.ts';
 
-let datastore_list = (await import(`//plugins/${getThemeName()}/config/datastoreDefault.js`)).default
+let datastore_list = (await import(pluginUrl("config/datastoreDefault.js"))).default
 
 /** Imports and restores DataStore backup data from a remote URL or exported object. */
 export class BackupRestoreData {

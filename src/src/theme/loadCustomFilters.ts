@@ -1,9 +1,9 @@
 import utils from "../utils/utils.ts"
 import { cdnImport } from "../otherThings.ts"
-import { getThemeName } from "../otherThings.ts"
+import { pluginUrl } from "../otherThings.ts"
 import { log } from "../utils/themeLog.ts";
 
-let filtersData: string[] = (await cdnImport(`//plugins/${getThemeName()}/config/filters.js`, "Can't import filters data")).default;
+let filtersData: string[] = (await cdnImport(pluginUrl("config/filters.js"), "Can't import filters data")).default;
 
 /** Applies CSS filter overlays to different client pages based on a configurable filter map. */
 export class Filters {

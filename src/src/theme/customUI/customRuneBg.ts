@@ -1,7 +1,7 @@
 import * as upl from 'pengu-upl';
-import { getThemeName } from "../../otherThings"
+import { pluginUrl } from "../../otherThings"
 
-const filters = (await import(`//plugins/${getThemeName()}/config/filters.js`)).default;
+const filters = (await import(pluginUrl("config/filters.js"))).default;
 
 /** Replaces rune page backgrounds with custom images and applies CSS filter overlays. */
 export class CustomRunesBackground {

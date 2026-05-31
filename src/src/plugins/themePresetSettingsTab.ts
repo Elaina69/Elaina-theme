@@ -4,16 +4,16 @@
  * @description This's just a LL-settings from League Loader, but i change it a little bit for my theme
  */
 
-import { getThemeName } from '../otherThings.ts'
+import { pluginPath, pluginUrl } from '../otherThings.ts'
 import { Component, jsx, render } from "nano-jsx"
 import utils from "../utils/utils.ts"
 
-const icdata: Object = (await import(`//plugins/${window.getThemeName()}/config/icons.js`)).default;
+const icdata: Object = (await import(pluginUrl("config/icons.js"))).default;
 
-const datapath: string = `//plugins/${window.getThemeName()}/`
+const settingsIcon = pluginUrl("assets/Icon/Plugins-icons", icdata["LL_Settings"]);
 
-function openConfigs() {window.openPluginsFolder(`${getThemeName()}/config`)}
-function openAssets() {window.openPluginsFolder(`${getThemeName()}/assets`)}
+function openConfigs() {window.openPluginsFolder(pluginPath("config"))}
+function openAssets() {window.openPluginsFolder(pluginPath("assets"))}
 
 /**
  * Quick-access theme menu in the League Client navigation bar.
@@ -61,7 +61,7 @@ export class ThemePresetSettings {
 								<div class="dialog-content">
 									<lol-uikit-content-block class="app-controls-exit-dialog" type="dialog-medium" style="position: relative; overflow: hidden">
 										<div style="position: absolute; top: 60px">
-											<img src="${datapath}assets/Icon/Plugins-icons/${icdata["LL_Settings"]}" style="object-fit: cover; width: 290px; transform: scale(2.5); margin-left: 100px; filter: brightness(0.7)">
+											<img src="${settingsIcon}" style="object-fit: cover; width: 290px; transform: scale(2.5); margin-left: 100px; filter: brightness(0.7)">
 										</div>
 										</div>
 										<div style="position: relative">

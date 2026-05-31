@@ -1,7 +1,7 @@
-import { getThemeName } from "../otherThings.ts";
+import { pluginUrl } from "../otherThings.ts";
 import { log, error } from "../utils/themeLog.ts";
 
-let cdnServer = (await import(`//plugins/${getThemeName()}/config/cdnServer.js`)).default
+let cdnServer = (await import(pluginUrl("config/cdnServer.js"))).default
 
 let initLink: string
 
@@ -29,8 +29,8 @@ log(cdnServer["cdn-url"])
 
 export async function initThemeDataCdn() {
     if (ElainaData.get("Dev-mode")) {
-        initLink = `//plugins/${getThemeName()}/elaina-theme-data/cdninit.js`;
-        await cdnImport(`//plugins/${getThemeName()}/elaina-theme-data/index.js`, "Failed to load local data");
+        initLink = pluginUrl("elaina-theme-data/cdninit.js");
+        await cdnImport(pluginUrl("elaina-theme-data/index.js"), "Failed to load local data");
     }
     else {
         initLink = `${cdnServer["cdn-url"]}elaina-theme-data@${cdnServer["version"]}/cdninit.js`;

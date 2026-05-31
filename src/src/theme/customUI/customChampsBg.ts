@@ -1,12 +1,13 @@
 import * as upl from 'pengu-upl'
 import { log } from "../../utils/themeLog.js"
 import utils from '../../utils/utils.js'
-import { getThemeName, cdnImport } from '../../otherThings.js'
+import { pluginUrl, cdnImport } from '../../otherThings.js'
 
-let datapath = `//plugins/${getThemeName()}/`
 let bgInterval: number
+const champUrl = (...parts: unknown[]) => pluginUrl("assets/champs", ...parts);
+const cssChampUrl = (...parts: unknown[]) => utils.cssUrl(champUrl(...parts));
 
-const list = (await cdnImport(`${datapath}config/champsBgList.js`, "Can't import custom champion data")).default;
+const list = (await cdnImport(pluginUrl("config/champsBgList.js"), "Can't import custom champion data")).default;
 
 /** Replaces default champion select thumbnails with custom background images from a config list. */
 export class CustomChampsBg {
@@ -30,8 +31,8 @@ export class CustomChampsBg {
             const baseURL    = `/lol-game-data/assets/ASSETS/Characters`;
             const imagesBase = `${baseURL}/${firstDefaultFilename}/Skins/Base/Images`;
 
-            const customImage           = `${datapath}assets/champs/${item.image}`;
-            const customPreviewImage    = `${datapath}assets/champs/${item.image_preview}`;
+            const customImage           = champUrl(item.image);
+            const customPreviewImage    = champUrl(item.image_preview);
                 
             for (const charDir of [firstDefaultFilename, firstDefaultFilenameLower]) {
                 for (const filename of ["LoadScreen", "Loadscreen"]) {
@@ -110,7 +111,7 @@ export class CustomChampsBg {
                 profileMasteryIcon.getAttribute("src")?.includes(champ.default_icon_id.toString())
             );
             if (champData) {
-                profileMasteryIcon.setAttribute("src", `${datapath}assets/champs/${champData.image_thumbnail}`);
+                profileMasteryIcon.setAttribute("src", champUrl(champData.image_thumbnail));
             }
         });
 
@@ -131,7 +132,7 @@ export class CustomChampsBg {
                 profileEternalIcon.getAttribute("src")?.includes(champ.default_icon_id.toString())
             );
             if (champData) {
-                profileEternalIcon.setAttribute("src", `${datapath}assets/champs/${champData.image_thumbnail}`);
+                profileEternalIcon.setAttribute("src", champUrl(champData.image_thumbnail));
             }
         });
     }
@@ -145,7 +146,7 @@ export class CustomChampsBg {
                 img.getAttribute("src")?.includes(champ.default_icon_id.toString())
             );
             if (champData) {
-                img.setAttribute("src", `${datapath}assets/champs/${champData.image_thumbnail}`);
+                img.setAttribute("src", champUrl(champData.image_thumbnail));
             }
         });
     }
@@ -158,7 +159,7 @@ export class CustomChampsBg {
                     champIcon.match(/Characters\/([^\/]+)\//)?.[1].toLowerCase() == list[i]["default_champion_name"].toLowerCase() || 
                     champIcon.match(/Characters\/([^\/]+)\//)?.[1].toLowerCase() == list[i]["replace_name"].toLowerCase()
                 ){
-                    champIcon = `url(${datapath}assets/champs/${list[i]["image_thumbnail"]})`
+                    champIcon = cssChampUrl(list[i]["image_thumbnail"])
                 }
             }
         })
@@ -204,8 +205,8 @@ export class CustomChampsBg {
                             if (skinName) skinName.textContent = list[j]["replace_name"]
                         }
         
-                        this.updateDefaultSkinThumbnails(".carousel-track-container .buffer-wrapper", `url(${datapath}assets/champs/${list[j]["image_thumbnail"]})`);
-                        this.updateDefaultSkinThumbnails(".carousel-track-container .thumbnail-wrapper", `url(${datapath}assets/champs/${list[j]["image_thumbnail"]})`);
+                        this.updateDefaultSkinThumbnails(".carousel-track-container .buffer-wrapper", cssChampUrl(list[j]["image_thumbnail"]));
+                        this.updateDefaultSkinThumbnails(".carousel-track-container .thumbnail-wrapper", cssChampUrl(list[j]["image_thumbnail"]));
                     }
                 }
             }, 100)
@@ -225,7 +226,7 @@ export class CustomChampsBg {
             );
 
             if (champData) {
-                element.setAttribute("src", `${datapath}assets/champs/${champData.image_thumbnail}`);
+                element.setAttribute("src", champUrl(champData.image_thumbnail));
             }
         })
 
@@ -236,7 +237,7 @@ export class CustomChampsBg {
             );
 
             if (champData) {
-                element.setAttribute("src", `${datapath}assets/champs/${champData.image_thumbnail}`);
+                element.setAttribute("src", champUrl(champData.image_thumbnail));
             }
         })
 
@@ -255,7 +256,7 @@ export class CustomChampsBg {
             );
 
             if (champData) {
-                element.setAttribute("src", `${datapath}assets/champs/${champData.image_thumbnail}`);
+                element.setAttribute("src", champUrl(champData.image_thumbnail));
             }
         })
 
@@ -266,7 +267,7 @@ export class CustomChampsBg {
             );
 
             if (champData) {
-                element.setAttribute("src", `${datapath}assets/champs/${champData.image_thumbnail}`);
+                element.setAttribute("src", champUrl(champData.image_thumbnail));
             }
         })
 
@@ -277,7 +278,7 @@ export class CustomChampsBg {
             );
 
             if (champData) {
-                element.querySelector(".avatar")?.setAttribute("href", `${datapath}assets/champs/${champData.image_thumbnail}`);
+                element.querySelector(".avatar")?.setAttribute("href", champUrl(champData.image_thumbnail));
             }
         })
 
@@ -287,7 +288,7 @@ export class CustomChampsBg {
             );
 
             if (champData) {
-                element.querySelector(".avatar")?.setAttribute("href", `${datapath}assets/champs/${champData.image_thumbnail}`);
+                element.querySelector(".avatar")?.setAttribute("href", champUrl(champData.image_thumbnail));
             }
         })
 
@@ -298,7 +299,7 @@ export class CustomChampsBg {
             );
 
             if (champData) {
-                element.querySelector(".champion-pic")?.setAttribute("src", `${datapath}assets/champs/${champData.image_thumbnail}`);
+                element.querySelector(".champion-pic")?.setAttribute("src", champUrl(champData.image_thumbnail));
             }
         })
     }
@@ -326,7 +327,7 @@ export class CustomChampsBg {
             );
 
             if (champData) {
-                champIcon.setAttribute("src", `${datapath}assets/champs/${champData.image_thumbnail}`);
+                champIcon.setAttribute("src", champUrl(champData.image_thumbnail));
             }
         });
 
@@ -337,7 +338,7 @@ export class CustomChampsBg {
             );
 
             if (champData) {
-                champIcon.setAttribute("src", `${datapath}assets/champs/${champData.image_thumbnail}`);
+                champIcon.setAttribute("src", champUrl(champData.image_thumbnail));
             }
         });
     }
@@ -350,7 +351,7 @@ export class CustomChampsBg {
             );
 
             if (champData) {
-                thumbnail.setAttribute("src", `${datapath}assets/champs/${champData.image_thumbnail}`);
+                thumbnail.setAttribute("src", champUrl(champData.image_thumbnail));
             }
         })
 
@@ -410,7 +411,7 @@ export class CustomChampsBg {
                 );
 
                 if (champData) {
-                    img.setAttribute("src", `${datapath}assets/champs/${champData.image_thumbnail}`);
+                    img.setAttribute("src", champUrl(champData.image_thumbnail));
                 }
             });
         }, 100)

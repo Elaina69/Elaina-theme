@@ -10,7 +10,7 @@ export function addFont(folder: string, font_id: string, font_family: string) {
     const fontStyle = document.createElement('style');
     fontStyle.id = font_id;
     fontStyle.appendChild(document.createTextNode(
-        `@font-face {font-family: "${utils.escapeCssString(font_family)}"; src: url("${utils.escapeCssString(encodeURI(folder))}")}`
+        `@font-face {font-family: "${utils.escapeCssString(font_family)}"; src: ${utils.cssUrl(folder)}}`
     ));
     document.body.appendChild(fontStyle);
 }

@@ -1,6 +1,6 @@
 import * as upl from 'pengu-upl';
-import { getThemeName } from "../../otherThings"
-let filters = (await import(`//plugins/${getThemeName()}/config/filters.js`)).default;
+import { pluginUrl } from "../../otherThings"
+let filters = (await import(pluginUrl("config/filters.js"))).default;
 
 /** Restyles the game search and queue card UI with custom layout and animations. */
 export class CustomGameSearchCard {
