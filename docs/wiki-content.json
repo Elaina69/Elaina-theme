@@ -132,7 +132,7 @@
                 {
                     "name": "Audio",
                     "folder": "assets/backgrounds/audio",
-                    "formats": [".mp3", ".flac", ".ogg", ".wav", ".aac"],
+                    "formats": [".mp3", ".flac", ".ogg", ".opus", ".wav", ".aac"],
                     "listKey": "Audio-list",
                     "description": "Theme background music or ambient audio."
                 },

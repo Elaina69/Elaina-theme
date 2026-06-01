@@ -14,8 +14,8 @@ let cdnServer = (await import(`//plugins/${getThemeName()}/config/cdnServer.js`)
 
 // Set default data
 const defaultData = {
-    "Wallpaper-list": ["elaina1.webm", "elaina2.jpg"],
-    "Audio-list": ["Laur - その花は世界を紡ぐ.flac", "Laur - Mellifluous.flac"],
+    "Wallpaper-list": ["elaina1-av1-crf40.webm", "elaina2.webp"],
+    "Audio-list": ["Laur - その花は世界を紡ぐ.opus", "Laur - Mellifluous.opus"],
     "wallpaper-index": 0,
     "audio-index": 0,
     "wallpaper-volume": 0.0,

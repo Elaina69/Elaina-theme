@@ -37,7 +37,7 @@ export default [
 
         "replace_name"              : "Hatsune Miku",
         "replace_sub_name"          : "Voicaloid",
-        "image"                     : "miku.png",
+        "image"                     : "miku.webp",
         "image_preview"             : "miku_preview.png",
         "image_thumbnail"           : "miku_thumbnail.png",
         "css-left"                  : "100px",
@@ -51,7 +51,7 @@ export default [
 
         "replace_name"              : "Amiya",
         "replace_sub_name"          : "Solo Around The World",
-        "image"                     : "amiyi.png",
+        "image"                     : "amiyi.webp",
         "image_preview"             : "amiyi_preview.png",
         "image_thumbnail"           : "amiyi_thumbnail.png",
         "css-left"                  : "160px",

@@ -23,7 +23,7 @@ export default {
     
     "Mouse-cursor"  : "mouse-cursor.png",
 
-    "LL_Settings"   : "ll-settings.jpg",
+    "LL_Settings"   : "ll-settings.webp",
 
     //Runes
     "Precision"  :  "precision.jpg",
