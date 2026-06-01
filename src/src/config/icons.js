@@ -3,54 +3,54 @@ export default {
 
     "Animation-logo": "animation-logo.gif",
     "Loading"       : "loading.gif",
-    "Static-logo"   : "logo.png",
+    "Static-logo"   : "logo.webp",
 
     "Avatar"        : "avatar.gif",
 
-    "Border"        : "border.png",
+    "Border"        : "border.webp",
 
-    "Hover-card"    : "hover-card-backdrop.jpg",
+    "Hover-card"    : "hover-card-backdrop.webp",
 
-    "RP-icon"       : "rp-icon.png",
-    "BE-icon"       : "be-icon.png",
+    "RP-icon"       : "rp-icon.webp",
+    "BE-icon"       : "be-icon.webp",
 
-    "Rank-icon"     : "rank.png",
-    "Honor"         : "honor.png",
-    "Trophy"        : "trophy.png",
-    "Class-banner"  : "clash.png",
+    "Rank-icon"     : "rank.webp",
+    "Honor"         : "honor.webp",
+    "Trophy"        : "trophy.webp",
+    "Class-banner"  : "clash.webp",
 
-    "Ticker"        : "ticker.png",
+    "Ticker"        : "ticker.webp",
     
-    "Mouse-cursor"  : "mouse-cursor.png",
+    "Mouse-cursor"  : "mouse-cursor.webp",
 
-    "LL_Settings"   : "ll-settings.jpg",
+    "LL_Settings"   : "ll-settings.webp",
 
     //Runes
-    "Precision"  :  "precision.jpg",
-    "Domination" :  "domination.jpg",
-    "Sorcery"    :  "sorcery.jpg",
-    "Resolve"    :  "resolve.jpg",
-    "Inspiration":  "inspiration.jpg",
+    "Precision"  :  "precision.webp",
+    "Domination" :  "domination.webp",
+    "Sorcery"    :  "sorcery.webp",
+    "Resolve"    :  "resolve.webp",
+    "Inspiration":  "inspiration.webp",
 
     //Gamemodes
-    "classic_def"  : "classic-default.png",
-    "classic_act"  : "classic-active.png",
+    "classic_def"  : "classic-default.webp",
+    "classic_act"  : "classic-active.webp",
     "classic_video": "classic-video.webm",
 
-    "aram_def"     : "aram-default.png",
-    "aram_act"     : "aram-active.png",
+    "aram_def"     : "aram-default.webp",
+    "aram_act"     : "aram-active.webp",
     "aram_video"   : "aram-video.webm",
 
-    "tft_def"      : "tft-default.png",
-    "tft_act"      : "tft-active.png",
+    "tft_def"      : "tft-default.webp",
+    "tft_act"      : "tft-active.webp",
     "tft_video"    : "tft-video.webm",
     
-    "cherry_def"   : "cherry-default.png",
-    "cherry_act"   : "cherry-active.png",
+    "cherry_def"   : "cherry-default.webp",
+    "cherry_act"   : "cherry-active.webp",
     "cherry_video" : "cherry-video.webm",
 
-    "brawl_def"   : "cherry-default.png",
-    "brawl_act"   : "cherry-active.png",
+    "brawl_def"   : "cherry-default.webp",
+    "brawl_act"   : "cherry-active.webp",
     "brawl_video" : "cherry-video.webm",
     //______________________________________________________________________________//
 }

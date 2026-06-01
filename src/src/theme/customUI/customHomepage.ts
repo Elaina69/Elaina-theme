@@ -4,6 +4,7 @@ import * as upl from 'pengu-upl';
 import utils from '../../utils/utils.ts';
 import { setDefaultData } from "../../services/backupAndRestoreDatastore.ts";
 const iconFolder: string = `${pluginUrl("assets/icon")}/`;
+const mediaControllerIconFolder: string = `${iconFolder}plugins-icons/mediaControllers/`;
 
 let addedBackgrounds = false
 let navbarContentList: any[] = [];
@@ -13,7 +14,7 @@ let cdnServer = (await import(pluginUrl("config/cdnServer.js"))).default
 // Set default data
 const defaultData = {
     "Wallpaper-list": ["elaina1.webm", "elaina2.jpg"],
-    "Audio-list": ["Laur - その花は世界を紡ぐ.flac", "Laur - Mellifluous.flac"],
+    "Audio-list": ["Laur - Fragments of a Gentle Memory.opus", "Laur - Mellifluous.opus", "Laur - その花は世界を紡ぐ.opus"],
     "wallpaper-index": 0,
     "audio-index": 0,
     "wallpaper-volume": 0.0,
@@ -156,7 +157,7 @@ class WallpaperController {
     playPauseSetIcon = (elem: any = document.querySelector(".pause-bg-icon")) => {
         const pauseBgIcon = elem;
         if (!pauseBgIcon) return;
-        pauseBgIcon.setAttribute("src", `${iconFolder}plugins-icons/${ElainaData.get('pause-wallpaper') % 2 === 0 ? 'play_button' : 'pause_button'}.png`);
+        pauseBgIcon.setAttribute("src", `${mediaControllerIconFolder}${ElainaData.get('pause-wallpaper') % 2 === 0 ? 'play_button' : 'pause_button'}.webp`);
     };
 
     loadBG = (BG: string) => {
@@ -279,7 +280,7 @@ class AudioController {
     playPauseSetIconAudio = (elem: any = document.querySelector(".pause-audio-icon")) => {
         const pauseAudioIcon = elem;
         if (!pauseAudioIcon) return;
-        pauseAudioIcon.setAttribute("src", `${iconFolder}plugins-icons/${ElainaData.get('pause-audio') % 2 === 0 ? 'play_button' : 'pause_button'}.png`);
+        pauseAudioIcon.setAttribute("src", `${mediaControllerIconFolder}${ElainaData.get('pause-audio') % 2 === 0 ? 'play_button' : 'pause_button'}.webp`);
     };
 
     audioMute = () => {
@@ -294,13 +295,13 @@ class AudioController {
     muteSetIconAudio = (elem: any = document.querySelector(".mute-audio-icon")) => {
         const muteAudioIcon = elem;
         if (!muteAudioIcon) return;
-        muteAudioIcon.setAttribute("src", `${iconFolder}plugins-icons/${ElainaData.get("mute-audio") ? 'mute' : 'audio'}.png`);
+        muteAudioIcon.setAttribute("src", `${mediaControllerIconFolder}${ElainaData.get("mute-audio") ? 'mute' : 'audio'}.webp`);
     };
 
     setAudioLoopIcon = (elem: any = document.querySelector(".audio-loop-icon")) => {
         const iconElement = elem;
         if (!iconElement) return;
-        iconElement.setAttribute("src", `${iconFolder}plugins-icons/${ElainaData.get("audio-loop") ? 'rotating-arrow' : 'unrotating-arrow'}.png`);
+        iconElement.setAttribute("src", `${mediaControllerIconFolder}${ElainaData.get("audio-loop") ? 'rotating-arrow' : 'unrotating-arrow'}.webp`);
     };
 
     toggleAudioLoop = () => {
@@ -485,11 +486,11 @@ class MainController {
         const muteAudio = this.createElementWithId("div", "mute-audio");
         const audioLoop = this.createElementWithId("div", "audio-loop");
 
-        const pauseAudioIcon = this.createIcon("pause-audio-icon", `${iconFolder}plugins-icons/pause-audio.png`);
-        const nextAudioIcon = this.createIcon("next-audio-icon", `${iconFolder}plugins-icons/next-audio.png`);
-        const prevAudioIcon = this.createIcon("prev-audio-icon", `${iconFolder}plugins-icons/prev-audio.png`);
-        const muteAudioIcon = this.createIcon("mute-audio-icon", `${iconFolder}plugins-icons/mute-audio.png`);
-        const audioLoopIcon = this.createIcon("audio-loop-icon", `${iconFolder}plugins-icons/audio-loop.png`);
+        const pauseAudioIcon = this.createIcon("pause-audio-icon", `${mediaControllerIconFolder}pause_button.webp`);
+        const nextAudioIcon = this.createIcon("next-audio-icon", `${mediaControllerIconFolder}next-audio.webp`);
+        const prevAudioIcon = this.createIcon("prev-audio-icon", `${mediaControllerIconFolder}prev-audio.webp`);
+        const muteAudioIcon = this.createIcon("mute-audio-icon", `${mediaControllerIconFolder}mute.webp`);
+        const audioLoopIcon = this.createIcon("audio-loop-icon", `${mediaControllerIconFolder}unrotating-arrow.webp`);
 
         // Create wallpaper controller
         const wallpaperControls = this.createElementWithClass("div", "wallpaper-controls");
@@ -500,9 +501,9 @@ class MainController {
         const nextBg = this.createElementWithId("div", "next-bg");
         const prevBg = this.createElementWithId("div", "prev-bg");
 
-        const pauseBgIcon = this.createIcon("pause-bg-icon", `${iconFolder}plugins-icons/pause-bg.png`);
-        const nextBgIcon = this.createIcon("next-bg-icon", `${iconFolder}plugins-icons/next_button.png`);
-        const prevBgIcon = this.createIcon("prev-bg-icon", `${iconFolder}plugins-icons/prev_button.png`);
+        const pauseBgIcon = this.createIcon("pause-bg-icon", `${mediaControllerIconFolder}pause_button.webp`);
+        const nextBgIcon = this.createIcon("next-bg-icon", `${mediaControllerIconFolder}next_button.webp`);
+        const prevBgIcon = this.createIcon("prev-bg-icon", `${mediaControllerIconFolder}prev_button.webp`);
 
         const bgDropdown = this.createElementWithId("lol-uikit-framed-dropdown", "bgdropdown");
 
@@ -524,7 +525,7 @@ class MainController {
         volumeSlider.classList.add("volume-slider");
 
         const muteUnmuteButton = this.createElementWithClass("div", "mute-unmute-button");
-        const muteUnmuteIcon = this.createIcon("mute-unmute-icon", `${iconFolder}plugins-icons/${ElainaData.get("mute-audio") ? 'mute' : 'audio'}.png`);
+        const muteUnmuteIcon = this.createIcon("mute-unmute-icon", `${mediaControllerIconFolder}${ElainaData.get("mute-audio") ? 'mute' : 'audio'}.webp`);
 
         // Set icon wallpaper/audio controller button
         audioController.playPauseSetIconAudio(pauseAudioIcon);
@@ -616,12 +617,12 @@ class MainController {
                 ElainaData.set("mute-audio", true);
                 audio.muted = true;
                 audioController.muteSetIconAudio();
-                muteUnmuteIcon.setAttribute("src", `${iconFolder}plugins-icons/mute.png`);
+                muteUnmuteIcon.setAttribute("src", `${mediaControllerIconFolder}mute.webp`);
             } else {
                 ElainaData.set("mute-audio", false);
                 audio.muted = false;
                 audioController.muteSetIconAudio();
-                muteUnmuteIcon.setAttribute("src", `${iconFolder}plugins-icons/audio.png`);
+                muteUnmuteIcon.setAttribute("src", `${mediaControllerIconFolder}audio.webp`);
             }
         });
 
@@ -631,7 +632,7 @@ class MainController {
             ElainaData.set("mute-audio", isMuted);
             audioController.audioMute();
             audioController.muteSetIconAudio();
-            muteUnmuteIcon.setAttribute("src", `${iconFolder}plugins-icons/${isMuted ? 'mute' : 'audio'}.png`);
+            muteUnmuteIcon.setAttribute("src", `${mediaControllerIconFolder}${isMuted ? 'mute' : 'audio'}.webp`);
             const audio: any = document.getElementById("bg-audio");
             if (isMuted) {
                 volumeSlider.value = 0;
@@ -801,7 +802,7 @@ class HideNavbarButton {
             if (navFooter) navFooter.style.cssText = `transform: translateX(-212px); pointer-events: none;`
             if (navDivider) navDivider.style.cssText = `transform: translateX(-212px); pointer-events: none;`
             if (hideButton) hideButton.style.cssText = `transform: translateX(0px);`
-            if (hideButtonIcon) hideButtonIcon.setAttribute("src", `${iconFolder}plugins-icons/next_button.png`);
+            if (hideButtonIcon) hideButtonIcon.setAttribute("src", `${mediaControllerIconFolder}next_button.webp`);
         }
         else {
             if (navPersistent) navPersistent.style.cssText = `transform: translateX(0px); pointer-events: auto;`
@@ -809,7 +810,7 @@ class HideNavbarButton {
             if (navFooter) navFooter.style.cssText = `transform: translateX(0px); pointer-events: auto;`
             if (navDivider) navDivider.style.cssText = `transform: translateX(0px); pointer-events: auto;`
             if (hideButton) hideButton.style.cssText = `transform: translateX(212px);`
-            if (hideButtonIcon) hideButtonIcon.setAttribute("src", `${iconFolder}plugins-icons/prev_button.png`);
+            if (hideButtonIcon) hideButtonIcon.setAttribute("src", `${mediaControllerIconFolder}prev_button.webp`);
         }
     }
 
@@ -895,10 +896,10 @@ class HideTopNavbarButton {
     changeButtonIcon = (isHidden: boolean) => {
         const hideButtonIcon: any = document.querySelector(".hide-top-navbar-icon")
         if (isHidden) {
-            hideButtonIcon.setAttribute("src", `${iconFolder}plugins-icons/prev_button.png`);
+            hideButtonIcon.setAttribute("src", `${mediaControllerIconFolder}prev_button.webp`);
         }
         else {
-            hideButtonIcon.setAttribute("src", `${iconFolder}plugins-icons/next_button.png`);
+            hideButtonIcon.setAttribute("src", `${mediaControllerIconFolder}next_button.webp`);
         }
     }
 

@@ -15,7 +15,7 @@ export async function pluginsInfoSection(): Promise<HTMLElement[]> {
                     `*${await getString("settings.note")}: ${await getString("settings.note-1")}`, ""
                 ),
             ]),
-            UI.createImage(true, "logo.png", "plugins-settings-logo")
+            UI.createImage(true, "logo.webp", "plugins-settings-logo")
         ]),
         UI.createLabel(
             `${await getString("plugins-settings.plugins-settings")}`, "", "theme-settings-section-title"

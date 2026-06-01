@@ -42,12 +42,12 @@ export class HideFriendList {
         const button = document.querySelector(".hideFriendslist > img")
 
         if (!hide) {
-            button?.setAttribute("src", pluginUrl("assets/icon/plugins-icons/next_button.png"))
+            button?.setAttribute("src", pluginUrl("assets/icon/plugins-icons/mediaControllers/next_button.webp"))
             buttonDiv.style.cssText = `transform: translateX(0px);`
         }
         else {
             buttonDiv.style.cssText = `transform: translateX(225px);`
-            button?.setAttribute("src", pluginUrl("assets/icon/plugins-icons/prev_button.png"))
+            button?.setAttribute("src", pluginUrl("assets/icon/plugins-icons/mediaControllers/prev_button.webp"))
         }
     }
 

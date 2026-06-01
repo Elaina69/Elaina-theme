@@ -27,7 +27,7 @@ export async function aboutustab(panel: Element) {
                         UI.createRow("dev-div",[
                             UI.createImageWithLink(
                                 true, 
-                                "about-us/elainadacatto.png", 
+                                "about-us/elainadacatto.webp",
                                 "dev_ava", 
                                 "https://github.com/Elaina69", 
                                 () => {}
@@ -75,7 +75,7 @@ export async function aboutustab(panel: Element) {
                     ),
                     UI.createContributor(
                         true, 
-                        "about-us/soulmare.png",
+                        "about-us/soulmare.webp",
                         "Soulmare", 
                         `${await getString("about-us.support")}, ${await getString("about-us.translator")}`,
                         "",
@@ -164,9 +164,9 @@ export async function aboutustab(panel: Element) {
                     UI.createLabel(await getString("about-us.donate-secondline"),""),
                     UI.createLabel(await getString("about-us.donate-thirdline"), ""),
                     UI.createRow("Donation-row",[
-                        UI.createImageWithLink(true, "ko-fi.webp","donate", "https://ko-fi.com/elainadacatto", () => {}),
-                        UI.createImageWithLink(true, "paypal.png", "donate", "https://www.paypal.com/paypalme/ElainaDaCattoRiel", () => {}),
-                        UI.createImageWithLink(true, "momo.svg", "donate","https://me.momo.vn/elainadacatto", () => {}),
+                        UI.createImageWithLink(true, "donate/ko-fi.webp","donate", "https://ko-fi.com/elainadacatto", () => {}),
+                        UI.createImageWithLink(true, "donate/paypal.webp", "donate", "https://www.paypal.com/paypalme/ElainaDaCattoRiel", () => {}),
+                        UI.createImageWithLink(true, "donate/momo.svg", "donate","https://me.momo.vn/elainadacatto", () => {}),
                     ])
                 ])
             ])

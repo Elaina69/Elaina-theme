@@ -64,7 +64,7 @@ class ui {
         const row = document.createElement('div')
         const main = document.createElement('div')
         const hideButtonElement = document.createElement('div')
-        const hideButtonIcon = this.createImage(true, "plugins-icons/next_button.png", 'elaina-theme-settings-row-hide-icon')
+        const hideButtonIcon = this.createImage(true, "plugins-icons/mediaControllers/next_button.webp", 'elaina-theme-settings-row-hide-icon')
 
         row.classList.add('elaina-theme-settings-row-hideable')
         row.id = id

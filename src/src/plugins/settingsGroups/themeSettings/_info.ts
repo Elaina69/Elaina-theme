@@ -23,7 +23,7 @@ export async function infoSection(): Promise<HTMLElement[]> {
                     `*${await getString("settings.note")}: ${await getString("settings.note-1")}`, ""
                 ),
             ]),
-            UI.createImage(true, "logo.png", "theme-settings-logo")
+            UI.createImage(true, "logo.webp", "theme-settings-logo")
         ]),
         UI.createCheckBox(
             `${await getString("theme-settings.allowtrackingdata")}`, 'trackData', 'trackDatabox', () => {

@@ -469,15 +469,15 @@ export class LootHelper {
         utils.addStyleNode(/*css*/`
             @import ${cssAssetUrl("assets/styles/components/loothelper.css")};
             :root {
-                --OC_button:${cssAssetUrl("assets/icon/plugins-icons/button-open-chests.png")};
-                --BE_button:${cssAssetUrl("assets/icon/plugins-icons/button-blue-essence.png")};
-                --BE_hover:${cssAssetUrl("assets/icon/plugins-icons/button-blue-essence-hover.png")};
-                --BE_active:${cssAssetUrl("assets/icon/plugins-icons/button-blue-essence-click.png")};
-                --rbutton:${cssAssetUrl("assets/icon/plugins-icons/button-refresh.png")};
-                --rhover:${cssAssetUrl("assets/icon/plugins-icons/button-refresh-hover.png")};
-                --ractive:${cssAssetUrl("assets/icon/plugins-icons/button-refresh-click.png")};
-                --OC_hover:${cssAssetUrl("assets/icon/plugins-icons/button-open-chests-hover.png")};
-                --OC_active:${cssAssetUrl("assets/icon/plugins-icons/button-open-chests-click.png")};
+                --OC_button:${cssAssetUrl("assets/icon/plugins-icons/lootHelper/button-open-chests.webp")};
+                --BE_button:${cssAssetUrl("assets/icon/plugins-icons/lootHelper/button-blue-essence.webp")};
+                --BE_hover:${cssAssetUrl("assets/icon/plugins-icons/lootHelper/button-blue-essence-hover.webp")};
+                --BE_active:${cssAssetUrl("assets/icon/plugins-icons/lootHelper/button-blue-essence-click.webp")};
+                --rbutton:${cssAssetUrl("assets/icon/plugins-icons/lootHelper/button-refresh.webp")};
+                --rhover:${cssAssetUrl("assets/icon/plugins-icons/lootHelper/button-refresh-hover.webp")};
+                --ractive:${cssAssetUrl("assets/icon/plugins-icons/lootHelper/button-refresh-click.webp")};
+                --OC_hover:${cssAssetUrl("assets/icon/plugins-icons/lootHelper/button-open-chests-hover.webp")};
+                --OC_active:${cssAssetUrl("assets/icon/plugins-icons/lootHelper/button-open-chests-click.webp")};
             }
         `)
     

@@ -10,7 +10,7 @@ import utils from "../utils/utils.ts"
 
 const icdata: Object = (await import(pluginUrl("config/icons.js"))).default;
 
-const settingsIcon = pluginUrl("assets/Icon/Plugins-icons", icdata["LL_Settings"]);
+const settingsIcon = pluginUrl("assets/icon/plugins-icons", icdata["LL_Settings"]);
 
 function openConfigs() {window.openPluginsFolder(pluginPath("config"))}
 function openAssets() {window.openPluginsFolder(pluginPath("assets"))}
