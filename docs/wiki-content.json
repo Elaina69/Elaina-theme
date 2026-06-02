@@ -186,7 +186,7 @@
             },
             {
                 "title": "Custom assets",
-                "description": "Enable or disable bundled/custom asset replacement.",
+                "description": "Enable or disable bundled/custom asset replacement, including synced profile icons such as rank icon and Clash banner.",
                 "keys": ["sync-user-icons", "Custom-Icon", "Custom-Loading-Icon", "Custom-Avatar", "Custom-Border", "Custom-Regalia-Banner", "CurrentBanner", "manual-banner-name", "Banner-list", "Custom-Hover-card-backdrop", "Custom-RP-Icon", "Custom-BE-Icon", "Custom-Rank-Icon", "Custom-Emblem", "Custom-Clash-banner", "Custom-Trophy", "Custom-Gamemode-Icon", "Custom-Ticker", "Custom-Cursor", "Runes-BG", "custom-champs-image", "animate-loading"]
             },
             {

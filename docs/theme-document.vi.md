@@ -126,7 +126,7 @@ League Client dùng nhiều Web Component và Shadow DOM. Theme thường cần:
 
 - `pengu-upl` observer để bắt element mới.
 - `MutationObserver` cho component được League render lại nhiều lần.
-- Shadow DOM traversal khi cần thay avatar, border, banner, tooltip icon.
+- Shadow DOM traversal khi cần thay avatar, border, banner, rank icon, Clash banner, tooltip icon.
 - Không dùng interval dài hạn nếu có thể dùng observer/event-driven.
 
 ### 4.3 Custom icon rendering
@@ -142,7 +142,7 @@ League Client dùng nhiều Web Component và Shadow DOM. Theme thường cần:
 - Chat header avatar.
 - Conversation avatar.
 - Identity tooltip avatar khi hover icon.
-- Loading icon, game mode icon, honor emblem.
+- Loading icon, game mode icon, honor emblem, rank icon trong profile và Clash banner trong profile.
 
 Nguyên tắc:
 
@@ -166,6 +166,9 @@ Sync user icon hiện dùng khái niệm visible users/peers:
 - On-demand sync qua `window.syncUserIcons.ensureUserIcons()`.
 
 `friendIconList` vẫn giữ tên export cũ để tránh sửa rộng, nhưng nội dung hiện là synced visible users.
+Payload sync icon hiện gồm `avatar`, `border`, `banner`, `emblem`, `hoverCardBackdrop`, `rankIcon`, và `clashBanner`; client cũ chỉ hiểu 5 type cũ vẫn dùng cùng endpoint bình thường.
+CDN icon config vẫn giữ `Class-banner` làm alias cũ của `Clash-banner` để bản theme cũ vẫn resolve được cùng asset.
+Client mới gửi danh sách `types` nó hỗ trợ; nếu thiếu, backend chỉ trả payload 5 icon cũ.
 
 ### 5.2 Cache và compatibility
 
@@ -201,6 +204,7 @@ Request shape:
   "usersList": [
     { "summonerId": 123456789, "puuid": "optional-puuid" }
   ],
+  "types": ["avatar", "border", "banner", "emblem", "hoverCardBackdrop", "rankIcon", "clashBanner"],
   "localHashes": {
     "123456789:avatar": "sha256"
   }
@@ -239,7 +243,7 @@ Elaina Theme backend features:
 Image storage:
 
 - Lưu theo `summonerID`.
-- Type gồm `avatar`, `border`, `banner`, `emblem`, `hoverCardBackdrop`.
+- Type gồm `avatar`, `border`, `banner`, `emblem`, `hoverCardBackdrop`, `rankIcon`, `clashBanner`.
 - Backend sanitize filename/path.
 - Upload cần token hợp lệ.
 - Read/sync endpoint không cần friendship relation.

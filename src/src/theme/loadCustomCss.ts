@@ -35,7 +35,7 @@ class AddCss {
 				--RP-Icon: ${cssIconUrl(icdata["RP-icon"])};
 				--BE-Icon: ${cssIconUrl(icdata["BE-icon"])};
 				--Rank-Icon: ${cssIconUrl(icdata["Rank-icon"])};
-				--Clash-banner: ${cssIconUrl(icdata["Class-banner"])};
+				--Clash-banner: ${cssIconUrl(icdata["Clash-banner"])};
 				--Ticker: ${cssIconUrl(icdata["Ticker"])};
 				--Trophy: ${cssIconUrl(icdata["Trophy"])};
 				--Border: ${cssIconUrl(icdata["Border"])};

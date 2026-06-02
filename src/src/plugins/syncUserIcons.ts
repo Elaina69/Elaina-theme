@@ -8,7 +8,7 @@ const icdata = (await import(pluginUrl("config/icons.js"))).default;
 const iconFolder = `${pluginUrl("assets/icon")}/`
 const iconUrl = (...parts: unknown[]) => pluginUrl("assets/icon", ...parts);
 
-const syncIconsType = ["avatar", "border", "banner", "emblem", "hoverCardBackdrop"] as const;
+const syncIconsType = ["avatar", "border", "banner", "emblem", "hoverCardBackdrop", "rankIcon", "clashBanner"] as const;
 type IconType = typeof syncIconsType[number];
 
 const syncIconsDir = './data/icons';
@@ -36,10 +36,12 @@ function normalizeDisplayName(name: any): string {
         : '';
 }
 
+/** Resolves a synced user target by normalized display name. */
 function resolveSyncedUserTargetByDisplayName(name: string): UserIconTarget | null {
     return visibleUserNameTargets.get(normalizeDisplayName(name)) || null;
 }
 
+/** Handles custom icon upload, cache, and peer sync. */
 class SyncUserIcons {
     getIconFolder() { return iconFolder; }
     getIconData() { return icdata; }
@@ -51,7 +53,9 @@ class SyncUserIcons {
             { url: iconUrl(icdata["Border"]), type: "border" },
             { url: iconUrl("Regalia-Banners", currentBanner), type: "banner" },
             { url: iconUrl(icdata["Hover-card"]), type: "hoverCardBackdrop" },
-            { url: iconUrl(icdata["Honor"]), type: "emblem" }
+            { url: iconUrl(icdata["Honor"]), type: "emblem" },
+            { url: iconUrl(icdata["Rank-icon"]), type: "rankIcon" },
+            { url: iconUrl(icdata["Clash-banner"]), type: "clashBanner" }
         ];
     }
 
@@ -148,8 +152,40 @@ class SyncUserIcons {
         hashTouchedAt[key] = Date.now();
     }
 
+    private createEmptyIconMap(): Record<IconType, string | null> {
+        const icons = {} as Record<IconType, string | null>;
+        for (const type of syncIconsType) {
+            icons[type] = null;
+        }
+        return icons;
+    }
+
+    private normalizeIconEntry(entry: any): FriendIconEntry | null {
+        const summonerID = Number(entry?.summonerID);
+        if (!Number.isFinite(summonerID) || summonerID <= 0) return null;
+
+        const sourceIcons = entry?.icon || {};
+        const icon = this.createEmptyIconMap();
+        for (const type of syncIconsType) {
+            icon[type] = typeof sourceIcons[type] === "string" && sourceIcons[type] ? sourceIcons[type] : null;
+        }
+
+        return {
+            summonerID,
+            puuid: typeof entry?.puuid === "string" ? entry.puuid : "",
+            icon
+        };
+    }
+
+    private normalizeIconEntries(entries: any[]): FriendIconEntry[] {
+        if (!Array.isArray(entries)) return [];
+        return entries
+            .map(entry => this.normalizeIconEntry(entry))
+            .filter((entry): entry is FriendIconEntry => Boolean(entry));
+    }
+
     private mergeIconEntries(entries: FriendIconEntry[]): void {
-        for (const entry of entries) {
+        for (const entry of this.normalizeIconEntries(entries)) {
             const index = friendIconList.findIndex(current => String(current.summonerID) === String(entry.summonerID));
             if (index >= 0) friendIconList[index] = entry;
             else friendIconList.push(entry);
@@ -392,16 +428,17 @@ class SyncUserIcons {
         let entries: FriendIconEntry[] = [];
         try {
             if (typeof window.elainathemeApi.getUsersImage === 'function') {
-                entries = await window.elainathemeApi.getUsersImage(targets);
+                entries = await window.elainathemeApi.getUsersImage(targets, [...syncIconsType]);
             } else {
-                entries = await window.elainathemeApi.getFriendsImage(targets as { summonerId: number; puuid: string }[]);
+                entries = await window.elainathemeApi.getFriendsImage(targets as { summonerId: number; puuid: string }[], [...syncIconsType]);
             }
         } catch (err: any) {
             warn(`getUsersImage failed: ${err.message}`);
         }
 
-        if (replaceList) friendIconList = entries;
-        else this.mergeIconEntries(entries);
+        const normalizedEntries = this.normalizeIconEntries(entries);
+        if (replaceList) friendIconList = normalizedEntries;
+        else this.mergeIconEntries(normalizedEntries);
     }
 
     /** fs mode: one batch diff request, then read unchanged icons from local cache */
@@ -433,8 +470,8 @@ class SyncUserIcons {
         let serverPatches: SyncFriendIconPatch[] | null = null;
         try {
             serverPatches = typeof window.elainathemeApi.syncUsersIcons === 'function'
-                ? await window.elainathemeApi.syncUsersIcons(targets, hashCache)
-                : await window.elainathemeApi.syncFriendsIcons(targets as { summonerId: number; puuid: string }[], hashCache);
+                ? await window.elainathemeApi.syncUsersIcons(targets, hashCache, [...syncIconsType])
+                : await window.elainathemeApi.syncFriendsIcons(targets as { summonerId: number; puuid: string }[], hashCache, [...syncIconsType]);
         } catch (err: any) {
             warn(`syncUsersIcons failed: ${err.message}`);
         }
@@ -464,7 +501,7 @@ class SyncUserIcons {
         const writeTasks: (() => Promise<void>)[] = [];
 
         for (const target of targets) {
-            const icons: Record<IconType, string | null> = {} as Record<IconType, string | null>;
+            const icons = this.createEmptyIconMap();
             const patch = patchBySummonerId.get(String(target.summonerId));
             const changedIcons = patch?.icons || {};
 

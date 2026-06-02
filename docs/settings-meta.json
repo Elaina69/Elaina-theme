@@ -227,7 +227,7 @@
         },
         "sync-user-icons": {
             "category": "custom-assets",
-            "description": "Sync custom user icons across sessions.",
+            "description": "Sync custom user icons across sessions, including avatar, border, banner, honor emblem, rank icon, and Clash banner.",
             "type": "boolean"
         },
         "hide-homepage-navbar": {

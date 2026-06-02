@@ -9,8 +9,22 @@ const icdata = (await import(pluginUrl("config/icons.js"))).default;
 const iconUrl = (...parts: unknown[]) => pluginUrl("assets/icon", ...parts);
 const cssIconUrl = (...parts: unknown[]) => utils.cssUrl(iconUrl(...parts));
 
-type SyncedIconType = "avatar" | "border" | "banner" | "emblem" | "hoverCardBackdrop";
+type SyncedIconType = "avatar" | "border" | "banner" | "emblem" | "hoverCardBackdrop" | "rankIcon" | "clashBanner";
 type ApplyResult = boolean | Promise<boolean>;
+
+const rankEmblemCssVars = [
+	"--regalia-emblem-unranked",
+	"--regalia-emblem-iron",
+	"--regalia-emblem-bronze",
+	"--regalia-emblem-silver",
+	"--regalia-emblem-gold",
+	"--regalia-emblem-platinum",
+	"--regalia-emblem-diamond",
+	"--regalia-emblem-master",
+	"--regalia-emblem-grandmaster",
+	"--regalia-emblem-challenger",
+	"--regalia-emblem-emerald"
+] as const;
 
 const activeRegaliaWatchers = new WeakMap<Element, Set<string>>();
 const activeSocialRosterWatchers = new WeakMap<Element, MutationObserver>();
@@ -746,6 +760,113 @@ class CustomHoverCardBackdrop {
 	}
 }
 
+class CustomProfileRankClashIcon {
+	private getProfileElement(): Element | null {
+		return document.querySelector("lol-regalia-profile-v2-element");
+	}
+
+	private getRankElement(): HTMLElement | null {
+		return document.querySelector(".style-profile-ranked-crest-ranked > lol-regalia-emblem-element");
+	}
+
+	private getClashBannerElement(): HTMLElement | null {
+		return document.querySelector(".style-profile-clash-banner-empty");
+	}
+
+	private isOwnProfile(profileElement: Element | null, target: UserIconTarget | null): boolean {
+		if (!profileElement) return false;
+
+		if (target && String(target.summonerId) === String(ElainaData.get("Summoner-ID"))) {
+			return true;
+		}
+
+		const puuid = profileElement.getAttribute("puuid") || profileElement.getAttribute("voice-puuid") || "";
+		return Boolean(puuid && puuid === ElainaData.get("PUUID"));
+	}
+
+	private async resolveProfileIcon(type: SyncedIconType, localIcon: string, settingKey: string, reason: string): Promise<string | null> {
+		const profileElement = this.getProfileElement();
+		const target = findSyncedUserTargetFromElement(profileElement);
+
+		if (this.isOwnProfile(profileElement, target)) {
+			return ElainaData.get(settingKey) ? localIcon : null;
+		}
+
+		if (!target || !ElainaData.get(settingKey)) return null;
+
+		await window.syncUserIcons?.ensureUserIcons(target, reason);
+		const syncedIcon = findSyncedUserIcon(target.summonerId, type);
+		return syncedIcon ? utils.cssUrl(syncedIcon) : null;
+	}
+
+	private clearRankIcon(element: HTMLElement): void {
+		element.removeAttribute("elaina-rank-icon");
+		for (const property of rankEmblemCssVars) {
+			element.style.removeProperty(property);
+		}
+	}
+
+	private applyRankIcon = async (): Promise<boolean> => {
+		const element = this.getRankElement();
+		if (!element) return false;
+
+		const icon = await this.resolveProfileIcon("rankIcon", cssIconUrl(icdata["Rank-icon"]), "Custom-Rank-Icon", "profile-rank-icon");
+		if (!icon) {
+			this.clearRankIcon(element);
+			return false;
+		}
+
+		element.setAttribute("elaina-rank-icon", "true");
+		for (const property of rankEmblemCssVars) {
+			element.style.setProperty(property, icon);
+		}
+		return true;
+	}
+
+	private applyClashBanner = async (): Promise<boolean> => {
+		const element = this.getClashBannerElement();
+		if (!element) return false;
+
+		const icon = await this.resolveProfileIcon("clashBanner", cssIconUrl(icdata["Clash-banner"]), "Custom-Clash-banner", "profile-clash-banner");
+		if (!icon) {
+			element.removeAttribute("elaina-clash-banner");
+			element.style.removeProperty("background-image");
+			return false;
+		}
+
+		element.setAttribute("elaina-clash-banner", "true");
+		element.style.backgroundImage = icon;
+		return true;
+	}
+
+	private applyProfileIcons = async (): Promise<boolean> => {
+		const [rankApplied, clashApplied] = await Promise.all([
+			this.applyRankIcon(),
+			this.applyClashBanner()
+		]);
+
+		return rankApplied || clashApplied;
+	}
+
+	private scheduleApplyProfileIcons = (): void => {
+		for (const delay of [0, 300, 1000]) {
+			window.setTimeout(() => void this.applyProfileIcons(), delay);
+		}
+	}
+
+	private watchProfileElement = (element: Element): void => {
+		watchRegaliaElement(element, "profile-rank-clash-icons", () => this.applyProfileIcons());
+		this.scheduleApplyProfileIcons();
+	}
+
+	main = (): void => {
+		upl.observer.subscribeToElementCreation("lol-regalia-profile-v2-element", this.watchProfileElement);
+		upl.observer.subscribeToElementCreation(".style-profile-ranked-crest-ranked > lol-regalia-emblem-element", () => this.scheduleApplyProfileIcons());
+		upl.observer.subscribeToElementCreation(".style-profile-clash-banner-empty", () => this.scheduleApplyProfileIcons());
+		this.scheduleApplyProfileIcons();
+	}
+}
+
 class CustomGamemodeIcon {
 	gameModeIcon_active(obj: any, name: any) {
 		try {
@@ -860,6 +981,11 @@ export class CustomIcon {
 		if (ElainaData.get("Custom-Hover-card-backdrop")) {
 			const customHoverCardBackdrop = new CustomHoverCardBackdrop()
 			customHoverCardBackdrop.main()
+		}
+
+		if (ElainaData.get("Custom-Rank-Icon") || ElainaData.get("Custom-Clash-banner")) {
+			const customProfileRankClashIcon = new CustomProfileRankClashIcon()
+			customProfileRankClashIcon.main()
 		}
 
 		if (ElainaData.get('Custom-Gamemode-Icon')) {

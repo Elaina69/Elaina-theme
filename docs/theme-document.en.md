@@ -126,7 +126,7 @@ League Client uses many Web Components and Shadow DOM. The theme often needs:
 
 - `pengu-upl` observers to detect newly created elements.
 - `MutationObserver` for components that League re-renders.
-- Shadow DOM traversal for avatar, border, banner, and tooltip icon replacement.
+- Shadow DOM traversal for avatar, border, banner, rank icon, Clash banner, and tooltip icon replacement.
 - Event-driven observers instead of long-running intervals whenever possible.
 
 ### 4.3 Custom Icon Rendering
@@ -142,7 +142,7 @@ League Client uses many Web Components and Shadow DOM. The theme often needs:
 - Chat header avatar.
 - Conversation avatar.
 - Identity tooltip avatar while hovering icons.
-- Loading icon, game mode icon, honor emblem.
+- Loading icon, game mode icon, honor emblem, profile rank icon, and profile Clash banner.
 
 Principles:
 
@@ -166,6 +166,9 @@ Icon sync now works with visible users/peers:
 - On-demand sync through `window.syncUserIcons.ensureUserIcons()`.
 
 The `friendIconList` export name remains for compatibility, but it now represents synced visible users.
+Synced icon payloads currently cover `avatar`, `border`, `banner`, `emblem`, `hoverCardBackdrop`, `rankIcon`, and `clashBanner`; clients that only understand the older five-icon payload can keep using the same endpoints.
+The CDN icon config keeps `Class-banner` as a legacy alias for `Clash-banner` so older theme builds can still resolve the same asset.
+New clients send their supported `types`; if omitted, the backend returns only the legacy five-icon payload.
 
 ### 5.2 Cache and Compatibility
 
@@ -201,6 +204,7 @@ Request shape:
   "usersList": [
     { "summonerId": 123456789, "puuid": "optional-puuid" }
   ],
+  "types": ["avatar", "border", "banner", "emblem", "hoverCardBackdrop", "rankIcon", "clashBanner"],
   "localHashes": {
     "123456789:avatar": "sha256"
   }
@@ -239,7 +243,7 @@ Elaina Theme backend features:
 Image storage:
 
 - Stored by `summonerID`.
-- Types include `avatar`, `border`, `banner`, `emblem`, `hoverCardBackdrop`.
+- Types include `avatar`, `border`, `banner`, `emblem`, `hoverCardBackdrop`, `rankIcon`, `clashBanner`.
 - Backend sanitizes filenames/paths.
 - Upload requires a valid token.
 - Read/sync endpoints do not require a friendship relation.

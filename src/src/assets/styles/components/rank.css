@@ -1,4 +1,4 @@
-.style-profile-ranked-crest-ranked > lol-regalia-emblem-element {
+.style-profile-ranked-crest-ranked > lol-regalia-emblem-element[elaina-rank-icon] {
     --regalia-emblem-unranked: var(--Rank-Icon) !important;
     --regalia-emblem-iron: var(--Rank-Icon) !important;
     --regalia-emblem-bronze: var(--Rank-Icon) !important;

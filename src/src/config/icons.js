@@ -5,25 +5,30 @@ export default {
     "Loading"       : "loading.gif",
     "Static-logo"   : "logo.webp",
 
+    "RP-icon"       : "rp-icon.webp",
+    "BE-icon"       : "be-icon.webp",
+
+    "Ticker"        : "ticker.webp",
+
+    "Mouse-cursor"  : "mouse-cursor.webp",
+
+    "LL_Settings"   : "ll-settings.webp",
+
+    // Profiles
     "Avatar"        : "avatar.gif",
 
     "Border"        : "border.webp",
 
     "Hover-card"    : "hover-card-backdrop.webp",
 
-    "RP-icon"       : "rp-icon.webp",
-    "BE-icon"       : "be-icon.webp",
-
     "Rank-icon"     : "rank.webp",
+
     "Honor"         : "honor.webp",
+
     "Trophy"        : "trophy.webp",
-    "Class-banner"  : "clash.webp",
 
-    "Ticker"        : "ticker.webp",
-    
-    "Mouse-cursor"  : "mouse-cursor.webp",
-
-    "LL_Settings"   : "ll-settings.webp",
+    "Clash-banner"  : "clash.webp",
+    "Class-banner"  : "clash.webp", // Legacy alias for older theme builds.
 
     //Runes
     "Precision"  :  "precision.webp",
