@@ -12,9 +12,42 @@ type ChampData = {
     image: string;
     image_preview: string;
     image_thumbnail: string;
+    skill_passive?: string;
+    skill_q?: string;
+    skill_w?: string;
+    skill_e?: string;
+    skill_r?: string;
+    skill_passive_name?: string;
+    skill_passive_desc?: string;
+    skill_q_name?: string;
+    skill_q_desc?: string;
+    skill_w_name?: string;
+    skill_w_desc?: string;
+    skill_e_name?: string;
+    skill_e_desc?: string;
+    skill_r_name?: string;
+    skill_r_desc?: string;
     "css-left": string;
     lore: string;
 }
+
+type ChampImageField = "image" | "image_preview" | "image_thumbnail" | "skill_passive" | "skill_q" | "skill_w" | "skill_e" | "skill_r";
+type AbilitySlot = "passive" | "q" | "w" | "e" | "r";
+type ChampTextField = keyof Pick<ChampData,
+    "skill_passive_name" | "skill_passive_desc" |
+    "skill_q_name" | "skill_q_desc" |
+    "skill_w_name" | "skill_w_desc" |
+    "skill_e_name" | "skill_e_desc" |
+    "skill_r_name" | "skill_r_desc"
+>;
+
+const abilityFields: Record<AbilitySlot, { image: ChampImageField; name: ChampTextField; desc: ChampTextField }> = {
+    passive: { image: "skill_passive", name: "skill_passive_name", desc: "skill_passive_desc" },
+    q: { image: "skill_q", name: "skill_q_name", desc: "skill_q_desc" },
+    w: { image: "skill_w", name: "skill_w_name", desc: "skill_w_desc" },
+    e: { image: "skill_e", name: "skill_e_name", desc: "skill_e_desc" },
+    r: { image: "skill_r", name: "skill_r_name", desc: "skill_r_desc" }
+};
 
 const champUrl = (...parts: unknown[]) => pluginUrl("assets/champs", ...parts);
 const cssChampUrl = (...parts: unknown[]) => utils.cssUrl(champUrl(...parts));
@@ -32,7 +65,9 @@ const champByIconId = new Map<string, ChampData>();
 const champByName = new Map<string, ChampData>();
 
 for (const champ of list) {
-    champByIconId.set(String(champ.default_icon_id), champ);
+    if (String(champ.default_icon_id).trim()) {
+        champByIconId.set(String(champ.default_icon_id), champ);
+    }
 
     [
         champ.default_champion_name,
@@ -49,6 +84,8 @@ for (const champ of list) {
 export class CustomChampsBg {
     private observer: MutationObserver | null = null;
     private applyTimer: number | null = null;
+    private lastCollectionAbilitySlot: AbilitySlot | null = null;
+    private lastCollectionChampionName: string | null = null;
 
     private findChampDataFromName(name: string | null | undefined): ChampData | null {
         const cleanName = normalizeChampName(name);
@@ -94,6 +131,25 @@ export class CustomChampsBg {
         return true;
     }
 
+    private hasValue(value: unknown): value is string {
+        return typeof value === "string" && value.trim().length > 0;
+    }
+
+    private getChampAssetUrl(champData: ChampData, field: ChampImageField): string | null {
+        const filename = champData[field];
+        return this.hasValue(filename) ? champUrl(filename) : null;
+    }
+
+    private getChampCssAssetUrl(champData: ChampData, field: ChampImageField): string | null {
+        const filename = champData[field];
+        return this.hasValue(filename) ? cssChampUrl(filename) : null;
+    }
+
+    private getChampText(champData: ChampData, field: ChampTextField): string | null {
+        const text = champData[field];
+        return this.hasValue(text) ? text : null;
+    }
+
     private registerImageSrcReplacement(oldSrc: string, newSrc: string): void {
         if (registeredImageSrcReplacements.has(oldSrc)) return;
 
@@ -105,7 +161,8 @@ export class CustomChampsBg {
         const champData = this.findChampDataFromIconUrl(element.getAttribute(attribute));
         if (!champData) return false;
 
-        const nextImage = champUrl(champData.image_thumbnail);
+        const nextImage = this.getChampAssetUrl(champData, "image_thumbnail");
+        if (!nextImage) return false;
         if (element.getAttribute(attribute) === nextImage) return false;
 
         element.setAttribute(attribute, nextImage);
@@ -114,56 +171,169 @@ export class CustomChampsBg {
 
     private applyChampionIconBackground(element: Element): boolean {
         const champData = this.findChampDataFromIconUrl(this.getBackgroundImage(element));
-        return champData ? this.setBackgroundImage(element, cssChampUrl(champData.image_thumbnail)) : false;
+        const nextImage = champData ? this.getChampCssAssetUrl(champData, "image_thumbnail") : null;
+        return nextImage ? this.setBackgroundImage(element, nextImage) : false;
     }
 
     private applyCharacterBackground(element: Element): boolean {
         const champData = this.findChampDataFromCharacterUrl(this.getBackgroundImage(element));
-        return champData ? this.setBackgroundImage(element, cssChampUrl(champData.image_thumbnail)) : false;
+        const nextImage = champData ? this.getChampCssAssetUrl(champData, "image_thumbnail") : null;
+        return nextImage ? this.setBackgroundImage(element, nextImage) : false;
     }
 
     private applyCharacterSplashBackground(element: Element): boolean {
         const champData = this.findChampDataFromCharacterUrl(this.getBackgroundImage(element));
-        return champData ? this.setBackgroundImage(element, cssChampUrl(champData.image)) : false;
+        const nextImage = champData ? this.getChampCssAssetUrl(champData, "image") : null;
+        return nextImage ? this.setBackgroundImage(element, nextImage) : false;
     }
 
     private applyBaseSkinThumbnail(element: Element): boolean {
         const champData = this.findChampDataFromBaseSkinTileUrl(this.getBackgroundImage(element));
-        return champData ? this.setBackgroundImage(element, cssChampUrl(champData.image_thumbnail)) : false;
+        const nextImage = champData ? this.getChampCssAssetUrl(champData, "image_thumbnail") : null;
+        return nextImage ? this.setBackgroundImage(element, nextImage) : false;
     }
 
     private applyChampionName(element: Element): boolean {
         const champData = this.findChampDataFromName(element.textContent);
-        return champData ? this.setText(element, champData.replace_name) : false;
+        return champData && this.hasValue(champData.replace_name)
+            ? this.setText(element, champData.replace_name)
+            : false;
+    }
+
+    private findChampDataFromElementMetadata(element: Element): ChampData | null {
+        return this.findChampDataFromName(element.getAttribute("data-elaina-champ"));
+    }
+
+    private getAbilitySlotFromKey(key: string | null | undefined): AbilitySlot | null {
+        const normalizedKey = normalizeChampName(key);
+        if (normalizedKey === "p" || normalizedKey === "passive") return "passive";
+        if (normalizedKey === "q") return "q";
+        if (normalizedKey === "w") return "w";
+        if (normalizedKey === "e") return "e";
+        if (normalizedKey === "r") return "r";
+        return null;
+    }
+
+    private getAbilitySlotFromAbilityElement(element: Element | null): AbilitySlot | null {
+        if (!element) return null;
+        if (element.classList.contains("ability-passive")) return "passive";
+        if (element.classList.contains("ability-q")) return "q";
+        if (element.classList.contains("ability-w")) return "w";
+        if (element.classList.contains("ability-e")) return "e";
+        if (element.classList.contains("ability-r")) return "r";
+        return this.getAbilitySlotFromKey(element.querySelector(".ability-key")?.textContent);
+    }
+
+    private getAbilitySlotFromIcon(element: Element): AbilitySlot | null {
+        const ability = element.closest(".ability");
+        const slotFromAbility = this.getAbilitySlotFromAbilityElement(ability);
+        if (slotFromAbility) return slotFromAbility;
+
+        const slotFromDataset = this.getAbilitySlotFromKey(element.getAttribute("data-elaina-ability-slot"));
+        if (slotFromDataset) return slotFromDataset;
+
+        const actionName = element.getAttribute("data-dd-action-name") || "";
+        const slotFromAction = actionName.match(/ability-previews-([pqwer])$/i)?.[1];
+        if (slotFromAction) return this.getAbilitySlotFromKey(slotFromAction);
+
+        const src = element.getAttribute("src") || "";
+        const filename = src.split("/").pop() || "";
+        if (/passive/i.test(filename)) return "passive";
+        if (/q\d*\.[a-z0-9]+$/i.test(filename)) return "q";
+        if (/w\d*\.[a-z0-9]+$/i.test(filename)) return "w";
+        if (/e\d*\.[a-z0-9]+$/i.test(filename)) return "e";
+        if (/r\d*\.[a-z0-9]+$/i.test(filename)) return "r";
+
+        return null;
+    }
+
+    private getAbilitySlotFromCollectionSection(section: Element): AbilitySlot | null {
+        const sectionSlot = section.getAttribute("section-id")?.match(/^ability_([pqwer])$/i)?.[1];
+        if (sectionSlot) return this.getAbilitySlotFromKey(sectionSlot);
+
+        const video = section.querySelector("[class*='ability-video-']");
+        const videoSlot = Array.from(video?.classList || [])
+            .find(className => /^ability-video-[pqwer]$/i.test(className))
+            ?.replace("ability-video-", "");
+
+        return this.getAbilitySlotFromKey(videoSlot);
+    }
+
+    private markAbilityElement(element: Element, champData: ChampData, slot: AbilitySlot): void {
+        element.setAttribute("data-elaina-champ", champData.default_champion_name);
+        element.setAttribute("data-elaina-ability-slot", slot);
+        const ability = element.closest(".ability");
+        if (ability) {
+            ability.setAttribute("data-elaina-champ", champData.default_champion_name);
+            ability.setAttribute("data-elaina-ability-slot", slot);
+        }
+    }
+
+    private applyAbilityIcon(element: Element): boolean {
+        const champData = this.findChampDataFromCharacterUrl(element.getAttribute("src")) || this.findChampDataFromElementMetadata(element);
+        const slot = this.getAbilitySlotFromIcon(element);
+        if (!champData || !slot) return false;
+
+        this.markAbilityElement(element, champData, slot);
+
+        const nextImage = this.getChampAssetUrl(champData, abilityFields[slot].image);
+        if (!nextImage || element.getAttribute("src") === nextImage) return false;
+
+        element.setAttribute("src", nextImage);
+        return true;
+    }
+
+    private applyAbilityText(champData: ChampData, slot: AbilitySlot, nameElement: Element | null | undefined, descElement: Element | null | undefined): boolean {
+        let changed = false;
+        const name = this.getChampText(champData, abilityFields[slot].name);
+        const desc = this.getChampText(champData, abilityFields[slot].desc);
+
+        if (name && nameElement) changed = this.setText(nameElement, name) || changed;
+        if (desc && descElement) changed = this.setText(descElement, desc) || changed;
+
+        return changed;
     }
 
     private registerClientImageReplacements(): void {
         const baseURL = `/lol-game-data/assets/ASSETS/Characters`;
 
         for (const item of list) {
-            const firstDefaultFilename = item.first_default_filename;
+            const firstDefaultFilename = item.first_default_filename || "";
+            if (!this.hasValue(firstDefaultFilename)) continue;
+
             const firstDefaultFilenameLower = firstDefaultFilename.toLowerCase();
-            const secondDefaultFilename = item.second_default_filename;
+            const secondDefaultFilename = item.second_default_filename || "";
             const secondDefaultFilenameLower = secondDefaultFilename.toLowerCase();
             const imagesBase = `${baseURL}/${firstDefaultFilename}/Skins/Base/Images`;
-            const customImage = champUrl(item.image);
-            const customPreviewImage = champUrl(item.image_preview);
+            const customImage = this.getChampAssetUrl(item, "image");
+            const customPreviewImage = this.getChampAssetUrl(item, "image_preview");
 
-            this.registerImageSrcReplacement(`/lol-game-data/assets/v1/champion-icons/${item.default_icon_id}.png`, champUrl(item.image_thumbnail));
+            const customThumbnail = this.getChampAssetUrl(item, "image_thumbnail");
+            if (customThumbnail && this.hasValue(String(item.default_icon_id))) {
+                this.registerImageSrcReplacement(`/lol-game-data/assets/v1/champion-icons/${item.default_icon_id}.png`, customThumbnail);
+            }
 
-            for (const charDir of [firstDefaultFilename, firstDefaultFilenameLower]) {
-                for (const filename of ["LoadScreen", "Loadscreen"]) {
-                    this.registerImageSrcReplacement(`${baseURL}/${charDir}/Skins/Base/${firstDefaultFilename}${filename}.jpg`, customPreviewImage);
-                    this.registerImageSrcReplacement(`${baseURL}/${charDir}/Skins/Base/${firstDefaultFilename}${filename}_0.jpg`, customPreviewImage);
-                    this.registerImageSrcReplacement(`${baseURL}/${charDir}/Skins/Base/${firstDefaultFilename}${filename}_0.${secondDefaultFilename}.jpg`, customPreviewImage);
+            if (customPreviewImage) {
+                for (const charDir of [firstDefaultFilename, firstDefaultFilenameLower]) {
+                    for (const filename of ["LoadScreen", "Loadscreen"]) {
+                        this.registerImageSrcReplacement(`${baseURL}/${charDir}/Skins/Base/${firstDefaultFilename}${filename}.jpg`, customPreviewImage);
+                        this.registerImageSrcReplacement(`${baseURL}/${charDir}/Skins/Base/${firstDefaultFilename}${filename}_0.jpg`, customPreviewImage);
+                        if (this.hasValue(secondDefaultFilename)) {
+                            this.registerImageSrcReplacement(`${baseURL}/${charDir}/Skins/Base/${firstDefaultFilename}${filename}_0.${secondDefaultFilename}.jpg`, customPreviewImage);
+                        }
+                    }
                 }
             }
 
-            for (const name of [firstDefaultFilename, firstDefaultFilenameLower]) {
-                for (const type of ["centered", "uncentered"]) {
-                    this.registerImageSrcReplacement(`${imagesBase}/${name}_splash_${type}_0.jpg`, customImage);
-                    this.registerImageSrcReplacement(`${imagesBase}/${name}_splash_${type}_0.${secondDefaultFilename}.jpg`, customImage);
-                    this.registerImageSrcReplacement(`${imagesBase}/${name}_splash_${type}_0.${secondDefaultFilenameLower}.jpg`, customImage);
+            if (customImage) {
+                for (const name of [firstDefaultFilename, firstDefaultFilenameLower]) {
+                    for (const type of ["centered", "uncentered"]) {
+                        this.registerImageSrcReplacement(`${imagesBase}/${name}_splash_${type}_0.jpg`, customImage);
+                        if (this.hasValue(secondDefaultFilename)) {
+                            this.registerImageSrcReplacement(`${imagesBase}/${name}_splash_${type}_0.${secondDefaultFilename}.jpg`, customImage);
+                            this.registerImageSrcReplacement(`${imagesBase}/${name}_splash_${type}_0.${secondDefaultFilenameLower}.jpg`, customImage);
+                        }
+                    }
                 }
             }
         }
@@ -178,7 +348,7 @@ export class CustomChampsBg {
 
             const champData = this.findChampDataFromName(championNameElement.innerText);
             if (champData) {
-                if (!nameContainer.querySelector("#champion-name-replace")) {
+                if (this.hasValue(champData.replace_name) && !nameContainer.querySelector("#champion-name-replace")) {
                     const newName = document.createElement("p");
                     newName.classList.add("champion-name");
                     newName.id = "champion-name-replace";
@@ -214,6 +384,85 @@ export class CustomChampsBg {
             .forEach(title => this.applyChampionName(title));
     }
 
+    private applyCollectionAbilities(): void {
+        document
+            .querySelectorAll(".spellbook .ability-icon")
+            .forEach(icon => this.applyAbilityIcon(icon));
+
+        const pageChampData = this.findChampDataFromName(document.querySelector(".lockup-champion-name")?.textContent);
+        if (pageChampData && this.lastCollectionChampionName !== pageChampData.default_champion_name) {
+            this.lastCollectionChampionName = pageChampData.default_champion_name;
+            this.lastCollectionAbilitySlot = null;
+        }
+
+        if (pageChampData && this.applyCollectionAbilitySections(pageChampData)) return;
+
+        const abilities = Array.from(document.querySelectorAll(".spellbook .ability"));
+        const activeAbility = this.findCollectionActiveAbility(abilities);
+        const activeIcon = activeAbility?.querySelector(".ability-icon");
+        const champData = (activeIcon
+            ? this.findChampDataFromCharacterUrl(activeIcon.getAttribute("src")) || this.findChampDataFromElementMetadata(activeIcon)
+            : null)
+            || (activeAbility ? this.findChampDataFromElementMetadata(activeAbility) : null)
+            || pageChampData;
+        const slot = this.lastCollectionAbilitySlot || this.getAbilitySlotFromAbilityElement(activeAbility);
+        if (!champData || !slot) return;
+
+        this.applyAbilityText(
+            champData,
+            slot,
+            document.querySelector(".cdp-ability-description-wrapper .cdp-ability-name"),
+            document.querySelector(".cdp-ability-description-wrapper .cdp-ability-dynamic-desc")
+        );
+    }
+
+    private applyCollectionAbilitySections(champData: ChampData): boolean {
+        let foundSection = false;
+
+        document
+            .querySelectorAll("lol-uikit-section[section-id^='ability_'], .cdp-ability-section-container[section-id^='ability_']")
+            .forEach(section => {
+                const slot = this.getAbilitySlotFromCollectionSection(section);
+                if (!slot) return;
+
+                foundSection = true;
+                this.applyAbilityText(
+                    champData,
+                    slot,
+                    section.querySelector(".cdp-ability-description-wrapper .cdp-ability-name"),
+                    section.querySelector(".cdp-ability-description-wrapper .cdp-ability-dynamic-desc")
+                );
+            });
+
+        return foundSection;
+    }
+
+    private findCollectionActiveAbility(abilities: Element[]): Element | null {
+        if (this.lastCollectionAbilitySlot) {
+            const clickedAbility = abilities.find(ability => this.getAbilitySlotFromAbilityElement(ability) === this.lastCollectionAbilitySlot);
+            if (clickedAbility) return clickedAbility;
+        }
+
+        return abilities.find(ability => ability.classList.contains("selected"))
+            || abilities.find(ability => ability.querySelector(".selected"))
+            || abilities.find(ability => ability.querySelector(".ability-video-progress"))
+            || abilities.find(ability => ability.classList.contains("active"))
+            || abilities.find(ability => ability.classList.contains("section-visible"))
+            || null;
+    }
+
+    private handleCollectionAbilityClick = (event: Event): void => {
+        const target = event.target;
+        if (!(target instanceof Element)) return;
+
+        const ability = target.closest(".spellbook .ability");
+        const slot = this.getAbilitySlotFromAbilityElement(ability);
+        if (!slot) return;
+
+        this.lastCollectionAbilitySlot = slot;
+        this.scheduleApply(100);
+    }
+
     private applyChampionSelect(): void {
         document
             .querySelectorAll(".champion-grid-champion-thumbnail img")
@@ -230,6 +479,36 @@ export class CustomChampsBg {
         document
             .querySelectorAll(".champion-select .skin-selection-thumbnail, .skin-select .skin-selection-thumbnail")
             .forEach(thumbnail => this.applyBaseSkinThumbnail(thumbnail));
+
+        document
+            .querySelectorAll(".champion-select .ability-icon, .skin-select .ability-icon")
+            .forEach(icon => this.applyAbilityIcon(icon));
+
+        document
+            .querySelectorAll(".ability-previews-container")
+            .forEach(container => this.applyChampionSelectAbilityPreview(container));
+    }
+
+    private applyChampionSelectAbilityPreview(container: Element): void {
+        const selectedPreviewIcon = container.querySelector(".ability-icon-container.selected .ability-icon")
+            || container.querySelector(".ability-icon");
+        const slot = this.getAbilitySlotFromKey(container.querySelector(".ability-title-container .ability-key")?.textContent)
+            || (selectedPreviewIcon ? this.getAbilitySlotFromIcon(selectedPreviewIcon) : null);
+        if (!slot) return;
+
+        const selectedIcon = container.querySelector(`.ability-icon[data-elaina-ability-slot="${slot}"]`)
+            || selectedPreviewIcon;
+        if (!selectedIcon) return;
+
+        const champData = this.findChampDataFromCharacterUrl(selectedIcon.getAttribute("src")) || this.findChampDataFromElementMetadata(selectedIcon);
+        if (!champData) return;
+
+        this.applyAbilityText(
+            champData,
+            slot,
+            container.querySelector(".ability-title-container .ability-name"),
+            container.querySelector(".ability-description-container .ability-description")
+        );
     }
 
     private applyLootTab(): void {
@@ -252,11 +531,11 @@ export class CustomChampsBg {
             const champData = this.findChampDataFromName(championName.textContent?.replace(/\n\s*/g, ''));
             if (!champData) return;
 
-            this.setText(championName, champData.replace_name);
-            this.setText(championName.parentElement?.querySelector(".lockup-champion-title"), champData.replace_sub_name);
+            if (this.hasValue(champData.replace_name)) this.setText(championName, champData.replace_name);
+            if (this.hasValue(champData.replace_sub_name)) this.setText(championName.parentElement?.querySelector(".lockup-champion-title"), champData.replace_sub_name);
 
             const bio = document.querySelector(".cdp-overview-short-bio");
-            if (bio && champData.lore !== "" && bio.innerHTML !== champData.lore) {
+            if (bio && this.hasValue(champData.lore) && bio.innerHTML !== champData.lore) {
                 bio.innerHTML = champData.lore;
             }
 
@@ -266,17 +545,22 @@ export class CustomChampsBg {
                 "lol-uikit-section[section-id='cdp_progression'] .cdp-backdrop-img"
             ].forEach(selector => {
                 const backdrop = document.querySelector(selector) as HTMLElement | null;
-                if (backdrop && backdrop.style.left !== champData["css-left"]) {
+                if (backdrop && this.hasValue(champData["css-left"]) && backdrop.style.left !== champData["css-left"]) {
                     backdrop.style.left = champData["css-left"];
                 }
             });
 
-            if (document.querySelector(".cdp-skins-section.ember-view > lol-uikit-section-controller[selected-item='skin_0']")) {
+            if (this.hasValue(champData.replace_name) && document.querySelector(".cdp-skins-section.ember-view > lol-uikit-section-controller[selected-item='skin_0']")) {
                 this.setText(document.querySelector(".champion-skin-name.skin-name"), champData.replace_name);
             }
 
-            this.updateDefaultSkinThumbnails(".carousel-track-container .buffer-wrapper", cssChampUrl(champData.image_thumbnail));
-            this.updateDefaultSkinThumbnails(".carousel-track-container .thumbnail-wrapper", cssChampUrl(champData.image_thumbnail));
+            const thumbnail = this.getChampCssAssetUrl(champData, "image_thumbnail");
+            if (thumbnail) {
+                this.updateDefaultSkinThumbnails(".carousel-track-container .buffer-wrapper", thumbnail);
+                this.updateDefaultSkinThumbnails(".carousel-track-container .thumbnail-wrapper", thumbnail);
+            }
+
+            this.applyCollectionAbilities();
         });
     }
 
@@ -336,6 +620,7 @@ export class CustomChampsBg {
     private applyAllVisibleAreas = (): void => {
         this.applyChampionSelect();
         this.applyCollectionTab();
+        this.applyCollectionAbilities();
         this.applyProfileTab();
         this.applyLootTab();
         this.applyChampionDetailsPage();
@@ -369,6 +654,7 @@ export class CustomChampsBg {
     main = () => {
         this.registerClientImageReplacements();
         this.startDomObserver();
+        document.addEventListener("click", this.handleCollectionAbilityClick, true);
 
         this.applyAllVisibleAreas();
         [100, 500, 1500].forEach(delay => {
