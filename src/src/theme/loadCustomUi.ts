@@ -5,7 +5,6 @@ import { RemoveGamemode } from './customUI/removeGamemode.ts';
 import { CustomProfile } from './customUI/customProfile.ts';
 import { CustomRunesBackground } from './customUI/customRuneBg.ts';
 import { CustomGameSearchCard } from './customUI/customGameSearchCard.ts';
-import { TransparentSettingsDialogs } from './customUI/transparentSettingsDialogs.ts';
 import { CustomIcon } from './customUI/customIcon.ts';
 import { HideFriendList } from './customUI/hideFriendList.ts';
 import { CustomChampsBg } from "./customUI/customChampsBg.ts"
@@ -56,13 +55,6 @@ export class ApplyUI {
 			const customgameSearchCard = new CustomGameSearchCard()
 
 			customgameSearchCard.restyleGamesearchCard()
-		}
-
-		// Transparent settings dialogs
-		if (ElainaData.get("settings-dialogs-transparent")) {
-			const transparentSettingsDialogs = new TransparentSettingsDialogs()
-
-			transparentSettingsDialogs.applyStyle()
 		}
 
 		// Custom icon
