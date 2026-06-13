@@ -1,7 +1,3 @@
-:root {
-	--Settings-and-Dialog-frame-color: rgb(0 0 0 / 15%);
-}
-
 .elaina-theme-settings-row, .elaina-theme-settings-row-hideable {
     margin-bottom: 15px;
     clear: both;
@@ -155,7 +151,7 @@
 
 #Custom-icon-list, #customprf, #customrank_detail, 
 #customchallengecrystal, #customstatus, #restoreFileInfo, 
-#background-settings, #change-nickname-color-row, #add-background-manually-row, 
+#background-settings, #change-nickname-color-row, #change-sidebar-color-row, #add-background-manually-row, 
 #slideTimeRow, #wallpaperSlide, #offaudio, 
 #disablethemewallpaper, #disablethemeaudio, #Custom-banner-row,
 #oldpnb, #window-effects-settings {
@@ -334,7 +330,8 @@
 	margin-left: 15px;
 }
 
-#nickname-color-with-text {
+#nickname-color-with-text,
+#sidebar-color-with-text {
 	display: flex;
 }
 
@@ -356,7 +353,8 @@
     margin-bottom: 0px;
 }
 
-#nickname-color-text {
+#nickname-color-text,
+#sidebar-color-text {
 	margin-top: 6px !important;
 	margin-left: 15px;
 }

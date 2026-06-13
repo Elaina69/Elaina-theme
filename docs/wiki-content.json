@@ -192,7 +192,7 @@
             {
                 "title": "Interface and layout",
                 "description": "Client layout visibility and transparency controls.",
-                "keys": ["hide-homepage-navbar", "old-prev/next-button", "enable-hide-top-navbar-friendlist-button", "sidebar-transparent", "lobby-transparent-filter", "settings-dialogs-transparent", "hide-profile-background", "hide-champions-splash-art", "hide-vertical-lines", "custom-navbar-css", "navbar-content"]
+                "keys": ["hide-homepage-navbar", "old-prev/next-button", "enable-hide-top-navbar-friendlist-button", "change-sidebar-color", "lobby-transparent-filter", "hide-profile-background", "hide-champions-splash-art", "hide-vertical-lines", "custom-navbar-css", "navbar-content"]
             },
             {
                 "title": "Profile and identity",

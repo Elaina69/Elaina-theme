@@ -1,7 +1,6 @@
 /**
- * @author Teisseire117
- * @modifier Elaina Da Catto
- * @version 1.5.0
+ * @author Elaina Da Catto
+ * @version 1.6.0
  * @description Utility functions for League of Legends client customization
  */
 
@@ -18,6 +17,9 @@ import { routineAddCallback as _routineAddCallback } from './_routineAddCallback
 import { mutationObserverAddCallback as _mutationObserverAddCallback } from './_mutationObserverAddCallback';
 import { freezeProperties } from './_freezeProperties';
 import { sanitizeColor, sanitizeFileName, escapeHtml, escapeCssString, cssUrl, getSafeGoogleFont } from './_sanitize';
+import { assets } from './_assets.ts';
+import { styleEngine } from './_styleEngine.ts';
+import { assetReplacement } from './_assetReplacement.ts';
 
 // State variables
 let pvp_net_id: any,
@@ -96,15 +98,22 @@ class Utils {
         _mutationObserverAddCallback(mutationCallbacks, callback, target);
     }
 
-    addStyleNode = addStyleNode;
-    addFont = addFont;
-    CustomCursor = CustomCursor;
     getSummonerID = getSummonerID;
     getPUUID = getPUUID;
+    
+    stop = stop;
+
+    addStyleNode = addStyleNode;
     addStyleNodeWithID = addStyleNodeWithID;
     freezeProperties = freezeProperties;
-    stop = stop;
+    addFont = addFont;
+    CustomCursor = CustomCursor;
+
     updateImageSrc = updateImageSrc;
+    assets = assets;
+    styleEngine = styleEngine;
+    assetReplacement = assetReplacement;
+
     sanitizeColor = sanitizeColor;
     sanitizeFileName = sanitizeFileName;
     escapeHtml = escapeHtml;

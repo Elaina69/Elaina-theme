@@ -1,13 +1,12 @@
 import utils from '../../utils/utils.ts'
 import * as upl from 'pengu-upl';
-import { pluginUrl } from "../../otherThings"
-import { log, warn, error } from '../../utils/themeLog.ts';
+import { warn } from '../../utils/themeLog.ts';
 import { friendIconList, resolveSyncedUserTargetByDisplayName } from '../../plugins/syncUserIcons.ts';
 
-const icdata = (await import(pluginUrl("config/icons.js"))).default;
+const icdata = (await import(utils.assets.url("config/icons.js"))).default;
 
-const iconUrl = (...parts: unknown[]) => pluginUrl("assets/icon", ...parts);
-const cssIconUrl = (...parts: unknown[]) => utils.cssUrl(iconUrl(...parts));
+const iconUrl = utils.assets.icon;
+const cssIconUrl = utils.assets.cssIcon;
 
 type SyncedIconType = "avatar" | "border" | "banner" | "emblem" | "hoverCardBackdrop" | "rankIcon" | "clashBanner";
 type ApplyResult = boolean | Promise<boolean>;
@@ -199,27 +198,35 @@ function watchRegaliaElement(element: Element, key: string, apply: () => ApplyRe
 }
 
 class CustomTickerIcon {
-	tickerCss(element: any, defaults: Object) {
-		Object.entries(defaults).forEach(([key, value]) => {
-			element.shadowRoot.querySelector(key).style.cssText = value
-		});
-	}
-
 	main = () => {
-		upl.observer.subscribeToElementCreation("lol-uikit-flyout-frame",(element: any)=>{
-			this.tickerCss(element,
-				{
-					".border": "display: none;",
-					".sub-border": "display: none;",
-					".caret": "display: none;",
-					".lol-uikit-flyout-frame": "background-color: black; border-radius: 10px;"
-				}
-			)
-		})
+		// Static shadow-root styling is fastest through the style engine: one shared
+		// stylesheet covers existing and future flyout frames without per-node observers.
+		utils.styleEngine.apply("custom-ticker-frame", /*css*/`
+			.border,
+			.sub-border,
+			.caret {
+				display: none !important;
+			}
+
+			.lol-uikit-flyout-frame {
+				background-color: black !important;
+				border-radius: 10px !important;
+			}
+		`, { document: false, shadow: true })
 	}
 }
 
 class CustomAvatar {
+	private applyStaticAvatarStyles(): void {
+		// This background is the same for every hover card, so CSS is cheaper than
+		// mutating each created node.
+		utils.styleEngine.apply("custom-avatar-static-styles", /*css*/`
+			.hover-card-info-container {
+				background: #1a1c21 !important;
+			}
+		`, { document: true, shadow: true })
+	}
+
 	private startIdentityTooltipHoverTracking(): void {
 		if (identityTooltipHoverListenerStarted) return;
 		identityTooltipHoverListenerStarted = true;
@@ -241,6 +248,9 @@ class CustomAvatar {
 
 	private applyAvatarBackground(iconElement: HTMLElement | null, backgroundImage: string): boolean {
 		if (!iconElement) return false;
+		// Avatar assets can be local or synced per summoner. Direct element mutation
+		// keeps the replacement scoped to this regalia instance and avoids global
+		// CSS rules that could affect reused tooltip/social components.
 		iconElement.style.backgroundImage = backgroundImage;
 		utils.freezeProperties(iconElement.style, ['backgroundImage']);
 		return true;
@@ -286,6 +296,8 @@ class CustomAvatar {
 		const avatar = findSyncedUserIcon(summonerID, "avatar");
 		if (avatar) {
 			let icon = element.querySelector(".icon-image")
+			// Conversation rows are reused by the chat panel; setting src only after
+			// resolving the active conversation prevents stale global replacements.
 			icon.src = `${avatar}`
 			utils.freezeProperties(icon, ['src'])
 		}
@@ -335,6 +347,8 @@ class CustomAvatar {
 		const icon = headerElement.querySelector("lol-social-avatar.avatar .icon-image") as HTMLImageElement | null;
 		if (!avatar || !icon) return false;
 
+		// Chat headers do not expose a stable CSS hook for each summoner. Updating
+		// the resolved header image is the narrowest and fastest operation.
 		icon.src = avatar;
 		return true;
 	}
@@ -393,6 +407,8 @@ class CustomAvatar {
 
 		if (!avatar) return false;
 
+		// Identity tooltip content is reused while hovering different users, so the
+		// current hover target must be resolved before every src replacement.
 		icon.src = avatar;
 		return true;
 	}
@@ -434,6 +450,8 @@ class CustomAvatar {
 		const icon = memberElement.querySelector(".lol-social-avatar .icon-image") as HTMLImageElement | null;
 		if (!avatar || !icon) return false;
 
+		// Social roster rows lack summoner-id attributes, so JS can combine the
+		// display-name lookup with a scoped src update; CSS cannot express that.
 		icon.src = avatar;
 		return true;
 	}
@@ -485,11 +503,7 @@ class CustomAvatar {
 
 	async main() {
 		this.startIdentityTooltipHoverTracking();
-
-		// Hover card avatar
-		upl.observer.subscribeToElementCreation(".hover-card-info-container",(element: any)=>{
-			element.style.background = "#1a1c21"
-		})
+		this.applyStaticAvatarStyles();
 
 		upl.observer.subscribeToElementCreation(`lol-regalia-hovercard-v2-element`, async (element: any)=>{
 			this.watchCustomAvatar(element)
@@ -559,6 +573,8 @@ class CustomBorder {
 	private applyBorderTargets(targets: any, backgroundImage: string): boolean {
 		if (!targets) return false;
 
+		// Borders differ by user and are buried in nested regalia shadow roots.
+		// Direct mutation is cheaper and safer than generating per-summoner CSS rules.
 		targets.leverBorder.style.cssText = `
 			background-image: ${backgroundImage};
 			display: block;
@@ -632,6 +648,8 @@ class CustomBanner {
 
 	changeBanner = (banner: HTMLImageElement | null): boolean => {
 		if (!banner) return false;
+		// The banner image is a real <img> inside a regalia shadow tree. Setting src
+		// avoids CSS background shims and lets League size the asset normally.
 		banner.src = iconUrl("Regalia-Banners", ElainaData.get("CurrentBanner"))
 		utils.freezeProperties(banner,["src"])
 		return true;
@@ -642,6 +660,8 @@ class CustomBanner {
 		await ensureSyncedElementIcons(element, "banner");
 		const syncedBanner = findSyncedUserIcon(element.getAttribute("summoner-id"), "banner");
 		if (syncedBanner) {
+			// Synced banners are resolved per profile/party user, so direct src
+			// replacement prevents a global CSS rule from leaking to other users.
 			banner.src = `${syncedBanner}`
 			utils.freezeProperties(banner,["src"])
 			return true;
@@ -684,6 +704,8 @@ class CustomHoverCardBackdrop {
 	changeHoverCardBackdrop = (): boolean => {
 		let hoverCardBackdrop = document.querySelector("#hover-card-backdrop") as HTMLElement;
 		if (hoverCardBackdrop) {
+			// The hover card target changes with pointer focus, so inline mutation keeps
+			// the active user's backdrop scoped to the currently rendered tooltip.
 			hoverCardBackdrop.style.backgroundImage = "var(--Hover-card-backdrop)";
 			return true;
 		}
@@ -697,6 +719,8 @@ class CustomHoverCardBackdrop {
 		if (backdrop) {
 			let hoverCardBackdrop = document.querySelector("#hover-card-backdrop") as HTMLElement;
 			if (hoverCardBackdrop) {
+				// Synced hover-card backdrops are per hovered summoner. Inline style
+				// avoids a document-wide CSS rule that would affect the next tooltip.
 				hoverCardBackdrop.style.backgroundImage = utils.cssUrl(backdrop);
 				return true;
 			}
@@ -711,6 +735,8 @@ class CustomHoverCardBackdrop {
 			let profileBackground = document.querySelectorAll(".style-profile-masked-image .lol-uikit-background-switcher-image")
 			if (profileBackground.length === 0) return false;
 			profileBackground.forEach((bg: any) => {
+				// Profile background images are real image elements controlled by the
+				// background switcher, so src replacement survives layout changes best.
 				bg.src = `${backdrop}`
 				bg.style.height = "100%";
 				utils.freezeProperties(bg, ["src", "style.height"])
@@ -817,6 +843,9 @@ class CustomProfileRankClashIcon {
 		}
 
 		element.setAttribute("elaina-rank-icon", "true");
+		// Rank emblems consume CSS custom properties inside the regalia component.
+		// Setting only the host variables is the narrowest override and avoids
+		// walking every nested shadow node.
 		for (const property of rankEmblemCssVars) {
 			element.style.setProperty(property, icon);
 		}
@@ -835,6 +864,8 @@ class CustomProfileRankClashIcon {
 		}
 
 		element.setAttribute("elaina-clash-banner", "true");
+		// Clash banner is a profile-only background and can be synced per viewed
+		// user, so direct inline background is more precise than global CSS.
 		element.style.backgroundImage = icon;
 		return true;
 	}
@@ -870,6 +901,8 @@ class CustomProfileRankClashIcon {
 class CustomGamemodeIcon {
 	gameModeIcon_active(obj: any, name: any) {
 		try {
+			// These nodes are video sources, not plain images. Updating src directly is
+			// necessary so the client actually loads the replacement video asset.
 			let a: any = document.querySelector(`${obj} lol-uikit-video-state[state='active'] lol-uikit-video`)
 			a.setAttribute("src", iconUrl("gamemodes", name))
 			a.querySelector("video").setAttribute("src", iconUrl("gamemodes", name))
@@ -894,67 +927,41 @@ class CustomGamemodeIcon {
 }
 
 class CustomEmblemIcon {
-	changeEmblemIcon = (element: any) => {
-		element.setAttribute("src", iconUrl(icdata["Honor"]))
-		element.style.visibility = "visible"
-		utils.freezeProperties(element, ["src"])
-	}
-
 	main = () => {
-		upl.observer.subscribeToElementCreation(".style-profile-honor-icon-v3", (element: any) => {
-			this.changeEmblemIcon(element)
-		})
+		// Honor emblem is a static local replacement. CSS asset replacement avoids
+		// per-element observers and wins over emblem.css with a more specific rule.
+		utils.styleEngine.apply("custom-emblem-icon", /*css*/`
+			${utils.assetReplacement.imageReplacement(".style-profile-emblem-content > img.style-profile-honor-icon-v3", iconUrl(icdata["Honor"]))}
+
+			.style-profile-emblem-content > img.style-profile-honor-icon-v3 {
+				visibility: visible !important;
+				width: unset !important;
+			}
+		`)
 	}
 }
 
 class CustomLoadingIcon {
-	private storeInterval: number | null = null
-
-	storeLoadingIcon = () => {
-		upl.observer.subscribeToElementCreation("#rcp-fe-lol-store-iframe", (element: any) => {
-			log("Store page.")
-			
-			if (this.storeInterval !== null) {
-				window.clearInterval(this.storeInterval)
-				this.storeInterval = null
-			}
-
-			this.storeInterval = window.setInterval(() => {
-				let storeIframe: any = element.querySelector("iframe")
-				if (storeIframe) {
-					let storeDoc: any = storeIframe.contentDocument || storeIframe.contentWindow.document
-					let loadingIcon: any = storeDoc.querySelector(".store-app-wrapper > .loading-spinner")
-					if (loadingIcon) {
-						loadingIcon.style.cssText = `
-							width: 190px;
-							height: 190px;
-							background-image: unset;
-							background-size: unset;
-							content: ${cssIconUrl(icdata["Loading"])};
-							-webkit-animation-iteration-count: unset;
-							-webkit-animation-duration: unset;
-							-webkit-animation-timing-function: unset;
-							animation-iteration-count: unset;
-							animation-duration: unset;
-							animation-timing-function: unset;
-						`
-						// log("Store loading icon changed.")
-					}
-				}
-			}, 300)
-		})
-
-		upl.observer.subscribeToElementDeletion("#rcp-fe-lol-store-iframe", () => {
-			log("Store page deleted.")
-			if (this.storeInterval !== null) {
-				window.clearInterval(this.storeInterval)
-				this.storeInterval = null
-			}
-		})
-	}
-
 	main() {
-		this.storeLoadingIcon()
+		// Store content lives in a same-origin iframe. Iframe-scoped CSS avoids the
+		// old polling loop while still applying when the store iframe reloads.
+		utils.styleEngine.apply("custom-loading-icon", /*css*/`
+			.store-app-wrapper > .loading-spinner {
+				width: 190px !important;
+				height: 190px !important;
+				background-image: ${cssIconUrl(icdata["Loading"])} !important;
+				background-position: center !important;
+				background-size: contain !important;
+				background-repeat: no-repeat !important;
+				content: ${cssIconUrl(icdata["Loading"])} !important;
+				-webkit-animation-iteration-count: unset !important;
+				-webkit-animation-duration: unset !important;
+				-webkit-animation-timing-function: unset !important;
+				animation-iteration-count: unset !important;
+				animation-duration: unset !important;
+				animation-timing-function: unset !important;
+			}
+		`, { document: false, iframe: true })
 	}
 }
 

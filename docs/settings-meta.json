@@ -245,19 +245,14 @@
             "description": "Show the button that hides/shows the top navbar friend list.",
             "type": "boolean"
         },
-        "sidebar-transparent": {
+        "change-sidebar-color": {
             "category": "theme-visual",
-            "description": "Make the sidebar transparent.",
+            "description": "Change the color of the sidebar.",
             "type": "boolean"
         },
         "lobby-transparent-filter": {
             "category": "theme-visual",
             "description": "Apply a transparency filter to the lobby area.",
-            "type": "boolean"
-        },
-        "settings-dialogs-transparent": {
-            "category": "theme-visual",
-            "description": "Make settings dialog backgrounds transparent.",
             "type": "boolean"
         },
         "hide-profile-background": {

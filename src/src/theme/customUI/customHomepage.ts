@@ -1,15 +1,15 @@
-import { pluginPath, pluginUrl } from "../../otherThings.ts"
+import { pluginPath } from "../../otherThings.ts"
 import { log, warn, error } from "../../utils/themeLog.ts";
 import * as upl from 'pengu-upl';
 import utils from '../../utils/utils.ts';
 import { setDefaultData } from "../../services/backupAndRestoreDatastore.ts";
-const iconFolder: string = `${pluginUrl("assets/icon")}/`;
+const iconFolder: string = `${utils.assets.icon()}/`;
 const mediaControllerIconFolder: string = `${iconFolder}plugins-icons/mediaControllers/`;
 
 let addedBackgrounds = false
 let navbarContentList: any[] = [];
 let haveNewContent = 0
-let cdnServer = (await import(pluginUrl("config/cdnServer.js"))).default
+let cdnServer = (await import(utils.assets.url("config/cdnServer.js"))).default
 
 // Set default data
 const defaultData = {
@@ -27,7 +27,7 @@ const defaultData = {
 };
 
 function initHomepageData() {
-    ElainaData.set("Font-folder", `${pluginUrl("assets/fonts")}/`);
+    ElainaData.set("Font-folder", `${utils.assets.url("assets/fonts")}/`);
     ElainaData.set("Plugin-folder-name", pluginPath());
     setDefaultData(defaultData, false);
 }
@@ -174,9 +174,9 @@ class WallpaperController {
         elainaBg.load()
 
         requestAnimationFrame(() => {
-            elainaBg.src = pluginUrl("assets/backgrounds/wallpapers", BG);
+            elainaBg.src = utils.assets.background("wallpapers", BG);
             elainaBg.playbackRate = ElainaData.get("Playback-speed") / 100;
-            elainaStaticBg.src = pluginUrl("assets/backgrounds/wallpapers", BG);
+            elainaStaticBg.src = utils.assets.background("wallpapers", BG);
 
             // Respect current pause state after loading new source
             if (ElainaData.get('pause-wallpaper') % 2 === 1) {
@@ -325,7 +325,7 @@ class AudioController {
 
     loadSong = (song) => {
         const audio: any = document.getElementById("bg-audio");
-        audio.src = pluginUrl("assets/backgrounds/audio", song);
+        audio.src = utils.assets.background("audio", song);
     };
 
     updateAudio = async (song) => {
@@ -1051,7 +1051,7 @@ class WallpaperAndAudio {
             video.volume = ElainaData.get("wallpaper-volume");
             video.muted = ElainaData.get("mute-audio");
             video.currentTime = ElainaData.get("Wallpaper-currentTime");
-            video.src = pluginUrl("assets/backgrounds/wallpapers", ElainaData.get("Wallpaper-list")[ElainaData.get('wallpaper-index')]);
+            video.src = utils.assets.background("wallpapers", ElainaData.get("Wallpaper-list")[ElainaData.get('wallpaper-index')]);
             video.playbackRate = ElainaData.get("Playback-speed") / 100;
             video.preload = "metadata";
             video.setAttribute("disablePictureInPicture", "");
@@ -1079,7 +1079,7 @@ class WallpaperAndAudio {
         if (!ElainaData.get("disable-theme-wallpaper")) {
             const imgWallpaper: any = document.getElementById("elaina-static-bg")
             imgWallpaper.preload = "metadata";
-            imgWallpaper.src = pluginUrl("assets/backgrounds/wallpapers", ElainaData.get("Wallpaper-list")[ElainaData.get('wallpaper-index')]);
+            imgWallpaper.src = utils.assets.background("wallpapers", ElainaData.get("Wallpaper-list")[ElainaData.get('wallpaper-index')]);
 
             wallpaperController.wallpaperSlider(ElainaData.get("Wallpaper-list")[ElainaData.get('wallpaper-index')])
         }
@@ -1100,7 +1100,7 @@ class WallpaperAndAudio {
 
             const audio: any = document.getElementById("bg-audio")
             audio.autoplay = true;
-            audio.src = pluginUrl("assets/backgrounds/audio", ElainaData.get("Audio-list")[ElainaData.get('audio-index')]);
+            audio.src = utils.assets.background("audio", ElainaData.get("Audio-list")[ElainaData.get('audio-index')]);
             audio.volume = ElainaData.get("audio-volume");
             audio.muted = ElainaData.get("mute-audio");
             audio.currentTime = ElainaData.get("Audio-currentTime");

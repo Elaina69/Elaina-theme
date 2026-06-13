@@ -1,7 +1,7 @@
-import * as upl from 'pengu-upl';
-import { pluginUrl } from "../../otherThings"
+import utils from "../../utils/utils.ts"
+import * as upl from "pengu-upl"
 
-const filters = (await import(pluginUrl("config/filters.js"))).default;
+const filters = (await import(utils.assets.url("config/filters.js"))).default;
 
 /** Replaces rune page backgrounds with custom images and applies CSS filter overlays. */
 export class CustomRunesBackground {
@@ -15,15 +15,18 @@ export class CustomRunesBackground {
     }
 
     changeRunesBackground = () => {
-        upl.observer.subscribeToElementCreation('.perks-construct-minspec', (element: any) => {
-            window.setInterval(()=>{
-                element.style.cssText = `
-                    top: 0px; 
-                    left: 0px; 
-                    filter: ${filters["Runes"]}; 
-                    background-image: var(--pri${element.getAttribute('primary')})
-                `
-            },100)
-        })
+        utils.styleEngine.apply("custom-runes-background", /*css*/`
+            .perks-construct-minspec {
+                top: 0 !important;
+                left: 0 !important;
+                filter: ${filters["Runes"]} !important;
+            }
+
+            .perks-construct-minspec[primary="8000"] { background-image: var(--pri8000) !important; }
+            .perks-construct-minspec[primary="8100"] { background-image: var(--pri8100) !important; }
+            .perks-construct-minspec[primary="8200"] { background-image: var(--pri8200) !important; }
+            .perks-construct-minspec[primary="8300"] { background-image: var(--pri8300) !important; }
+            .perks-construct-minspec[primary="8400"] { background-image: var(--pri8400) !important; }
+        `)
     }
 }

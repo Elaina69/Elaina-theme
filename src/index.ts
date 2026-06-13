@@ -46,6 +46,7 @@ import { OfflineMode } from "./src/plugins/offlineMode.ts"
 // import { Practice5vs5 } from "./src/plugins/practice5vs5.ts"
 import { InviteAllFriends } from "./src/plugins/inviteAllFriends.ts"
 // import { DodgeButton } from "./src/plugins/dodgeButton.ts"
+import { inspectTool } from "./src/plugins/inspectTool.ts"
 
 // Import other plugins
 import * as upl from "pengu-upl"
@@ -98,6 +99,9 @@ class ElainaTheme {
         // Add theme's Css
         const loadCss = new LoadCss()
         loadCss.main()
+
+        // Apply user-authored inspect CSS after the theme CSS so it can override safely at runtime.
+        await inspectTool.init()
 
         // Load plugins
         // Add theme's pre-settings

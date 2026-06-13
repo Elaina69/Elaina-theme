@@ -2,6 +2,10 @@
 	--social-sidebar-bg-color: linear-gradient(rgb(6 6 6), rgb(0 0 0 / 25%));
 }
 
+.sidebar-background {
+	background: var(--social-sidebar-bg-color) !important;
+}
+
 .rcp-fe-viewport-sidebar {
 	background: transparent !important;
 }

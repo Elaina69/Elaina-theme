@@ -127,7 +127,11 @@ League Client uses many Web Components and Shadow DOM. The theme often needs:
 - `pengu-upl` observers to detect newly created elements.
 - `MutationObserver` for components that League re-renders.
 - Shadow DOM traversal for avatar, border, banner, rank icon, Clash banner, and tooltip icon replacement.
+- `utils.styleEngine` for reusable CSS injection into the document, Shadow DOM, and same-origin iframes.
+- `utils.assets` and `utils.assetReplacement` for escaped plugin asset URLs and CSS-based image replacement.
 - Event-driven observers instead of long-running intervals whenever possible.
+
+When CSS is injected into Shadow DOM or iframes, keep dynamic text changes in JavaScript. The style engine strips document-only rules such as `@import` and `@font-face` from embedded CSS so they stay in the main document stylesheet.
 
 ### 4.3 Custom Icon Rendering
 

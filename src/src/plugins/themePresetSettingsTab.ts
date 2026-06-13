@@ -4,13 +4,13 @@
  * @description This's just a LL-settings from League Loader, but i change it a little bit for my theme
  */
 
-import { pluginPath, pluginUrl } from '../otherThings.ts'
+import { pluginPath } from '../otherThings.ts'
 import { Component, jsx, render } from "nano-jsx"
 import utils from "../utils/utils.ts"
 
-const icdata: Object = (await import(pluginUrl("config/icons.js"))).default;
+const icdata: Object = (await import(utils.assets.url("config/icons.js"))).default;
 
-const settingsIcon = pluginUrl("assets/icon/plugins-icons", icdata["LL_Settings"]);
+const settingsIcon = utils.assets.icon("plugins-icons", icdata["LL_Settings"]);
 
 function openConfigs() {window.openPluginsFolder(pluginPath("config"))}
 function openAssets() {window.openPluginsFolder(pluginPath("assets"))}

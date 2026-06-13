@@ -1,12 +1,12 @@
-import { pluginUrl } from "../otherThings"
+import utils from "../utils/utils";
 import { log, warn, error } from '../utils/themeLog';
 import { customAvatar } from "../theme/customUI/customIcon";
 import { fileSystem } from "../utils/fileSystem";
 
-const icdata = (await import(pluginUrl("config/icons.js"))).default;
+const icdata = (await import(utils.assets.url("config/icons.js"))).default;
 
-const iconFolder = `${pluginUrl("assets/icon")}/`
-const iconUrl = (...parts: unknown[]) => pluginUrl("assets/icon", ...parts);
+const iconFolder = `${utils.assets.icon()}/`
+const iconUrl = utils.assets.icon;
 
 const syncIconsType = ["avatar", "border", "banner", "emblem", "hoverCardBackdrop", "rankIcon", "clashBanner"] as const;
 type IconType = typeof syncIconsType[number];

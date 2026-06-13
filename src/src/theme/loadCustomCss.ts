@@ -1,13 +1,10 @@
 import utils from "../utils/utils.ts"
-import { pluginUrl } from "../otherThings.ts"
 
-let icdata: Object = (await import(pluginUrl("config/icons.js"))).default;
+let icdata: Object = (await import(utils.assets.url("config/icons.js"))).default;
 
-const assetUrl = (...parts: unknown[]) => pluginUrl(...parts);
-const cssAssetUrl = (...parts: unknown[]) => utils.cssUrl(assetUrl(...parts));
-const iconUrl = (...parts: unknown[]) => assetUrl("assets/icon", ...parts);
-const cssIconUrl = (...parts: unknown[]) => utils.cssUrl(iconUrl(...parts));
-const cssBgUrl = (...parts: unknown[]) => utils.cssUrl(assetUrl("assets/backgrounds", ...parts));
+const cssAssetUrl = utils.assets.cssUrl;
+const cssIconUrl = utils.assets.cssIcon;
+const cssBgUrl = utils.assets.cssBackground;
 
 class AddCss {
 	cssVar = () => {
@@ -94,11 +91,6 @@ class AddCss {
 					key: "lobby-transparent-filter",
 					css: "lobby-transparent-filter.css",
 					altCss: "null.css"
-				},
-				{
-					key: "sidebar-transparent",
-					css: "sidebar-transparent.css",
-					altCss: "sidebar-color.css"
 				},
 			],
 	
@@ -191,7 +183,7 @@ class AddCss {
 			return;
 		}
 
-		utils.addFont(assetUrl("assets/fonts", ElainaData.get("CurrentFont")),"Custom-font","Custom")
+		utils.addFont(utils.assets.url("assets/fonts", ElainaData.get("CurrentFont")),"Custom-font","Custom")
 	}
 
 	customCursor = () => {
@@ -202,6 +194,21 @@ class AddCss {
 		utils.addStyleNodeWithID("nickname-color-css", /*css*/`
 			span.player-name__force-locale-text-direction, #nickname-color-preview {
 				color: ${utils.sanitizeColor(ElainaData.get("nickname-color-with-opacity"))};
+			}
+		`)
+	}
+
+	customSidebarColor = () => {
+		const sidebarColor = utils.sanitizeColor(ElainaData.get("sidebar-color-with-opacity"));
+		if (!sidebarColor) return;
+
+		utils.styleEngine.apply("sidebar-color-css", /*css*/`
+			:root {
+				--social-sidebar-bg-color: ${sidebarColor};
+			}
+
+			.sidebar-background {
+				background: ${sidebarColor} !important;
 			}
 		`)
 	}
@@ -218,5 +225,6 @@ export class LoadCss {
 		if (ElainaData.get("Custom-Font")) addCss.customFont()
 		if (ElainaData.get("Custom-Cursor")) addCss.customCursor()
 		if (ElainaData.get("change-nickname-color")) addCss.customNicknameColor()
+		if (ElainaData.get("change-sidebar-color")) addCss.customSidebarColor()
 	}
 }

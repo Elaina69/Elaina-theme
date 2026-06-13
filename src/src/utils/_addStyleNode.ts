@@ -1,9 +1,9 @@
-/**
- * Adds a CSS style to the document body
- * @param {string} style - The CSS style to add
- */
+import { styleEngine } from './_styleEngine.ts';
+
+let legacyStyleNodeCounter = 0;
+
+/** Adds a CSS style to the document head. */
 export function addStyleNode(style: string) {
-    const styleElement = document.createElement('style');
-    styleElement.appendChild(document.createTextNode(style));
-    document.body.appendChild(styleElement);
+    legacyStyleNodeCounter++;
+    styleEngine.apply(`legacy-${legacyStyleNodeCounter}`, style);
 }

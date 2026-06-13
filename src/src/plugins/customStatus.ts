@@ -1,6 +1,6 @@
-import { pluginUrl } from "../otherThings"
+import utils from "../utils/utils"
 
-const text = await (await fetch(pluginUrl("config/customStatus.txt"))).text()
+const text = await (await fetch(utils.assets.url("config/customStatus.txt"))).text()
 
 /**
  * Sets a custom rotating chat status message from a text file.

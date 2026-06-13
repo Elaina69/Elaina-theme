@@ -1,9 +1,8 @@
 import utils from '../utils/utils.ts'
 import * as upl from "pengu-upl"
-import { pluginUrl } from "../otherThings"
 import { log } from '../utils/themeLog.ts'
 
-const cssAssetUrl = (...parts: unknown[]) => utils.cssUrl(pluginUrl(...parts));
+const cssAssetUrl = utils.assets.cssUrl;
 
 function AddElement(parent: any, tag: any, params: any[] = [], classes:any[] = [], content: any = null) {
     let element = document.createElement(tag);

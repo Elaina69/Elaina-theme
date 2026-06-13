@@ -1,6 +1,6 @@
 import { log } from "../../utils/themeLog.js"
 import utils from '../../utils/utils.js'
-import { pluginUrl, cdnImport } from '../../otherThings.js'
+import { cdnImport } from '../../otherThings.js'
 
 type ChampData = {
     default_champion_name: string;
@@ -49,11 +49,10 @@ const abilityFields: Record<AbilitySlot, { image: ChampImageField; name: ChampTe
     r: { image: "skill_r", name: "skill_r_name", desc: "skill_r_desc" }
 };
 
-const champUrl = (...parts: unknown[]) => pluginUrl("assets/champs", ...parts);
-const cssChampUrl = (...parts: unknown[]) => utils.cssUrl(champUrl(...parts));
+const champUrl = utils.assets.champ;
+const cssChampUrl = utils.assets.cssChamp;
 
-const list = (await cdnImport(pluginUrl("config/champsBgList.js"), "Can't import custom champion data")).default as ChampData[];
-const registeredImageSrcReplacements = new Set<string>();
+const list = (await cdnImport(utils.assets.url("config/champsBgList.js"), "Can't import custom champion data")).default as ChampData[];
 
 function normalizeChampName(name: string | null | undefined): string {
     return typeof name === "string"
@@ -148,13 +147,6 @@ export class CustomChampsBg {
     private getChampText(champData: ChampData, field: ChampTextField): string | null {
         const text = champData[field];
         return this.hasValue(text) ? text : null;
-    }
-
-    private registerImageSrcReplacement(oldSrc: string, newSrc: string): void {
-        if (registeredImageSrcReplacements.has(oldSrc)) return;
-
-        registeredImageSrcReplacements.add(oldSrc);
-        utils.updateImageSrc(oldSrc, newSrc);
     }
 
     private applyChampionIconImage(element: Element, attribute: "src" | "href" = "src"): boolean {
@@ -294,49 +286,154 @@ export class CustomChampsBg {
         return changed;
     }
 
-    private registerClientImageReplacements(): void {
+    private uniqueValues(values: Array<string | number | null | undefined>): string[] {
+        return Array.from(new Set(values
+            .map(value => String(value ?? "").trim())
+            .filter(value => value.length > 0)));
+    }
+
+    private getChampionCharacterDirs(item: ChampData): string[] {
+        return this.uniqueValues([
+            item.first_default_filename,
+            String(item.first_default_filename || "").toLowerCase(),
+            item.second_default_filename,
+            String(item.second_default_filename || "").toLowerCase()
+        ]);
+    }
+
+    private getChampionDefaultBaseNames(item: ChampData): string[] {
+        return this.uniqueValues([
+            item.first_default_filename,
+            String(item.first_default_filename || "").toLowerCase(),
+            item.second_default_filename,
+            String(item.second_default_filename || "").toLowerCase()
+        ]);
+    }
+
+    private getBaseSkinPathVariants(item: ChampData, kind: "loadscreen" | "splash" | "tile"): string[] {
         const baseURL = `/lol-game-data/assets/ASSETS/Characters`;
+        const paths: string[] = [];
+        const secondDefaultFilename = item.second_default_filename || "";
+        const secondDefaultFilenameLower = secondDefaultFilename.toLowerCase();
 
-        for (const item of list) {
-            const firstDefaultFilename = item.first_default_filename || "";
-            if (!this.hasValue(firstDefaultFilename)) continue;
-
-            const firstDefaultFilenameLower = firstDefaultFilename.toLowerCase();
-            const secondDefaultFilename = item.second_default_filename || "";
-            const secondDefaultFilenameLower = secondDefaultFilename.toLowerCase();
-            const imagesBase = `${baseURL}/${firstDefaultFilename}/Skins/Base/Images`;
-            const customImage = this.getChampAssetUrl(item, "image");
-            const customPreviewImage = this.getChampAssetUrl(item, "image_preview");
-
-            const customThumbnail = this.getChampAssetUrl(item, "image_thumbnail");
-            if (customThumbnail && this.hasValue(String(item.default_icon_id))) {
-                this.registerImageSrcReplacement(`/lol-game-data/assets/v1/champion-icons/${item.default_icon_id}.png`, customThumbnail);
-            }
-
-            if (customPreviewImage) {
-                for (const charDir of [firstDefaultFilename, firstDefaultFilenameLower]) {
+        for (const charDir of this.getChampionCharacterDirs(item)) {
+            for (const baseName of this.getChampionDefaultBaseNames(item)) {
+                if (kind === "loadscreen") {
                     for (const filename of ["LoadScreen", "Loadscreen"]) {
-                        this.registerImageSrcReplacement(`${baseURL}/${charDir}/Skins/Base/${firstDefaultFilename}${filename}.jpg`, customPreviewImage);
-                        this.registerImageSrcReplacement(`${baseURL}/${charDir}/Skins/Base/${firstDefaultFilename}${filename}_0.jpg`, customPreviewImage);
+                        paths.push(`${baseURL}/${charDir}/Skins/Base/${baseName}${filename}.jpg`);
+                        paths.push(`${baseURL}/${charDir}/Skins/Base/${baseName}${filename}_0.jpg`);
+
                         if (this.hasValue(secondDefaultFilename)) {
-                            this.registerImageSrcReplacement(`${baseURL}/${charDir}/Skins/Base/${firstDefaultFilename}${filename}_0.${secondDefaultFilename}.jpg`, customPreviewImage);
+                            paths.push(`${baseURL}/${charDir}/Skins/Base/${baseName}${filename}_0.${secondDefaultFilename}.jpg`);
+                            paths.push(`${baseURL}/${charDir}/Skins/Base/${baseName}${filename}_0.${secondDefaultFilenameLower}.jpg`);
                         }
                     }
+                    continue;
+                }
+
+                const imagesBase = `${baseURL}/${charDir}/Skins/Base/Images`;
+                if (kind === "splash") {
+                    for (const type of ["centered", "uncentered"]) {
+                        paths.push(`${imagesBase}/${baseName}_splash_${type}_0.jpg`);
+                        if (this.hasValue(secondDefaultFilename)) {
+                            paths.push(`${imagesBase}/${baseName}_splash_${type}_0.${secondDefaultFilename}.jpg`);
+                            paths.push(`${imagesBase}/${baseName}_splash_${type}_0.${secondDefaultFilenameLower}.jpg`);
+                        }
+                    }
+                    continue;
+                }
+
+                paths.push(`${imagesBase}/${baseName}_splash_tile_0.jpg`);
+                if (this.hasValue(secondDefaultFilename)) {
+                    paths.push(`${imagesBase}/${baseName}_splash_tile_0.${secondDefaultFilename}.jpg`);
+                    paths.push(`${imagesBase}/${baseName}_splash_tile_0.${secondDefaultFilenameLower}.jpg`);
                 }
             }
+        }
 
-            if (customImage) {
-                for (const name of [firstDefaultFilename, firstDefaultFilenameLower]) {
-                    for (const type of ["centered", "uncentered"]) {
-                        this.registerImageSrcReplacement(`${imagesBase}/${name}_splash_${type}_0.jpg`, customImage);
-                        if (this.hasValue(secondDefaultFilename)) {
-                            this.registerImageSrcReplacement(`${imagesBase}/${name}_splash_${type}_0.${secondDefaultFilename}.jpg`, customImage);
-                            this.registerImageSrcReplacement(`${imagesBase}/${name}_splash_${type}_0.${secondDefaultFilenameLower}.jpg`, customImage);
-                        }
+        return this.uniqueValues(paths);
+    }
+
+    private buildAbilityIconSelectors(item: ChampData, slot: AbilitySlot): string[] {
+        const selectors: string[] = [];
+        const slotKeys = slot === "passive"
+            ? ["Passive", "passive"]
+            : [slot.toUpperCase(), slot.toLowerCase()];
+
+        for (const charDir of this.getChampionCharacterDirs(item)) {
+            for (const baseName of this.getChampionDefaultBaseNames(item)) {
+                for (const slotKey of slotKeys) {
+                    const baseSelectors = [
+                        `${baseName}${slotKey}`,
+                        `${baseName}_${slotKey}`,
+                        `Icon_${baseName}_${slotKey}`,
+                        `Icon_${baseName}${slotKey}`
+                    ];
+
+                    for (const marker of baseSelectors) {
+                        selectors.push(`img[src*="/Characters/${charDir}/"][src*="/HUD/Icons2D/"][src*="${marker}"]`);
                     }
                 }
             }
         }
+
+        return this.uniqueValues(selectors);
+    }
+
+    private buildClientImageReplacementCss(): string {
+        const rules: string[] = [];
+
+        for (const item of list) {
+            const customThumbnail = this.getChampAssetUrl(item, "image_thumbnail");
+            const iconId = String(item.default_icon_id ?? "").trim();
+            if (customThumbnail && iconId) {
+                const iconPath = `/lol-game-data/assets/v1/champion-icons/${iconId}.png`;
+                rules.push(utils.assetReplacement.imageSrc(iconPath, customThumbnail, "img"));
+                rules.push(utils.assetReplacement.imageHref(iconPath, customThumbnail));
+                rules.push(utils.assetReplacement.styleBackground(iconPath, customThumbnail));
+            }
+
+            const customPreviewImage = this.getChampAssetUrl(item, "image_preview");
+            if (customPreviewImage) {
+                for (const oldPath of this.getBaseSkinPathVariants(item, "loadscreen")) {
+                    rules.push(utils.assetReplacement.imageSrc(oldPath, customPreviewImage, "img"));
+                    rules.push(utils.assetReplacement.styleBackground(oldPath, customPreviewImage));
+                }
+            }
+
+            const customImage = this.getChampAssetUrl(item, "image");
+            if (customImage) {
+                for (const oldPath of this.getBaseSkinPathVariants(item, "splash")) {
+                    rules.push(utils.assetReplacement.imageSrc(oldPath, customImage, "img"));
+                    rules.push(utils.assetReplacement.styleBackground(oldPath, customImage));
+                }
+            }
+
+            if (customThumbnail) {
+                for (const oldPath of this.getBaseSkinPathVariants(item, "tile")) {
+                    rules.push(utils.assetReplacement.imageSrc(oldPath, customThumbnail, "img"));
+                    rules.push(utils.assetReplacement.styleBackground(oldPath, customThumbnail));
+                }
+            }
+
+            for (const slot of Object.keys(abilityFields) as AbilitySlot[]) {
+                const customAbilityIcon = this.getChampAssetUrl(item, abilityFields[slot].image);
+                if (!customAbilityIcon) continue;
+
+                for (const selector of this.buildAbilityIconSelectors(item, slot)) {
+                    rules.push(utils.assetReplacement.imageReplacement(selector, customAbilityIcon));
+                }
+            }
+        }
+
+        return rules.join("\n");
+    }
+
+    private applyClientImageReplacementCss(): void {
+        utils.styleEngine.apply("custom-champs-image-assets", this.buildClientImageReplacementCss(), {
+            document: true,
+            shadow: true
+        });
     }
 
     private applyCollectionTab(): void {
@@ -652,7 +749,7 @@ export class CustomChampsBg {
     }
 
     main = () => {
-        this.registerClientImageReplacements();
+        this.applyClientImageReplacementCss();
         this.startDomObserver();
         document.addEventListener("click", this.handleCollectionAbilityClick, true);
 

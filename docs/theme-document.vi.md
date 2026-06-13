@@ -127,7 +127,11 @@ League Client dùng nhiều Web Component và Shadow DOM. Theme thường cần:
 - `pengu-upl` observer để bắt element mới.
 - `MutationObserver` cho component được League render lại nhiều lần.
 - Shadow DOM traversal khi cần thay avatar, border, banner, rank icon, Clash banner, tooltip icon.
+- `utils.styleEngine` để inject CSS dùng lại được vào document, Shadow DOM và same-origin iframe.
+- `utils.assets` và `utils.assetReplacement` để tạo URL asset đã escape và thay ảnh bằng CSS.
 - Không dùng interval dài hạn nếu có thể dùng observer/event-driven.
+
+Khi CSS được inject vào Shadow DOM hoặc iframe, các phần đổi text động vẫn nên xử lý bằng JavaScript. Style engine sẽ tách rule chỉ nên nằm ở document như `@import` và `@font-face` khỏi CSS nhúng để tránh lỗi trong Shadow DOM/iframe.
 
 ### 4.3 Custom icon rendering
 

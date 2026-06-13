@@ -1,4 +1,4 @@
-import { pluginUrl } from "../../otherThings.ts"
+import utils from "../../utils/utils.ts"
 
 class ui {
     /**
@@ -125,7 +125,7 @@ class ui {
     createImage = (localImage: boolean = true, image: string, cls: string, id = "", style = "") => {
         const img = document.createElement('img')
 
-        img.setAttribute("src", localImage? pluginUrl("assets/icon", image) : image)
+        img.setAttribute("src", localImage ? utils.assets.icon(image) : image)
         img.classList.add(cls)
         img.id = id
         img.style.cssText = style

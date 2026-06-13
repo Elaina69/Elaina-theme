@@ -1,6 +1,7 @@
 import LocalKey from "./updateKeyLocal.ts"
-import { pluginUrl, cdnImport } from "../otherThings.ts"
+import { cdnImport } from "../otherThings.ts"
 import { log, warn, error } from "../utils/themeLog.ts"
+import utils from "../utils/utils.ts"
 
 interface UpdateData {
 	version: string
@@ -24,10 +25,10 @@ export class CheckUpdate {
 	private cdnKey: number = LocalKey
 
 	fetchCdnData = async () => {
-		this.cdnServer = (await import(pluginUrl("config/cdnServer.js"))).default
+		this.cdnServer = (await import(utils.assets.url("config/cdnServer.js"))).default
 
 		const cdnUrl = `${this.cdnServer["cdn-url"]}elaina-theme-data@${this.cdnServer["version"]}`
-		const localUrl = pluginUrl("elaina-theme-data")
+		const localUrl = utils.assets.url("elaina-theme-data")
 
 		try {
 			let updateModule: any
