@@ -140,7 +140,6 @@ export default {
     "theme-settings.hide-profile-background": "Hide profile background",
     "theme-settings.hide-champions-splash-art": "Hide champions splash art in champs select",
     "theme-settings.hide-vertical-lines": "Hide vertical lines on the right of the navbar",
-    "theme-settings.inspect-tool": "Inspect Tool (Alt + I)",
     "theme-settings.custom-font": "Custom font",
     "theme-settings.custom-font-local": "Local font file",
     "theme-settings.custom-font-google": "Google Font",

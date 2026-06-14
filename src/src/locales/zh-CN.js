@@ -140,7 +140,6 @@ export default {
     "theme-settings.hide-profile-background": "Hide profile background",
     "theme-settings.hide-champions-splash-art": "选择英雄时隐藏英雄原画",
     "theme-settings.hide-vertical-lines": "隐藏主导航栏按钮的分割线",
-    "theme-settings.inspect-tool": "Inspect Tool (Alt + I)",
     "theme-settings.custom-font": "自定义字体",
     "theme-settings.custom-font-local": "Local font file",
     "theme-settings.custom-font-google": "Google Font",

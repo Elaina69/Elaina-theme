@@ -113,7 +113,7 @@ export async function aboutustab(panel: Element) {
                         "https://github.com/Flirip"
                     ),
                 ]),
-                UI.createRow("Donation-row",[
+                UI.createRow("Contributors-row",[
                     UI.createContributor(
                         false, 
                         "https://avatars.githubusercontent.com/u/21153423",
@@ -128,6 +128,22 @@ export async function aboutustab(panel: Element) {
                         `${await getString("about-us.support")}`,
                         "https://github.com/rumi-chan"
                     ),
+                ]),
+                UI.createRow("Contributors-row",[
+                    UI.createContributor(
+                        false,
+                        "https://avatars.githubusercontent.com/u/39759213",
+                        "ReformedDoge",
+                        `${await getString("about-us.support")}, ${await getString("about-us.plugins-provider")}`,
+                        "https://github.com/ReformedDoge"
+                    ),
+                    // UI.createContributor(
+                    //     true,
+                    //     "about-us/",
+                    //     "",
+                    //     "",
+                    //     ""
+                    // ),
                 ]),
                 /*
                 UI.createRow("Contributors-row",[

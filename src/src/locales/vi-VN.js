@@ -140,7 +140,6 @@ export default {
     "theme-settings.hide-profile-background": "Ẩn hình nền hồ sơ",
     "theme-settings.hide-champions-splash-art": "Ẩn ảnh nền tướng trong lúc chọn tướng",
     "theme-settings.hide-vertical-lines": "Ẩn các đường ngăn cách bên phải thanh điều hướng",
-    "theme-settings.inspect-tool": "Công cụ Inspect (Alt + I)",
     "theme-settings.custom-font": "Phông chữ tùy chỉnh",
     "theme-settings.custom-font-local": "File phông chữ local",
     "theme-settings.custom-font-google": "Google Font",

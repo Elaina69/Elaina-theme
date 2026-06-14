@@ -140,7 +140,6 @@ export default {
     "theme-settings.hide-profile-background": "Hide profile background",
     "theme-settings.hide-champions-splash-art": "Скрыть арт чемпионов в выборе чемпионов",
     "theme-settings.hide-vertical-lines": "Скрыть вертикальные линии справа от панели навигации",
-    "theme-settings.inspect-tool": "Inspect Tool (Alt + I)",
     "theme-settings.custom-font": "Кастомный шрифт",
     "theme-settings.custom-font-local": "Local font file",
     "theme-settings.custom-font-google": "Google Font",

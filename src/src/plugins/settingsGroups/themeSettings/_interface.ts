@@ -4,7 +4,6 @@ import {
     hideShowNavBar,
     changeHomePageStyle,
 } from "../../../theme/customUI/customHomepage.ts"
-import { inspectTool } from "../../inspectTool.ts"
 import utils from "../../../utils/utils.ts"
 import { addCss } from "../../../theme/loadCustomCss.ts"
 
@@ -89,13 +88,6 @@ export async function interfaceSection(): Promise<HTMLElement> {
             () => {
                 restartAfterChange("hidevl", "hide-vertical-lines")
             }, true, "hide-vertical-lines"
-        ),
-        br(),
-        UI.createCheckBox(
-            `${await getString("theme-settings.inspect-tool")}`, "inspecttool", "inspecttoolbox",
-            () => {
-                inspectTool.toggle(ElainaData.get("inspect-tool"))
-            }, true, "inspect-tool"
         ),
     ])
 }
