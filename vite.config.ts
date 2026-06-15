@@ -180,7 +180,7 @@ export default defineConfig((config) => ({
                 count = 0;
                 const interval = setInterval(() => count += 100, 100);
                 try {
-                    const output = fs.createWriteStream(join(outDir, "ElainaV4.zip"));
+                    const output = fs.createWriteStream(join(outDir, `${pkg.folderName}.zip`));
                     const archive = archiver('zip', { zlib: { level: 9 } });
             
                     archive.on('error', (err) => {

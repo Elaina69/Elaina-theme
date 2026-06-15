@@ -1,3 +1,10 @@
+/**
+ * @author ReformedDoge
+ * @description shadow-manager - A part of Snooze-CSS
+ * @link https://github.com/ReformedDoge || https://github.com/ReformedDoge/Snooze-CSS
+ * @modified by Elaina Da Catto, for Elaina Theme
+ */
+
 type StyleEngineOptions = {
     document?: boolean;
     shadow?: boolean;
