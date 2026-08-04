@@ -1,6 +1,6 @@
 import { log, error } from './themeLog';
 
-const DATA_FILE_PATH = './data/ElainaData.json';
+const elainaDataPath = './data/ElainaData.json';
 
 /** Mode of storage backend: 'fs' uses context.fs file, 'datastore' uses Pengu DataStore */
 type StorageMode = 'fs' | 'datastore';
@@ -25,7 +25,7 @@ class FSDataMgr {
         if (this.storageMode !== 'fs' || !this.fsContext) return false;
         try {
             const json = JSON.stringify(this.cache, null, 2);
-            const success = await this.fsContext.fs.write(DATA_FILE_PATH, json, { append: false });
+            const success = await this.fsContext.fs.write(elainaDataPath, json, { append: false });
             if (!success) {
                 error('context.fs.write returned false — data may not be persisted');
             }
@@ -154,7 +154,7 @@ class ElainaDataClass extends FSDataMgr {
             await context.fs.mkdir('./data');
 
             // Try to read existing file
-            const raw = await context.fs.read(DATA_FILE_PATH);
+            const raw = await context.fs.read(elainaDataPath);
 
             if (raw && raw.trim().length > 0) {
                 // File exists and has content — parse and use as cache

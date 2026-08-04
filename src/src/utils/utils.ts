@@ -26,8 +26,30 @@ let pvp_net_id: any,
     summoner_id: any,
     phase: any;
 
+type PhaseChangeCallback = (currentPhase: any, previousPhase: any) => void | Promise<void>;
+
 const routines: {callback: Function, target: string[]}[] = [];
 const mutationCallbacks: {callback: Function, target: string[]}[] = [];
+const phaseChangeCallbacks = new Set<PhaseChangeCallback>();
+
+function setPhase(value: any): void {
+    const previousPhase = phase;
+    phase = value;
+
+    if (previousPhase === value) return;
+
+    for (const callback of Array.from(phaseChangeCallbacks)) {
+        try {
+            const result = callback(value, previousPhase);
+            if (result instanceof Promise) {
+                result.catch((err) => console.error("Elaina utils phase callback failed:", err));
+            }
+        }
+        catch (err) {
+            console.error("Elaina utils phase callback failed:", err);
+        }
+    }
+}
 
 /**
  * Updates user PvP.net info
@@ -46,7 +68,7 @@ const updateUserPvpNetInfos = async (message: MessageEvent) => {
  * @param {MessageEvent} message - The WebSocket message event
  */
 const updatePhaseCallback = async (message: MessageEvent) => {
-    phase = JSON.parse(message.data)[2].data;
+    setPhase(JSON.parse(message.data)[2].data);
 };
 
 // Initialize event listeners and observers
@@ -80,7 +102,7 @@ window.addEventListener('load', () => {
 // Export utility class
 class Utils {
     get phase() { return phase; }
-    set phase(value: any) { phase = value; }
+    set phase(value: any) { setPhase(value); }
 
     get summoner_id() { return summoner_id; }
     set summoner_id(value: any) { summoner_id = value; }
@@ -89,6 +111,11 @@ class Utils {
     set pvp_net_id(value: any) { pvp_net_id = value; }
 
     subscribe_endpoint = subscribe_endpoint;
+
+    onPhaseChange(callback: PhaseChangeCallback) {
+        phaseChangeCallbacks.add(callback);
+        return () => phaseChangeCallbacks.delete(callback);
+    }
 
     routineAddCallback(callback: Function, target: string[]) {
         _routineAddCallback(routines, callback, target);

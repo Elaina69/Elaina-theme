@@ -4,8 +4,6 @@ import { log } from "../../../utils/themeLog.ts"
 import { setDefaultData } from "../../../services/backupAndRestoreDatastore.ts"
 
 export async function manualBackupSection(): Promise<HTMLElement[]> {
-    const summonerID = await utils.getSummonerID()
-
     return [
         UI.createLabel(await getString("backup-restore.manual-backup-restore"), ""),
         document.createElement('br'),

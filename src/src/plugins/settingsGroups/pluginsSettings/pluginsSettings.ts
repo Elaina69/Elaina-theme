@@ -2,7 +2,7 @@ import { UI } from "../settingsUI.ts"
 import { error } from "../../../utils/themeLog.ts"
 import { pluginsInfoSection } from "./_info.ts"
 import { coreSection } from "./_core.ts"
-import { queueSection } from "./_queue.ts"
+// import { queueSection } from "./_queue.ts"
 import { pluginsProfileSection } from "./_profile.ts"
 import { developerSection } from "./_developer.ts"
 
@@ -17,7 +17,7 @@ async function pluginsSettings(panel: Element) {
             UI.createRow("plugins-settings-root", [
                 ...await pluginsInfoSection(),
                 await coreSection(),
-                await queueSection(),
+                // await queueSection(),
                 await pluginsProfileSection(),
                 await developerSection(),
             ])

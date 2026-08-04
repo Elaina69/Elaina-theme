@@ -1,26 +1,6 @@
-/**
- * @author Lyfhael
- * @modifier Elaina Da Catto
- */
-
 import utils from '../utils/utils.ts';
 import * as upl from "pengu-upl"
-import { log, warn, error } from '../utils/themeLog.ts';
-
-let queue_accepted: boolean = false
-let player_declined: boolean = false
-let auto_accept_timer: number | null = null
-
-const MAX_AUTO_ACCEPT_DELAY = 15000;
-
-function parseEventData(message: any): any {
-	try {
-		return JSON.parse(message["data"])[2]["data"];
-	}
-	catch {
-		return null;
-	}
-}
+import { warn, error } from '../utils/themeLog.ts';
 
 /**
  * Automatically accepts the matchmaking ready check when a game is found.
@@ -35,30 +15,47 @@ function parseEventData(message: any): any {
  * @settings auto_accept, auto_accept_button
  */
 export class AutoAccept {
+	private maxAcceptDelay = 15000;
+
+	private queueAccepted: boolean = false;
+	private playerDeclined: boolean = false
+	private autoAcceptTimer: number | null = null;
+
 	getAutoAcceptDelay(): number {
 		const rawDelay = Number(ElainaData.get("auto_accept_delay"));
 
 		if (!Number.isFinite(rawDelay) || rawDelay < 0) return 0;
 		
-		return Math.min(Math.floor(rawDelay), MAX_AUTO_ACCEPT_DELAY);
+		return Math.min(Math.floor(rawDelay), this.maxAcceptDelay);
 	}
 
 	clearAutoAcceptTimer(): void {
-		if (auto_accept_timer !== null) {
-			window.clearTimeout(auto_accept_timer);
-			auto_accept_timer = null;
+		if (this.autoAcceptTimer !== null) {
+			window.clearTimeout(this.autoAcceptTimer);
+			this.autoAcceptTimer = null;
 		}
 	}
 
-	autoAcceptQueueButtonSelect() {
+	resetAutoAcceptState(): void {
+		this.clearAutoAcceptTimer();
+
+		this.queueAccepted = false;
+		this.playerDeclined = false;
+	}
+
+	autoAcceptQueueButtonSelect = () => {
 		const element = document.getElementById("autoAcceptQueueButton") as HTMLInputElement
 		if (element?.hasAttribute("selected")) {
 			ElainaData.set("auto_accept", false)
 			element.removeAttribute("selected")
+
+			this.resetAutoAcceptState()
 		}
 		else {
 			element?.setAttribute("selected", "true")
 			ElainaData.set("auto_accept", true)
+
+			this.scheduleAutoAccept()
 		}
 	}
 	
@@ -105,52 +102,88 @@ export class AutoAccept {
 		if (!readyCheck) return false;
 		if (this.didPlayerDeclineReadyCheck(readyCheck)) return false;
 		if (readyCheck.state && readyCheck.state !== "InProgress") return false;
+
 		return readyCheck.playerResponse === "None" || readyCheck.playerResponse === undefined;
 	}
 
 	acceptMatchmaking = async (): Promise<void> => {
-		if (player_declined) return;
+		if (this.playerDeclined) return;
+
 		const readyCheck = await this.getReadyCheck();
-		if (utils.phase != "ReadyCheck" || !ElainaData.get("auto_accept") || !this.	canAcceptReadyCheck(readyCheck)) return;
-		await fetch('/lol-matchmaking/v1/ready-check/accept', { method: 'POST' })
+
+		if (utils.phase != "ReadyCheck" || 
+			!ElainaData.get("auto_accept") || 
+			!this.canAcceptReadyCheck(readyCheck)
+		) return;
+
+		try {
+			const response = await fetch('/lol-matchmaking/v1/ready-check/accept', { method: 'POST' })
+			if (!response.ok) warn(`Auto Accept request failed with status ${response.status}`)
+		}
+		catch (err) {
+			warn("Auto Accept request failed:", err)
+		}
 	}
 
-	autoAcceptCallback = async (message: Object) => {
-		utils.phase = parseEventData(message)
-		if (utils.phase == "ReadyCheck" && ElainaData.get("auto_accept") && !queue_accepted) {
-			queue_accepted = true
-			player_declined = false
-			const delay = this.getAutoAcceptDelay();
+	scheduleAutoAccept = async (readyCheckData?: any): Promise<void> => {
+		if (utils.phase != "ReadyCheck" || 
+			!ElainaData.get("auto_accept") || 
+			this.queueAccepted || 
+			this.playerDeclined
+		) return;
 
-			this.clearAutoAcceptTimer();
-			if (delay > 0) {
-				auto_accept_timer = window.setTimeout(async () => {
-					auto_accept_timer = null;
-					if (utils.phase == "ReadyCheck" && ElainaData.get("auto_accept")) {
-						await this.acceptMatchmaking()
-					}
-				}, delay);
-			}
-			else if (utils.phase == "ReadyCheck" && ElainaData.get("auto_accept")) {
-				await this.acceptMatchmaking()
-			}
+		const readyCheck = readyCheckData ?? await this.getReadyCheck();
+		if (!this.canAcceptReadyCheck(readyCheck)) return;
+
+		this.queueAccepted = true
+		this.playerDeclined = false
+		const delay = this.getAutoAcceptDelay();
+
+		this.clearAutoAcceptTimer();
+		if (delay > 0) {
+			this.autoAcceptTimer = window.setTimeout(async () => {
+				this.autoAcceptTimer = null;
+				if (utils.phase == "ReadyCheck" && ElainaData.get("auto_accept")) {
+					await this.acceptMatchmaking()
+				}
+			}, delay);
 		}
-		else if (utils.phase != "ReadyCheck") {
-			this.clearAutoAcceptTimer();
-			queue_accepted = false
-			player_declined = false
+		else if (utils.phase == "ReadyCheck" && ElainaData.get("auto_accept")) {
+			await this.acceptMatchmaking()
 		}
+	}
+
+	autoAcceptCallback = async (phase: any) => {
+		if (phase == "ReadyCheck") {
+			this.playerDeclined = false
+			await this.scheduleAutoAccept()
+			return;
+		}
+
+		this.resetAutoAcceptState()
 	}
 
 	readyCheckCallback = async (message: Object) => {
-		const readyCheck = parseEventData(message);
+		const parsedData = (message: any) => {
+			try {
+				return JSON.parse(message["data"])[2]["data"];
+			}
+			catch {
+				return null;
+			}
+		}
+		
+		const readyCheck = parsedData(message);
 		if (!readyCheck) return;
 
 		if (this.didPlayerDeclineReadyCheck(readyCheck) || readyCheck.state !== "InProgress") {
-			player_declined = this.didPlayerDeclineReadyCheck(readyCheck);
+			this.playerDeclined = this.didPlayerDeclineReadyCheck(readyCheck);
 			this.clearAutoAcceptTimer();
-			queue_accepted = false;
+			this.queueAccepted = false;
+			return;
 		}
+
+		await this.scheduleAutoAccept(readyCheck);
 	}
 
 
@@ -170,16 +203,18 @@ export class AutoAccept {
 		delayInput.id = "autoAcceptDelayInput"
 		delayInput.title = await getString("auto-accept.auto-accept-delay")
 		delayInput.style.cssText = "width: 82px; margin-left: 8px;"
+
 		delayInputElement.type = "number"
 		delayInputElement.min = "0"
-		delayInputElement.max = String(MAX_AUTO_ACCEPT_DELAY)
+		delayInputElement.max = String(this.maxAcceptDelay)
 		delayInputElement.step = "100"
 		delayInputElement.placeholder = "ms"
 		delayInputElement.value = String(this.getAutoAcceptDelay())
 		delayInputElement.addEventListener("input", () => {
-			const value = Math.min(Math.max(Number(delayInputElement.value) || 0, 0), MAX_AUTO_ACCEPT_DELAY)
+			const value = Math.min(Math.max(Number(delayInputElement.value) || 0, 0), this.maxAcceptDelay)
 			ElainaData.set("auto_accept_delay", value)
 		})
+
 		delayInput.append(delayInputElement)
 	
 		if (ElainaData.get("auto_accept")){
@@ -195,7 +230,7 @@ export class AutoAccept {
 		}
 	}
 
-	main = (auto_accept_button: boolean = true) => {
+	main = (_auto_accept_button: boolean = true) => {
 		window.autoAcceptQueueButtonSelect = this.autoAcceptQueueButtonSelect
 
 		upl.observer.subscribeToElementCreation(".v2-lobby-root-component.ember-view .v2-footer-notifications.ember-view",async (element: any) => {
@@ -206,9 +241,7 @@ export class AutoAccept {
 			await this.createButton(element)
 		})
 
-		if (auto_accept_button) {
-			utils.subscribe_endpoint('/lol-gameflow/v1/gameflow-phase', this.autoAcceptCallback)
-			utils.subscribe_endpoint('/lol-matchmaking/v1/ready-check', this.readyCheckCallback)
-		}
+		utils.onPhaseChange(this.autoAcceptCallback)
+		utils.subscribe_endpoint('/lol-matchmaking/v1/ready-check', this.readyCheckCallback)
 	} 
 }
