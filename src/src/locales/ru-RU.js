@@ -35,6 +35,7 @@ export default {
     "rank.ranked-tft-double-up": "Ранговая TFT Двойной Удар",
     "rank.ranked-tft-pairs": "Ранговая TFT PAIRS",
     "rank.arena": "Арена",
+    "rank.ranked-classic": "Классический",
     "rank.iron": "Железо",
     "rank.bronze": "Бронза",
     "rank.silver": "Серебро",
@@ -45,6 +46,9 @@ export default {
     "rank.master": "Мастер",
     "rank.grand-master": "Гранд-Мастер",
     "rank.challenger": "Челленджер",
+    "rank.classic-salt": "Соль",
+    "rank.classic-wood": "Дерево",
+    "rank.classic-legend": "Легенда",
 
     // Loot Helper
     "loot-helper.shards": "осколки",
@@ -218,6 +222,7 @@ export default {
     "plugins-settings.ranked-queue": "Ранговая очередь",
     "plugins-settings.ranked-tier": "Ранг",
     "plugins-settings.ranked-division": "Ранговый дивизион",
+    "plugins-settings.custom-rank-classic": "Классический ранг",
     "plugins-settings.custom-challenge-crystal": "Пользовательский кристалл испытания",
     "plugins-settings.challenge-rank": "Ранг испытания",
     "plugins-settings.challenge-point": "Очки испытания",

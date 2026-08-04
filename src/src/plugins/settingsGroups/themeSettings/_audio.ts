@@ -1,8 +1,5 @@
 import { UI } from "../settingsUI.ts"
-import {
-    setAudio,
-    audioPlayPause,
-} from "../../../theme/customUI/customHomepage.ts"
+import { setAudio, audioPlayPause } from "../../../theme/customUI/customHomepage.ts"
 
 export async function audioSection(): Promise<HTMLElement> {
     const br = () => document.createElement("br")

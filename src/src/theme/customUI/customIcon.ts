@@ -12,6 +12,31 @@ type SyncedIconType = "avatar" | "border" | "banner" | "emblem" | "hoverCardBack
 type ApplyResult = boolean | Promise<boolean>;
 
 const rankEmblemCssVars = [
+	"--jade-regalia-emblem-salt-i",
+    "--jade-regalia-emblem-salt-ii",
+    "--jade-regalia-emblem-salt-iii",
+    "--jade-regalia-emblem-salt-iv",
+    "--jade-regalia-emblem-wood-i",
+    "--jade-regalia-emblem-wood-ii",
+    "--jade-regalia-emblem-wood-iii",
+    "--jade-regalia-emblem-wood-iv",
+    "--jade-regalia-emblem-silver-i",
+    "--jade-regalia-emblem-silver-ii",
+    "--jade-regalia-emblem-silver-iii",
+    "--jade-regalia-emblem-silver-iv",
+    "--jade-regalia-emblem-gold-i",
+    "--jade-regalia-emblem-gold-ii",
+    "--jade-regalia-emblem-gold-iii",
+    "--jade-regalia-emblem-gold-iv",
+    "--jade-regalia-emblem-platinum-i",
+    "--jade-regalia-emblem-platinum-ii",
+    "--jade-regalia-emblem-platinum-iii",
+    "--jade-regalia-emblem-platinum-iv",
+    "--jade-regalia-emblem-diamond-i",
+    "--jade-regalia-emblem-diamond-ii",
+    "--jade-regalia-emblem-diamond-iii",
+    "--jade-regalia-emblem-diamond-iv",
+    "--jade-regalia-emblem-legend-i",
 	"--regalia-emblem-unranked",
 	"--regalia-emblem-iron",
 	"--regalia-emblem-bronze",
@@ -847,7 +872,7 @@ class CustomProfileRankClashIcon {
 		// Setting only the host variables is the narrowest override and avoids
 		// walking every nested shadow node.
 		for (const property of rankEmblemCssVars) {
-			element.style.setProperty(property, icon);
+			element.style.setProperty(property, icon, "important");
 		}
 		return true;
 	}

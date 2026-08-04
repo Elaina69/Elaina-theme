@@ -24,8 +24,8 @@ import { initThemeDataCdn } from './src/theme/Cdn.ts';
 // Import Init modules
 import { Settings } from "./src/plugins/settings.ts";
 import { transparentLobby } from "./src/theme/customUI/transparentLobby.ts";
-import { AutoQueue } from "./src/plugins/autoQueue.ts";
-import { skipHonor } from "./src/plugins/skipHonor.js";
+// import { AutoQueue } from "./src/plugins/autoQueue.ts";
+// import { skipHonor } from "./src/plugins/skipHonor.ts";
 import { fileSystem } from "./src/utils/fileSystem.ts";
 
 // Import modules
@@ -76,8 +76,8 @@ export async function init(context: any) {
     // createHomePageTab(context);
     Settings(context);
     transparentLobby(context);
-    AutoQueue(context);
-    skipHonor(context);
+    // AutoQueue(context);
+    // skipHonor(context);
     // Cdninit(context);
 }
 

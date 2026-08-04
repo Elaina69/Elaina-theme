@@ -1,6 +1,5 @@
 import { UI } from "../settingsUI.ts"
 import { restartAfterChange } from "../../settings.ts"
-import utils from "../../../utils/utils.ts"
 import { customFontSection } from "./_customFont.ts"
 import { addCss } from '../../../theme/loadCustomCss';
 

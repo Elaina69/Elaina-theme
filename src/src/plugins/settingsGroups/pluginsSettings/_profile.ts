@@ -52,11 +52,15 @@ export async function pluginsProfileSection(): Promise<HTMLElement> {
             ]),
             UI.createRow("customrank_detail", [
                 rankDropdown("Ranked Queue ID", await getString("plugins-settings.ranked-queue")),
-                br(),
                 rankDropdown("Ranked Tier ID", await getString("plugins-settings.ranked-tier")),
-                br(),
                 rankDropdown("Ranked Division ID", await getString("plugins-settings.ranked-division")),
             ]),
+            UI.createLabel(`${await getString("plugins-settings.custom-rank-classic")}`),
+            UI.createRow("customrank_detail", [
+                rankDropdown("classic-ranked-tier-id", await getString("plugins-settings.ranked-tier")),
+                rankDropdown("classic-ranked-division-id", await getString("plugins-settings.ranked-division")),
+            ]),
+            br(),
             UI.createCheckBox(
                 `${await getString("plugins-settings.custom-challenge-crystal")}`, 'cuschalcry', 'cuschalcrybox',
                 () => {

@@ -35,6 +35,7 @@ export default {
     "rank.ranked-tft-double-up": "Ranked TFT DOUBLE UP",
     "rank.ranked-tft-pairs": "Ranked TFT PAIRS",
     "rank.arena": "Arena",
+    "rank.ranked-classic": "Classic",
     "rank.iron": "Iron",
     "rank.bronze": "Bronze",
     "rank.silver": "Silver",
@@ -45,6 +46,9 @@ export default {
     "rank.master": "Master",
     "rank.grand-master": "Grand-Master",
     "rank.challenger": "Challenger",
+    "rank.classic-salt": "Salt",
+    "rank.classic-wood": "Wood",
+    "rank.classic-legend": "Legend",
 
     // Loot Helper
     "loot-helper.shards": "shards",
@@ -218,6 +222,7 @@ export default {
     "plugins-settings.ranked-queue": "Ranked Queue",
     "plugins-settings.ranked-tier": "Ranked Tier",
     "plugins-settings.ranked-division": "Ranked Division",
+    "plugins-settings.custom-rank-classic": "Classic rank",
     "plugins-settings.custom-challenge-crystal": "Custom challenge crystal",
     "plugins-settings.challenge-rank": "Challenge rank",
     "plugins-settings.challenge-point": "Challenge point",

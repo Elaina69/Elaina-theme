@@ -35,6 +35,7 @@ export default {
     "rank.ranked-tft-double-up": "云顶之弈（双人作战）",
     "rank.ranked-tft-pairs": "Ranked TFT PAIRS",
     "rank.arena": "斗魂竞技场",
+    "rank.ranked-classic": "经典的",
     "rank.iron": "坚韧黑铁",
     "rank.bronze": "英勇黄铜",
     "rank.silver": "不屈白银",
@@ -45,6 +46,9 @@ export default {
     "rank.master": "超凡大师",
     "rank.grand-master": "傲世宗师",
     "rank.challenger": "最强王者",
+    "rank.classic-salt": "盐",
+    "rank.classic-wood": "木",
+    "rank.classic-legend": "传奇",
 
     // Loot Helper
     "loot-helper.shards": "碎片",
@@ -218,6 +222,7 @@ export default {
     "plugins-settings.ranked-queue": "排位模式",
     "plugins-settings.ranked-tier": "排位段位",
     "plugins-settings.ranked-division": "排位级位",
+    "plugins-settings.custom-rank-classic": "经典段位",
     "plugins-settings.custom-challenge-crystal": "自定义成就",
     "plugins-settings.challenge-rank": "段位",
     "plugins-settings.challenge-point": "积分",

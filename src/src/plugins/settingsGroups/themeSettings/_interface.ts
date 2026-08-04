@@ -1,9 +1,6 @@
 import { UI } from "../settingsUI.ts"
 import { restartAfterChange } from "../../settings.ts"
-import {
-    hideShowNavBar,
-    changeHomePageStyle,
-} from "../../../theme/customUI/customHomepage.ts"
+import { hideShowNavBar, changeHomePageStyle } from "../../../theme/customUI/customHomepage.ts"
 import utils from "../../../utils/utils.ts"
 import { addCss } from "../../../theme/loadCustomCss.ts"
 

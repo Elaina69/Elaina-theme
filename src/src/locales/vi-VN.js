@@ -35,6 +35,7 @@ export default {
     "rank.ranked-tft-double-up": "Đấu trường chân lý (DOUBLE UP)",
     "rank.ranked-tft-pairs": "Đấu trường chân lý (PAIRS)",
     "rank.arena": "Võ đài",
+    "rank.ranked-classic": "Cổ điển",
     "rank.iron": "Sắt",
     "rank.bronze": "Đồng",
     "rank.silver": "Bạc",
@@ -45,6 +46,9 @@ export default {
     "rank.master": "Cao thủ",
     "rank.grand-master": "Đại cao thủ",
     "rank.challenger": "Thách đấu",
+    "rank.classic-salt": "Muối",
+    "rank.classic-wood": "Gỗ",
+    "rank.classic-legend": "Huyền thoại",
 
     // Loot Helper
     "loot-helper.shards": "mảnh",
@@ -218,6 +222,7 @@ export default {
     "plugins-settings.ranked-queue": "Chế độ",
     "plugins-settings.ranked-tier": "Xếp hạng",
     "plugins-settings.ranked-division": "Bậc",
+    "plugins-settings.custom-rank-classic": "Xếp hạng cổ điển",
     "plugins-settings.custom-challenge-crystal": "Thử thách tùy chỉnh",
     "plugins-settings.challenge-rank": "Xếp hạng thử thách",
     "plugins-settings.challenge-point": "Điểm thử thách",

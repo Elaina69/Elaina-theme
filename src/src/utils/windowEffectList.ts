@@ -1,5 +1,3 @@
-import exp from "constants";
-
 const windowEffectList = {
     "window-effect-name": [
         { name: "transparent", id: "transparent" },

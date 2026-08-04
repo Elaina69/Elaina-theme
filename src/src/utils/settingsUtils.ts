@@ -1,4 +1,5 @@
 import { log } from "./themeLog.ts"
+
 export function settingsUtils(context, groupDataArray) {
     log("Loaded settings utils")
     context.rcp.postInit('rcp-fe-lol-settings', async (api) => {

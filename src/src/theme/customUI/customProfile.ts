@@ -18,9 +18,12 @@ async function requestRank() {
 
     return {
         "lol": {
-            "rankedLeagueQueue"    : rank["Ranked Queue ID"][ElainaData.get("Ranked Queue ID")]["Option"],
-            "rankedLeagueTier"     : rank["Ranked Tier ID"][ElainaData.get("Ranked Tier ID")]["Option"],
-            "rankedLeagueDivision" : rank["Ranked Division ID"][ElainaData.get("Ranked Division ID")]["name"]
+            "rankedLeagueQueue"           : rank["Ranked Queue ID"][ElainaData.get("Ranked Queue ID")]["Option"],
+            "rankedLeagueTier"            : rank["Ranked Tier ID"][ElainaData.get("Ranked Tier ID")]["Option"],
+            "rankedLeagueDivision"        : rank["Ranked Division ID"][ElainaData.get("Ranked Division ID")]["name"],
+            
+            "classicRankedLeagueTier"     : rank["Ranked Tier ID"][ElainaData.get("classic-ranked-tier-id")]["Option"],
+            "classicRankedLeagueDivision" : rank["Ranked Division ID"][ElainaData.get("classic-ranked-division-id")]["name"]
         }
     }
 }

@@ -31,7 +31,6 @@ class AddCss {
 				--Avatar: ${cssIconUrl(icdata["Avatar"])};
 				--RP-Icon: ${cssIconUrl(icdata["RP-icon"])};
 				--BE-Icon: ${cssIconUrl(icdata["BE-icon"])};
-				--Rank-Icon: ${cssIconUrl(icdata["Rank-icon"])};
 				--Clash-banner: ${cssIconUrl(icdata["Clash-banner"])};
 				--Ticker: ${cssIconUrl(icdata["Ticker"])};
 				--Trophy: ${cssIconUrl(icdata["Trophy"])};
@@ -113,11 +112,6 @@ class AddCss {
 				{
 					key: 'Custom-BE-Icon',
 					css: 'blueessence.css',
-					altCss: "null.css"
-				},
-				{
-					key: 'Custom-Rank-Icon',
-					css: 'rank.css',
 					altCss: "null.css"
 				},
 				{

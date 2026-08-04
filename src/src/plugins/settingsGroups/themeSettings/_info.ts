@@ -14,7 +14,7 @@ export async function infoSection(): Promise<HTMLElement[]> {
         UI.createRow("Info", [
             UI.createRow("Info-div", [
                 UI.createLink(
-                    'ElainaV4',
+                    'Elaina Theme',
                     'https://github.com/Elaina69/Elaina-V4',
                     () => { },
                     "theme-link"

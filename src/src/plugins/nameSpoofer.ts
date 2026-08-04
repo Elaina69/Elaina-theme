@@ -35,7 +35,6 @@ const SELECTORS = `
 /**
  * Replaces your displayed summoner name with a custom name throughout the client.
  * @wiki Replaces your displayed summoner name throughout the client with a custom name. Affects the sidebar, profile, chat, lobby, hover cards, scoreboards, and more. This is a local visual change only — other players still see your real name.
- * @author Elaina Da Catto
  * @usage
  * 1. Open League Client settings
  * 2. Navigate to **Elaina Theme** → **Plugin Settings**
