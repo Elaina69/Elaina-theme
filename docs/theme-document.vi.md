@@ -286,6 +286,14 @@ Khi sửa code:
 - Không revert thay đổi không do mình tạo.
 - Ưu tiên pattern hiện có.
 - Không đổi datastore key nếu chỉ đang đổi UI label/locale.
+- Tên hàm, biến, hằng và method, dù nằm trong hay ngoài class, dùng `camelCase`.
+- Tên class dùng `PascalCase`.
+- Key datastore mới của `ElainaData` và key ngôn ngữ mới dùng `kebab-case`; với key ngôn ngữ dạng namespace, từng segment cũng dùng `kebab-case`, ví dụ `theme-settings.sync-user-icons`.
+- Không tự ý rename datastore key cũ chỉ để đổi naming style; nếu cần đổi key legacy, phải có migration/backward compatibility rõ ràng.
+- Hạn chế dùng tên biến/hằng dạng `ABC_XYZ`; chỉ dùng dạng này cho key môi trường `.env` hoặc tên external constant bắt buộc giữ nguyên.
+- Nếu file đã tổ chức theo class, hạn chế đặt hàm, hằng và state bên ngoài class; ưu tiên đóng gói logic vào class/method để giữ phong cách hướng đối tượng.
+- Nếu đã có class, hàm hoặc utility làm được cùng một việc, tái sử dụng nó thay vì tạo alias/helper mới làm trùng chức năng hoặc khiến code dài dòng.
+- Type/interface global hoặc type dùng chung phải đặt trong `src/types.d.ts`; hạn chế khai báo type ngay trong file code, trừ type cục bộ rất nhỏ chỉ dùng nội bộ file.
 - Không thêm interval nếu observer/event-driven đủ dùng.
 - Không sửa generated wiki pages thủ công.
 - Với sync icon, giữ compatibility với endpoint cũ nếu backend/client cũ còn tồn tại.

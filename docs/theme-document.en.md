@@ -286,6 +286,14 @@ When editing code:
 - Do not revert changes you did not make.
 - Prefer existing project patterns.
 - Do not rename datastore keys when only changing UI label/locale.
+- Use `camelCase` for functions, variables, constants, and methods, whether they are inside or outside a class.
+- Use `PascalCase` for class names.
+- New `ElainaData` datastore keys and new locale keys must use `kebab-case`; for namespaced locale keys, each segment should also use `kebab-case`, for example `theme-settings.sync-user-icons`.
+- Do not rename legacy datastore keys only to change naming style; if a legacy key must change, include a clear migration/backward-compatibility path.
+- Avoid `ABC_XYZ` style variable/constant names; reserve that style for `.env` keys or required external constants.
+- If a file is already class-oriented, avoid placing functions, constants, and state outside the class; prefer encapsulating logic in classes/methods to keep the code object-oriented.
+- If an existing class, function, or utility already performs a task, reuse it instead of creating another alias/helper with duplicate behavior or unnecessary verbosity.
+- Shared or global types/interfaces must live in `src/types.d.ts`; avoid declaring types inside code files, except for very small file-local types.
 - Do not add intervals when observer/event-driven logic is enough.
 - Do not manually edit generated wiki pages.
 - For icon sync, keep compatibility with old endpoints while older clients/backends may still exist.
