@@ -2,6 +2,7 @@ import utils from "../utils/utils";
 import { log, warn, error } from '../utils/themeLog';
 import { customAvatar } from "../theme/customUI/customIcon";
 import { fileSystem } from "../utils/fileSystem";
+import { themeToast } from "../utils/themeToast";
 
 const icdata = (await import(utils.assets.url("config/icons.js"))).default;
 
@@ -682,11 +683,11 @@ class SyncUserIcons {
         }
 
         // Sync visible users' icons
-        await window.Toast.promise(this.getFriendsIcons(), {
+        await themeToast.promise(this.getFriendsIcons(), {
             loading: 'Syncing user icons...',
             success: 'Sync complete!',
             error: 'Error while syncing user icons, check console for more info!'
-        });
+        }, 'elaina-sync-user-icons');
 
         await this.syncOwnIcons(summonerID);
 

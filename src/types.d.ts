@@ -27,13 +27,80 @@ interface CommandBar {
     update: () => void
 }
 
+type ToastPosition =
+    | 'top-left'
+    | 'top-center'
+    | 'top-right'
+    | 'bottom-left'
+    | 'bottom-center'
+    | 'bottom-right'
+
+type ToastType = 'success' | 'error' | 'info' | 'warning' | 'loading' | 'custom'
+
+interface ToastOptions {
+    duration?: number
+    position?: ToastPosition
+    icon?: string
+    className?: string
+    id?: string
+    dismissable?: boolean
+}
+
 interface Toast {
-    success: (message: string) => void
-    error: (message: string) => void
+    success: (message: string, options?: ToastOptions) => string
+    error: (message: string, options?: ToastOptions) => string
+    info: (message: string, options?: ToastOptions) => string
+    warning: (message: string, options?: ToastOptions) => string
+    loading: (message: string, options?: ToastOptions) => string
+    custom: (html: string, options?: ToastOptions) => string
     promise: <T>(
         promise: Promise<T>,
-        msg: { loading: string, success: string, error: string }
+        msg: { loading: string, success: string, error: string | ((err: unknown) => string) },
+        options?: ToastOptions
     ) => Promise<T>
+    update: (id: string, patch: { message?: string, type?: ToastType, icon?: string }) => void
+    dismiss: (id: string) => void
+}
+
+type ThemeToastKind = 'success' | 'error' | 'info' | 'warning' | 'loading';
+
+type ThemeToastMessages = {
+    loading: string;
+    success: string;
+    error: string | ((error: unknown) => string);
+};
+
+type SettingsField =
+    | { type: 'boolean', label: string, default: boolean, description?: string }
+    | { type: 'string', label: string, default: string, description?: string, placeholder?: string, multiline?: boolean }
+    | { type: 'number', label: string, default: number, description?: string, min?: number, max?: number, step?: number, slider?: boolean }
+    | { type: 'select', label: string, default: string, description?: string, options: ReadonlyArray<{ value: string, label: string }> }
+    | { type: 'action', label: string, description?: string, perform: () => void }
+    | { type: 'note', text: string }
+
+type SettingsSchema = Record<string, SettingsField>
+type SettingsValues = Record<string, boolean | string | number>
+
+interface SettingsHandle<V extends SettingsValues = SettingsValues> {
+    values: () => V
+    set: (patch: Partial<V>) => void
+    unregister: () => void
+}
+
+interface PenguSettings {
+    register: <V extends SettingsValues = SettingsValues>(options: {
+        id: string
+        name: string
+        description?: string
+        icon?: string
+        schema: SettingsSchema
+        hotkey?: string
+        state?: V
+        onChange?: (values: V) => void
+    }) => SettingsHandle<V>
+    open: (pluginId?: string) => void
+    close: () => void
+    list: () => Array<{ id: string, name: string }>
 }
 
 interface DataStore {
@@ -171,6 +238,7 @@ declare interface Window {
     DataStore: DataStore;
     CommandBar: CommandBar;
     Toast: Toast;
+    Settings: PenguSettings;
     Effect: Effect;
     PluginFS: PluginFS;
     Pengu: {
@@ -211,9 +279,11 @@ declare interface Window {
     customRank: () => void;
     refreshLists: () => Promise<void>;
     isContextFSExist: boolean;
+    writeBackupData: () => Promise<void>;
+    __elainaPenguSettingsSync?: number;
 };
 
 declare function getString(param: string): Promise<string>;
-declare function writeBackupData(): void;
+declare function writeBackupData(): Promise<void>;
 declare const ElainaData: elainaData;
 declare const Pengu: Window['Pengu'];

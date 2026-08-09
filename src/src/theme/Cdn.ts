@@ -1,5 +1,6 @@
 import { pluginUrl } from "../otherThings.ts";
 import { log, error } from "../utils/themeLog.ts";
+import { themeToast } from "../utils/themeToast.ts";
 
 let cdnServer = (await import(pluginUrl("config/cdnServer.js"))).default
 
@@ -21,7 +22,7 @@ export async function cdnImport(url: string, errorMsg: any): Promise<any> {
     catch (err: any) {
         clearTimeout(timeoutId);
         error(errorMsg, err);
-        window.Toast.error(errorMsg);
+        themeToast.error(errorMsg, 'elaina-cdn-load');
     }
 };
 

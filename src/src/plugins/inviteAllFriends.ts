@@ -1,5 +1,6 @@
 import * as upl from "pengu-upl"
 import { log } from "../utils/themeLog";
+import { themeToast } from "../utils/themeToast";
 
 /**
  * Adds an Invite All button to the lobby for bulk friend invitations.
@@ -71,12 +72,7 @@ export class InviteAllFriends {
             button.onclick = async () => {
                 await this.refreshFriendsList()
                 let Invited = 0
-                let fakerun = new Promise(() => {})
-                window.Toast.promise(fakerun, {
-                    loading: 'Inviting all...',
-                    success: "",
-                    error: ""
-                })
+                themeToast.loading('Inviting all...', 'elaina-invite-all-friends')
 
                 for(let i = 0; i < ElainaData.get("friendslist").length ; i++) {
                     if (ElainaData.get("frGroupName") == ElainaData.get("friendslist")[i]["groupId"]
@@ -91,7 +87,7 @@ export class InviteAllFriends {
                     }
                 }
 
-                window.Toast.success(`Invited ${Invited} friends`)
+                themeToast.success(`Invited ${Invited} friends`, 'elaina-invite-all-friends')
             }
 
             let div = document.createElement("div")

@@ -1,5 +1,6 @@
 import * as upl from "pengu-upl"
 import { log } from "../utils/themeLog.ts";
+import { themeToast } from "../utils/themeToast.ts";
 
 let autoQueue = false
 
@@ -65,12 +66,11 @@ export function AutoQueue(context) {
                         }, delay*1000)
                     })
 
-                    //@ts-ignore
-                    Toast.promise(countDown, {
+                    themeToast.promise(countDown, {
                         loading: `Auto Queue will start in ${delay} seconds`,
                         success: 'Queue created!!',
                         error: ''
-                    })
+                    }, 'elaina-auto-queue-create')
                     break;
                 }
                 case "Lobby": {
@@ -84,12 +84,11 @@ export function AutoQueue(context) {
                             }, delay*1000)
                         })
 
-                        //@ts-ignore
-                        Toast.promise(countDown, {
+                        themeToast.promise(countDown, {
                             loading: `Matching game will start in ${delay} seconds`,
                             success: '',
                             error: ''
-                        })
+                        }, 'elaina-auto-queue-matchmaking')
                     }
                     break;
                 }
