@@ -1,6 +1,6 @@
 import { resolve, join, basename } from 'node:path';
 import { existsSync } from 'node:fs';
-import { readFile, writeFile, cp, mkdir, rm } from 'node:fs/promises';
+import { readFile, writeFile, cp, mkdir, rm, readdir, stat, copyFile } from 'node:fs/promises';
 import { defineConfig } from 'vite';
 import mkcert from 'vite-plugin-mkcert';
 import fs from 'node:fs';
@@ -29,11 +29,42 @@ let port: number;
 const outDir = resolve(__dirname, 'dist');
 const pluginsDir = resolve(__dirname, PLUGINS_PATH, PLUGIN_NAME);
 
-async function emptyDir(path: string) {
-    if (existsSync(path)) {
-        await rm(path, { recursive: true });
+// Never deleted from the plugin folder: user settings (fs mode) and the local data package.
+const KEEP_IN_PLUGIN = new Set(['data', 'elaina-theme-data']);
+// Release artifact, not needed by Pengu.
+const SKIP_DEPLOY = new Set(['ElainaV4.zip']);
+
+/**
+ * Mirrors src into dest, writing only files whose content changed and removing stale ones.
+ * Unchanged files are never touched, so files the running client holds open (the playing
+ * music) don't fail the deploy. Returns how many files couldn't be written or removed.
+ */
+async function syncDir(src: string, dest: string, top = true): Promise<number> {
+    let failed = 0;
+    const warn = (what: string, path: string, err: any) => {
+        failed++;
+        console.warn(chalk.yellow(`Couldn't ${what} ${path} (${err.code ?? err}). Pause the music or close the client and build again.`));
+    };
+    await mkdir(dest, { recursive: true });
+    const names = (await readdir(src)).filter(n => !(top && SKIP_DEPLOY.has(n)));
+
+    for (const name of await readdir(dest)) {
+        if (names.includes(name) || (top && KEEP_IN_PLUGIN.has(name))) continue;
+        await rm(join(dest, name), { recursive: true }).catch(err => warn('remove', join(dest, name), err));
     }
-    await mkdir(path, { recursive: true });
+
+    for (const name of names) {
+        const s = join(src, name), d = join(dest, name);
+        if ((await stat(s)).isDirectory()) {
+            failed += await syncDir(s, d, false);
+            continue;
+        }
+        const old = await stat(d).catch(() => null);
+        if (old?.isFile() && old.size === (await stat(s)).size
+            && (await readFile(s)).equals(await readFile(d))) continue;
+        await copyFile(s, d).catch(err => warn('update', d, err));
+    }
+    return failed;
 }
 
 export default defineConfig((config) => ({
@@ -93,7 +124,8 @@ export default defineConfig((config) => ({
                 server.httpServer!.once('listening', async () => {
                     // @ts-ignore
                     port = server.httpServer.address()['port'];
-                    await emptyDir(pluginsDir);
+                    // Keep the last build's config/locales/assets: the dev index.js still loads them from here.
+                    await mkdir(pluginsDir, { recursive: true });
                     await writeFile(join(pluginsDir, 'index.js'), getIndexCode(port));
                 });
             },
@@ -210,9 +242,9 @@ export default defineConfig((config) => ({
                 count = 0;
                 const penguInterval = setInterval(() => count += 100, 100);
                 try {
-                    await emptyDir(pluginsDir);
-                    await cp(outDir, pluginsDir, { recursive: true });
-                    console.log(chalk.green(`✔ Copy output to pengu dir completed! (in ${count / 1000}s)`));
+                    const failed = await syncDir(outDir, pluginsDir);
+                    if (failed) console.error(chalk.red(`✖ Copy output to pengu dir: ${failed} file(s) not updated, see above.`));
+                    else console.log(chalk.green(`✔ Copy output to pengu dir completed! (in ${count / 1000}s)`));
                 } catch (err) {
                     console.error(chalk.red('Error while copying to Pengu directory:'), err);
                 } finally {
