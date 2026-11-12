@@ -18,6 +18,7 @@
     "scripts": {
         "build": "tsc && vite build",
         "lint": "eslint src/",
+        "test": "vitest run",
         "lint:fix": "eslint src/ --fix",
         "wiki:generate": "node scripts/generate-wiki.mjs",
         "wiki:check": "node scripts/generate-wiki.mjs --check",
@@ -34,7 +35,8 @@
         "typescript": "^5.6.3",
         "typescript-eslint": "^8.58.2",
         "vite": "^4.5.5",
-        "vite-plugin-mkcert": "^1.16.0"
+        "vite-plugin-mkcert": "^1.16.0",
+        "vitest": "3.2.4"
     },
     "dependencies": {
         "archiver": "^7.0.1",
