@@ -182,7 +182,7 @@
             {
                 "title": "Wallpaper and audio",
                 "description": "Homepage background, media playback, slideshow, and window effects.",
-                "keys": ["manual-wallpaper-name", "manual-audio-name", "wallpaper-volume", "WallpaperAudio-timeUpdate", "Playback-speed", "wallpaper-slideshow", "wallpaper-change-slide-time", "disable-theme-wallpaper", "window-effect-name", "window-effect-color-base", "window-effect-alpha", "window-effect-color", "window-effect-material", "audio-volume", "audio-loop", "turnoff-audio-ingame", "disable-theme-audio", "pause-audio", "pause-wallpaper", "mute-audio"]
+                "keys": ["manual-wallpaper-name", "manual-audio-name", "wallpaper-volume", "Playback-speed", "wallpaper-slideshow", "wallpaper-change-slide-time", "disable-theme-wallpaper", "window-effect-name", "window-effect-color-base", "window-effect-alpha", "window-effect-color", "window-effect-material", "audio-volume", "audio-loop", "turnoff-audio-ingame", "disable-theme-audio", "pause-audio", "pause-wallpaper", "mute-audio"]
             },
             {
                 "title": "Custom assets",
@@ -345,6 +345,6 @@
             }
         ]
     },
-    "runtimeSettingKeys": ["WallpaperAudio-timeUpdate", "Playback-speed"],
+    "runtimeSettingKeys": ["Playback-speed"],
     "internalSettingKeys": ["queueList", "frGroupName", "friendslist", "grouplist", "ElainaTheme-Token", "Summoner-ID", "settingsChangenumber"]
 }

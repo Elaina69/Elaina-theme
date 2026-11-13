@@ -114,7 +114,6 @@ export default {
     "theme-settings.font-not-exist": "Phông chữ không tồn tại trong danh sách",
     "theme-settings.wallpaper-audio-settings": "Cài đặt Hình nền/Nhạc",
     "theme-settings.open-background-folder": "Mở thư mục backgrounds",
-    "theme-settings.wallpaperaudio-timeupdate": "Khoảng thời gian Hình nền/Nhạc sẽ lưu tiến trình vào Datastore (mỗi Mili-giây)",
     "theme-settings.wallpaper-volume": "Âm lượng hình nền",
     "theme-settings.wallpaper-speed": "Tốc độ hình nền",
     "theme-settings.wallpaper-slideshow": "Bộ trình chiếu hình nền",

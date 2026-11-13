@@ -3,6 +3,7 @@ import { log, warn, error } from "../../utils/themeLog.ts";
 import * as upl from 'pengu-upl';
 import utils from '../../utils/utils.ts';
 import { setDefaultData } from "../../services/backupAndRestoreDatastore.ts";
+import { resyncSelection, select, stepSelection } from "../../utils/mediaSelection.ts";
 const datapath: string = `//plugins/${getThemeName()}/`
 const iconFolder: string = `${datapath}assets/icon/`;
 const bgFolder: string = `${datapath}assets/backgrounds/`;
@@ -24,7 +25,6 @@ const defaultData = {
     "Playback-speed": 100,
     "Audio-currentTime": 0,
     "Wallpaper-currentTime": 0,
-    "WallpaperAudio-timeUpdate": 3000,
 };
 
 function initHomepageData() {
@@ -209,10 +209,7 @@ class WallpaperController {
         const elainaStaticBg: any = document.getElementById("elaina-static-bg");
         elainaStaticBg.classList.add("webm-hidden");
 
-        ElainaData.set('wallpaper-index', ElainaData.get('wallpaper-index') + 1);
-        if (ElainaData.get('wallpaper-index') > ElainaData.get("Wallpaper-list").length - 1) {
-            ElainaData.set('wallpaper-index', 0);
-        }
+        stepSelection('wallpaper', 1);
 
         await this.changeBG(ElainaData.get("Wallpaper-list")[ElainaData.get('wallpaper-index')]);
     };
@@ -224,10 +221,7 @@ class WallpaperController {
         const elainaStaticBg: any = document.getElementById("elaina-static-bg");
         elainaStaticBg.classList.add("webm-hidden");
 
-        ElainaData.set('wallpaper-index', ElainaData.get('wallpaper-index') - 1);
-        if (ElainaData.get('wallpaper-index') < 0) {
-            ElainaData.set('wallpaper-index', ElainaData.get("Wallpaper-list").length - 1);
-        }
+        stepSelection('wallpaper', -1);
 
         await this.changeBG(ElainaData.get("Wallpaper-list")[ElainaData.get('wallpaper-index')]);
     };
@@ -337,20 +331,12 @@ class AudioController {
     }
 
     nextSong = async () => {
-        ElainaData.set('audio-index', ElainaData.get('audio-index') + 1);
-
-        if (ElainaData.get('audio-index') > ElainaData.get("Audio-list").length - 1) {
-            ElainaData.set('audio-index', 0);
-        }
+        stepSelection('audio', 1);
         await this.updateAudio(ElainaData.get("Audio-list")[ElainaData.get('audio-index')]);
     };
 
     prevSong = async () => {
-        ElainaData.set('audio-index', ElainaData.get('audio-index') - 1);
-
-        if (ElainaData.get('audio-index') < 0) {
-            ElainaData.set('audio-index', ElainaData.get("Audio-list").length - 1);
-        }
+        stepSelection('audio', -1);
         await this.updateAudio(ElainaData.get("Audio-list")[ElainaData.get('audio-index')]);
     };
 
@@ -578,7 +564,7 @@ class MainController {
                     const elainaStaticBg: any = document.getElementById("elaina-static-bg");
                     elainaStaticBg.classList.add("webm-hidden");
 
-                    ElainaData.set('wallpaper-index', id);
+                    select('wallpaper', id);
 
                     await wallpaperController.changeBG(ElainaData.get("Wallpaper-list")[ElainaData.get('wallpaper-index')])
                 };
@@ -1048,6 +1034,7 @@ class WallpaperAndAudio {
 
     setWallpaperElement = () => {
         if (!ElainaData.get("disable-theme-wallpaper")) {
+            resyncSelection('wallpaper');
             if (ElainaData.get('wallpaper-index') > ElainaData.get("Wallpaper-list").length - 1) {
                 ElainaData.set('wallpaper-index', 0);
             }
@@ -1093,6 +1080,7 @@ class WallpaperAndAudio {
 
     setAudioElement = () => {
         if (!ElainaData.get("disable-theme-audio")) {
+            resyncSelection('audio');
             if (ElainaData.get('audio-index') > ElainaData.get("Audio-list").length - 1) {
                 ElainaData.set('audio-index', 0);
             }

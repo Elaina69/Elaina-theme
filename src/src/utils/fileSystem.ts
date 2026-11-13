@@ -1,5 +1,6 @@
 import { log, error } from './themeLog';
 import { fileRegex } from './fileRegex';
+import { resyncSelection } from './mediaSelection';
 import { del_webm_buttons, create_webm_buttons } from '../theme/customUI/customHomepage';
 
 class FileSystem {
@@ -80,20 +81,17 @@ class FileSystem {
     }
 
     refreshLists = async () => {
-        const wallpaper = await this.ls('./assets/backgrounds/wallpapers') ?? [];
-        const audio = await this.ls('./assets/backgrounds/audio') ?? [];
-        const banner = await this.ls('./assets/icon/regalia-banners') ?? [];
-        const font = await this.ls('./assets/fonts') ?? [];
-
-        const dataLists = {
-            Wallpaper: wallpaper,
-            Audio: audio,
-            Banner: banner,
-            Font: font,
+        // A failed listing gives undefined. That is not an empty folder: keep the stored list.
+        const dataLists: Record<string, string[] | undefined> = {
+            Wallpaper: await this.ls('./assets/backgrounds/wallpapers'),
+            Audio: await this.ls('./assets/backgrounds/audio'),
+            Banner: await this.ls('./assets/icon/regalia-banners'),
+            Font: await this.ls('./assets/fonts'),
         };
 
         const filteredLists = Object.keys(fileRegex).reduce((acc, key) => {
-            acc[key] = dataLists[key].filter(file => fileRegex  [key].test(file));
+            const files = dataLists[key];
+            if (files) acc[key] = files.filter(file => fileRegex[key].test(file));
             return acc;
         }, {} as Record<string, string[]>);
 
@@ -107,6 +105,8 @@ class FileSystem {
             if (ElainaData && JSON.stringify(prevList) !== JSON.stringify(list)) {
                 log(`List changed for ${key}`);
                 ElainaData.set(`${key}-list`, list);
+                if (key === 'Wallpaper') resyncSelection('wallpaper');
+                if (key === 'Audio') resyncSelection('audio');
                 del_webm_buttons();
                 create_webm_buttons();
             }

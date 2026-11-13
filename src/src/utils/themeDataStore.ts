@@ -1,9 +1,28 @@
 import { log, error } from './themeLog';
 
 const DATA_FILE_PATH = './data/ElainaData.json';
+/** Copy of the last data file that loaded fine. */
+const BACKUP_FILE_PATH = './data/ElainaData.json.bak';
+/** Pengu DataStore key that holds all theme settings. */
+const STORE_KEY = 'ElainaTheme';
+/** Pengu DataStore key that records which backend ran last: 'fs' or 'datastore'. */
+const MODE_KEY = 'ElainaTheme-storage';
+/** In fs mode, settings are copied to the Pengu DataStore at most this often (ms). */
+const MIRROR_INTERVAL = 5 * 60 * 1000;
 
 /** Mode of storage backend: 'fs' uses context.fs file, 'datastore' uses Pengu DataStore */
 type StorageMode = 'fs' | 'datastore';
+
+/** Parses a settings object; anything else (missing, damaged, not an object) gives null. */
+function parseSettings(raw: string | undefined): Record<string, any> | null {
+    if (!raw || raw.trim().length === 0) return null;
+    try {
+        const data = JSON.parse(raw);
+        return data && typeof data === 'object' && !Array.isArray(data) ? data : null;
+    } catch {
+        return null;
+    }
+}
 
 // ---------------------------------------------------------------------------
 // FSDataMgr — file-system persistence helpers
@@ -13,6 +32,8 @@ class FSDataMgr {
     protected cache: Record<string, any> = {};
     protected fsContext: any = null;
     protected storageMode: StorageMode = 'datastore';
+    /** True when the data file exists but could not be read: it must not be overwritten. */
+    protected fileLocked = false;
 
     private pendingPersist: Promise<boolean> | null = null;
     private persistAgain = false;
@@ -22,7 +43,7 @@ class FSDataMgr {
      * Writes synchronously (awaited) to guarantee data is saved.
      */
     async persistToFile(): Promise<boolean> {
-        if (this.storageMode !== 'fs' || !this.fsContext) return false;
+        if (this.storageMode !== 'fs' || !this.fsContext || this.fileLocked) return false;
         try {
             const json = JSON.stringify(this.cache, null, 2);
             const success = await this.fsContext.fs.write(DATA_FILE_PATH, json, { append: false });
@@ -61,67 +82,19 @@ class FSDataMgr {
 }
 
 // ---------------------------------------------------------------------------
-// DatastoreMgr — Pengu DataStore helpers (legacy fallback)
+// ElainaData — unified API over both backends
 // ---------------------------------------------------------------------------
-
-class DatastoreMgr {
-    /**
-     * Gets a value from the Pengu DataStore.
-     */
-    get(key: string, fallback: any = null): any {
-        const data: Record<string, any> = window.DataStore.get("ElainaTheme", {});
-        return data.hasOwnProperty(key) ? data[key] : fallback;
-    }
-
-    /**
-     * Sets a value in the Pengu DataStore.
-     */
-    set(key: string, value: any): boolean {
-        const data: Record<string, any> = window.DataStore.get("ElainaTheme", {});
-        data[key] = value;
-        window.DataStore.set("ElainaTheme", data);
-        return data.hasOwnProperty(key);
-    }
-
-    /**
-     * Checks if a key exists in the Pengu DataStore.
-     */
-    has(key: string): boolean {
-        const data: Record<string, any> = window.DataStore.get("ElainaTheme", {});
-        return data.hasOwnProperty(key);
-    }
-
-    /**
-     * Removes a key from the Pengu DataStore.
-     */
-    remove(key: string): boolean {
-        const data: Record<string, any> = window.DataStore.get("ElainaTheme", {});
-        if (data.hasOwnProperty(key)) {
-            delete data[key];
-            window.DataStore.set("ElainaTheme", data);
-            return true;
-        }
-        return false;
-    }
-}
-
-// ---------------------------------------------------------------------------
-// ElainaData — unified API, extends FSDataMgr & DatastoreMgr
-// ---------------------------------------------------------------------------
-
-// TypeScript does not support `extends` from two classes natively.
-// We use a mixin approach: ElainaData extends FSDataMgr and mixes in DatastoreMgr.
-
-interface ElainaDataClass extends FSDataMgr, DatastoreMgr {}
 
 class ElainaDataClass extends FSDataMgr {
     private initialized = false;
     private initPromiseResolve: (() => void) | null = null;
 
+    /** True when the cache has changes that are not in the Pengu DataStore yet. */
+    private dataStoreDirty = false;
+    private mirrorTimer: ReturnType<typeof setTimeout> | null = null;
+
     /** A promise that resolves once ElainaData has been fully initialized. */
     readonly ready: Promise<void>;
-
-    private readonly datastoreMgr = new DatastoreMgr();
 
     constructor() {
         super();
@@ -138,60 +111,116 @@ class ElainaDataClass extends FSDataMgr {
      * **Must be called (and awaited) before any other code uses ElainaData.**
      */
     async init(context: any): Promise<void> {
-        // Check if context.fs is available
+        // Settings as the Pengu DataStore has them: the only copy on Pengu without PluginFS
+        const stored: Record<string, any> = { ...window.DataStore.get(STORE_KEY, {}) };
+
         if (!context || !context.fs) {
             log('context.fs not available — using DataStore mode');
-            this.storageMode = 'datastore';
-            this.initialized = true;
-            this.initPromiseResolve?.();
-            return;
-        }
-
-        this.fsContext = context;
-
-        try {
-            // Ensure ./data/ directory exists
-            await context.fs.mkdir('./data');
-
-            // Try to read existing file
-            const raw = await context.fs.read(DATA_FILE_PATH);
-
-            if (raw && raw.trim().length > 0) {
-                // File exists and has content — parse and use as cache
-                try {
-                    this.cache = JSON.parse(raw);
-                    log('ElainaData loaded from file (fs mode)');
-                } catch (parseErr: any) {
-                    error('Failed to parse ElainaData.json, migrating from DataStore', parseErr);
-                    // File is corrupted — re-migrate from DataStore
-                    this.cache = { ...window.DataStore.get("ElainaTheme", {}) };
-                }
-            } else {
-                // File does not exist — migrate from DataStore
-                const datastoreData: Record<string, any> = window.DataStore.get("ElainaTheme", {});
-
-                if (Object.keys(datastoreData).length > 0) {
-                    this.cache = { ...datastoreData };
-                    log('Migrated ElainaData from DataStore to file (fs mode)');
-                } else {
-                    this.cache = {};
-                    log('Created new ElainaData file (fs mode)');
-                }
+            this.useDataStoreMode(stored);
+        } else {
+            this.fsContext = context;
+            try {
+                const rewriteFile = await this.loadFromFile(context, stored);
+                this.storageMode = 'fs';
+                if (rewriteFile) await this.persistToFile();
+                this.rememberMode('fs');
+            } catch (err: any) {
+                error('Failed to init ElainaData in fs mode, falling back to DataStore', err);
+                this.useDataStoreMode(stored);
             }
-
-            this.storageMode = 'fs';
-            this.initialized = true;
-
-            // Persist immediately to ensure file is up-to-date
-            await this.persistToFile();
-
-        } catch (err: any) {
-            error('Failed to init ElainaData in fs mode, falling back to DataStore', err);
-            this.storageMode = 'datastore';
-            this.initialized = true;
         }
 
+        this.initialized = true;
+        // Last chance to save before the page goes away
+        window.addEventListener('pagehide', () => this.saveToDataStore());
         this.initPromiseResolve?.();
+    }
+
+    /**
+     * Fills the cache for fs mode.
+     * @returns True when the data file has to be (re)written from the cache.
+     */
+    private async loadFromFile(context: any, stored: Record<string, any>): Promise<boolean> {
+        await context.fs.mkdir('./data');
+
+        const stat = await context.fs.stat(DATA_FILE_PATH);
+        const raw: string | undefined = await context.fs.read(DATA_FILE_PATH);
+        const fromFile = parseSettings(raw);
+
+        // The client ran on a Pengu without PluginFS since the file was written, so the
+        // DataStore copy is the newer one.
+        if (window.DataStore.get(MODE_KEY) === 'datastore' && Object.keys(stored).length > 0) {
+            this.cache = stored;
+            log('ElainaData taken from DataStore, it was used last (fs mode)');
+            return true;
+        }
+
+        if (fromFile) {
+            this.cache = fromFile;
+            log('ElainaData loaded from file (fs mode)');
+            if (await context.fs.read(BACKUP_FILE_PATH) !== raw) {
+                await context.fs.write(BACKUP_FILE_PATH, raw, { append: false });
+            }
+            return false;
+        }
+
+        const fileHasContent = (raw?.trim().length ?? 0) > 0 || (stat?.length ?? 0) > 0;
+        if (!fileHasContent) {
+            // No file yet — migrate from DataStore
+            this.cache = stored;
+            log(Object.keys(stored).length > 0
+                ? 'Migrated ElainaData from DataStore to file (fs mode)'
+                : 'Created new ElainaData file (fs mode)');
+            return true;
+        }
+
+        // The file is there but unusable. Use the backup, then the DataStore copy.
+        this.cache = parseSettings(await context.fs.read(BACKUP_FILE_PATH)) ?? stored;
+        if (raw) {
+            error('ElainaData.json is damaged, restored from backup or DataStore');
+            return true;
+        }
+        // The read itself failed, so the file may be fine: leave it alone for this session.
+        this.fileLocked = true;
+        error('ElainaData.json could not be read. Changes in this session are not saved to it');
+        return false;
+    }
+
+    private useDataStoreMode(stored: Record<string, any>): void {
+        this.cache = stored;
+        this.storageMode = 'datastore';
+        this.rememberMode('datastore');
+    }
+
+    /** Records which backend is in use, so a later start knows which copy is newer. */
+    private rememberMode(mode: StorageMode): void {
+        if (window.DataStore.get(MODE_KEY) !== mode) window.DataStore.set(MODE_KEY, mode);
+    }
+
+    /** Called after every change to the cache. */
+    private changed(): void {
+        this.dataStoreDirty = true;
+
+        if (this.storageMode === 'fs') {
+            this.queuePersist();
+            // Keep the DataStore copy roughly current for a switch back to a Pengu without
+            // PluginFS. Rarely: every DataStore write rewrites all plugins' settings.
+            this.mirrorTimer ??= setTimeout(() => this.saveToDataStore(), MIRROR_INTERVAL);
+        } else {
+            // One DataStore write for all changes made in the same tick.
+            // ponytail: bursts spread over several ticks still write once per tick; use a
+            // timer here if the 30 s write counter shows that matters.
+            queueMicrotask(() => this.saveToDataStore());
+        }
+    }
+
+    /** Writes the cache to the Pengu DataStore if it has unsaved changes. */
+    private saveToDataStore(): void {
+        if (this.mirrorTimer) clearTimeout(this.mirrorTimer);
+        this.mirrorTimer = null;
+        if (!this.dataStoreDirty) return;
+        this.dataStoreDirty = false;
+        window.DataStore.set(STORE_KEY, { ...this.cache });
     }
 
     /**
@@ -205,16 +234,12 @@ class ElainaDataClass extends FSDataMgr {
             error(`ElainaData.get("${key}") called before ElainaData.init()`);
             return fallback;
         }
-
-        if (this.storageMode === 'fs') {
-            return this.cache.hasOwnProperty(key) ? this.cache[key] : fallback;
-        }
-        return this.datastoreMgr.get(key, fallback);
+        return this.cache.hasOwnProperty(key) ? this.cache[key] : fallback;
     }
 
     /**
      * Sets a value in the datastore.
-     * In fs mode, updates in-memory cache and persists to file immediately.
+     * Updates the in-memory cache right away; saving is batched.
      * @param key The key to set.
      * @param value The value to associate with the key.
      * @returns True if the key was set successfully, false otherwise.
@@ -224,13 +249,9 @@ class ElainaDataClass extends FSDataMgr {
             error(`ElainaData.set("${key}") called before ElainaData.init()`);
             return false;
         }
-
-        if (this.storageMode === 'fs') {
-            this.cache[key] = value;
-            this.queuePersist();
-            return true;
-        }
-        return this.datastoreMgr.set(key, value);
+        this.cache[key] = value;
+        this.changed();
+        return true;
     }
 
     /**
@@ -243,11 +264,7 @@ class ElainaDataClass extends FSDataMgr {
             error(`ElainaData.has("${key}") called before ElainaData.init()`);
             return false;
         }
-
-        if (this.storageMode === 'fs') {
-            return this.cache.hasOwnProperty(key);
-        }
-        return this.datastoreMgr.has(key);
+        return this.cache.hasOwnProperty(key);
     }
 
     /**
@@ -260,39 +277,25 @@ class ElainaDataClass extends FSDataMgr {
             error(`ElainaData.remove("${key}") called before ElainaData.init()`);
             return false;
         }
-
-        if (this.storageMode === 'fs') {
-            if (this.cache.hasOwnProperty(key)) {
-                delete this.cache[key];
-                this.queuePersist();
-                return true;
-            }
-            return false;
-        }
-        return this.datastoreMgr.remove(key);
+        if (!this.cache.hasOwnProperty(key)) return false;
+        delete this.cache[key];
+        this.changed();
+        return true;
     }
 
     /**
      * Restores the default values of the theme in the datastore.
      */
     restoreDefaults(): void {
-        if (this.storageMode === 'fs') {
-            this.cache = {};
-            this.queuePersist();
-        } else {
-            window.DataStore.set("ElainaTheme", {});
-        }
-        window.reloadClient();
+        this.setAll({});
+        this.flush().finally(() => window.reloadClient());
     }
 
     /**
      * Returns the full data object (useful for backup/restore).
      */
     getAll(): Record<string, any> {
-        if (this.storageMode === 'fs') {
-            return { ...this.cache };
-        }
-        return window.DataStore.get("ElainaTheme", {});
+        return { ...this.cache };
     }
 
     /**
@@ -300,12 +303,8 @@ class ElainaDataClass extends FSDataMgr {
      * @param data The full data object to set.
      */
     setAll(data: Record<string, any>): void {
-        if (this.storageMode === 'fs') {
-            this.cache = { ...data };
-            this.queuePersist();
-        } else {
-            window.DataStore.set("ElainaTheme", data);
-        }
+        this.cache = { ...data };
+        this.changed();
     }
 
     /** Returns the current storage mode. */
@@ -313,9 +312,10 @@ class ElainaDataClass extends FSDataMgr {
         return this.storageMode;
     }
 
-    /** Force an immediate flush of cache to file (fs mode only). */
+    /** Saves all pending changes now: to the file in fs mode, to DataStore otherwise. */
     async flush(): Promise<void> {
-        await this.queuePersist();
+        if (this.storageMode === 'fs') await this.queuePersist();
+        else this.saveToDataStore();
     }
 }
 

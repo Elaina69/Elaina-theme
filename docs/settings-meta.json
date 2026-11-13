@@ -165,11 +165,6 @@
             "description": "Time between wallpaper changes in slideshow mode (milliseconds).",
             "type": "number"
         },
-        "WallpaperAudio-timeUpdate": {
-            "category": "wallpaper-audio",
-            "description": "Interval for saving wallpaper/audio playback progress to ElainaData (milliseconds).",
-            "type": "number"
-        },
         "Playback-speed": {
             "category": "wallpaper-audio",
             "description": "Wallpaper video playback speed as a percentage.",
