@@ -107,9 +107,6 @@ export async function wallpaperSection(): Promise<HTMLElement> {
 
     return UI.createSection("theme-settings-wallpaper", await getString("theme-settings.settings-section-wallpaper"), [
         UI.createButton(await getString("theme-settings.open-background-folder"), "open-background-folder", () => { window.openPluginsFolder(`${ElainaData.get("Plugin-folder-name")}/assets/backgrounds`) }),
-        UI.createLabel(await getString("theme-settings.wallpaperaudio-timeupdate"), ""),
-        UI.createSearchBox("WallpaperAudio-timeUpdate"),
-        br(),
         UI.createSlider(
             await getString("theme-settings.wallpaper-volume"), ElainaData.get("wallpaper-volume") * 100,
             (value) => {

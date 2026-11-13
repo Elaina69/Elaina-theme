@@ -114,7 +114,6 @@ export default {
     "theme-settings.font-not-exist": "Шрифт не существует в списке шрифтов",
     "theme-settings.wallpaper-audio-settings": "Настройки обоев/аудио",
     "theme-settings.open-background-folder": "Открыть папку с обоями",
-    "theme-settings.wallpaperaudio-timeupdate": "Wallpaper/Audio interval will save progress to Datastore (per Miliseconds)",
     "theme-settings.wallpaper-volume": "Громкость обоев",
     "theme-settings.wallpaper-speed": "Скорость переключения обоев",
     "theme-settings.wallpaper-slideshow": "Переключение обоев",

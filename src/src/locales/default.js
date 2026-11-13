@@ -114,7 +114,6 @@ export default {
     "theme-settings.font-not-exist": "Font not exist inside font list",
     "theme-settings.wallpaper-audio-settings": "Wallpaper/Audio settings",
     "theme-settings.open-background-folder": "Open backgrounds's folder",
-    "theme-settings.wallpaperaudio-timeupdate": "Wallpaper/Audio interval will save progress to Datastore (per Miliseconds)",
     "theme-settings.wallpaper-volume": "Wallpaper volume",
     "theme-settings.wallpaper-speed": "Wallpaper speed",
     "theme-settings.wallpaper-slideshow": "Wallpaper slider",
