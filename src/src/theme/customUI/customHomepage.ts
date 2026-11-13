@@ -1008,6 +1008,18 @@ class WallpaperAndAudio {
     private videoAbortController: AbortController | null = null;
     private audioAbortController: AbortController | null = null;
 
+    // Save the resume position only on pause or page close. Every ElainaData.set rewrites
+    // Pengu's whole shared datastore file, and saving during playback (about 1.5 times a
+    // second) made a mid-write client kill likely, which wipes every setting on next start.
+    private keepPosition(el: HTMLMediaElement, key: string, signal: AbortSignal) {
+        const save = () => {
+            const time = Math.floor(el.currentTime);
+            if (time !== ElainaData.get(key)) ElainaData.set(key, time);
+        };
+        el.addEventListener("pause", save, { signal });
+        window.addEventListener("pagehide", save, { signal });
+    }
+
     // Add Wallpaper and Audio to client
     addWallpaperElement = () => {
         // create wallpaper
@@ -1056,14 +1068,7 @@ class WallpaperAndAudio {
             video.preload = "metadata";
             video.setAttribute("disablePictureInPicture", "");
 
-            let savedTime = false
-            video.addEventListener('timeupdate', () => {
-                if (!savedTime && parseInt(video.currentTime) % (ElainaData.get("WallpaperAudio-timeUpdate") / 1000) == 0) {
-                    savedTime = true
-                    ElainaData.set("Wallpaper-currentTime", parseInt(video.currentTime))
-                }
-                else savedTime = false
-            }, { signal: videoSignal });
+            this.keepPosition(video, "Wallpaper-currentTime", videoSignal);
 
             if (ElainaData.get("wallpaper-slideshow")) {
                 video.loop = false
@@ -1106,14 +1111,7 @@ class WallpaperAndAudio {
             audio.currentTime = ElainaData.get("Audio-currentTime");
             audio.preload = "metadata";
 
-            let savedTime = false
-            audio.addEventListener('timeupdate', () => {
-                if (!savedTime && parseInt(audio.currentTime) % (ElainaData.get("WallpaperAudio-timeUpdate") / 1000) == 0) {
-                    savedTime = true
-                    ElainaData.set("Audio-currentTime", parseInt(audio.currentTime))
-                }
-                else savedTime = false
-            }, { signal: audioSignal });
+            this.keepPosition(audio, "Audio-currentTime", audioSignal);
 
             audioController.toggleAudioLoop();
 
