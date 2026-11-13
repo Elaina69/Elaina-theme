@@ -52,6 +52,7 @@ import * as upl from "pengu-upl"
 import { ForceJungLane } from "./src/plugins/forceJungleLane.ts"
 import { syncUserIcons } from "./src/plugins/syncUserIcons.ts";
 import { initDebug } from "./src/utils/debug.ts"
+import { initMcp } from "./src/plugins/mcp-server/browser/runtime.ts"
 
 // Export Init
 export async function init(context: any) {
@@ -65,6 +66,7 @@ export async function init(context: any) {
 
     log('Initializing file system for theme');
     await fileSystem.init(context);
+    initMcp(context);
 
     log('Initializing icon sync storage');
     await syncUserIcons.init();

@@ -1,0 +1,30 @@
+{
+  "name": "elainatheme-mcp-server",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Developer MCP bridge for Elainatheme, based on rumi-chan/league-client-mcp",
+  "license": "MIT",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/server/main.js",
+    "stdio": "node dist/server/stdio.js",
+    "dev": "tsx server/main.ts",
+    "test": "vitest run --config vitest.config.ts",
+    "check": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.32.2",
+    "ws": "8.18.3",
+    "zod": "4.3.6"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.0",
+    "@types/ws": "^8.18.1",
+    "happy-dom": "^20.0.0",
+    "tsx": "^4.20.0",
+    "typescript": "^5.9.0",
+    "vitest": "3.2.4"
+  }
+}

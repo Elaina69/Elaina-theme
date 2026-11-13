@@ -35,6 +35,12 @@
         }
     },
     "settings": {
+        "MCP-enabled": { "category": "plugins", "description": "Enable the developer MCP bridge. Dev-mode must also be enabled.", "type": "boolean" },
+        "MCP-console-capture": { "category": "plugins", "description": "Capture console messages, browser errors and unhandled rejections while MCP is enabled.", "type": "boolean" },
+        "MCP-network-capture": { "category": "plugins", "description": "Monitor renderer fetch/XHR, WebSockets, LCU events and asset timing.", "type": "boolean" },
+        "MCP-payload-capture": { "category": "plugins", "description": "Capture bounded request, response and WebSocket payloads.", "type": "boolean" },
+        "MCP-max-entries": { "category": "plugins", "description": "Maximum entries per MCP capture buffer, from 1 to 500.", "type": "number" },
+        "MCP-max-payload-bytes": { "category": "plugins", "description": "Maximum bytes per captured payload, from 256 to 65536.", "type": "number" },
         "Elaina-Plugins": {
             "category": "theme-core",
             "description": "Master toggle to enable or disable all Elaina Theme plugins.",

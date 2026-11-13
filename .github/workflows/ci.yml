@@ -28,6 +28,12 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Install MCP server dependencies
+        run: npm ci --prefix src/src/plugins/mcp-server --no-audit --no-fund
+
+      - name: Build MCP server
+        run: npm run build --prefix src/src/plugins/mcp-server
+
       - name: Lint
         run: pnpm run lint
 
@@ -36,3 +42,6 @@ jobs:
 
       - name: Test
         run: pnpm run test
+
+      - name: Test MCP transports
+        run: npm test --prefix src/src/plugins/mcp-server

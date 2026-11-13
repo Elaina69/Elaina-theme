@@ -23,5 +23,13 @@
         "noImplicitThis": false,
         "allowJs": true,
         "esModuleInterop": true
-    }
+    },
+    "exclude": [
+        "node_modules", "dist",
+        "src/src/plugins/mcp-server/server",
+        "src/src/plugins/mcp-server/node_modules",
+        "src/src/plugins/mcp-server/dist",
+        "src/src/plugins/mcp-server/.npm-cache",
+        "src/src/plugins/mcp-server/vitest.config.ts"
+    ]
 }

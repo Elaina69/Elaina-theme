@@ -29,6 +29,14 @@ describe('ElainaData before init', () => {
 });
 
 describe('ElainaData on Pengu without PluginFS (datastore mode)', () => {
+    it('notifies committed changes and can unsubscribe without extra datastore writes', async () => {
+        const { ElainaData, context, dataStore } = await boot('legacy', { ElainaTheme: { 'Dev-mode': true } });
+        await ElainaData.init(context);
+        const changes = vi.fn(); const stop = ElainaData.subscribe(changes);
+        ElainaData.set('MCP-enabled', true); ElainaData.setAll({ 'MCP-enabled': false });
+        expect(changes.mock.calls[1][0]).toContain('Dev-mode'); expect(dataStore.writes).toBe(2);
+        stop(); ElainaData.set('MCP-enabled', true); expect(changes).toHaveBeenCalledTimes(2);
+    });
     it('uses DataStore when context.fs is missing', async () => {
         const { ElainaData, context } = await boot('legacy');
         await ElainaData.init(context);

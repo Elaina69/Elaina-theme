@@ -160,6 +160,12 @@ export default {
 	"Dev-mode"                      : false,
 	"Active-dev-button"             : 0,
 	"Dev-button"                    : false,
+	"MCP-enabled"                   : false,
+	"MCP-console-capture"           : true,
+	"MCP-network-capture"           : true,
+	"MCP-payload-capture"           : true,
+	"MCP-max-entries"               : 500,
+	"MCP-max-payload-bytes"          : 65536,
 
 
 

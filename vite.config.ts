@@ -1,11 +1,12 @@
 import { resolve, join, basename } from 'node:path';
 import { existsSync } from 'node:fs';
-import { readFile, writeFile, cp, mkdir, rm, readdir, stat, copyFile } from 'node:fs/promises';
+import { readFile, writeFile, cp, mkdir } from 'node:fs/promises';
 import { defineConfig } from 'vite';
 import mkcert from 'vite-plugin-mkcert';
 import fs from 'node:fs';
 import archiver from "archiver"
 import chalk from 'chalk';
+import { buildMcpPackage, packageMcp, syncDeployment } from './scripts/mcp-package.mjs';
 
 import pkg from './package.json';
 const PLUGINS_PATH = pkg.config.pluginsPath;
@@ -29,42 +30,15 @@ let port: number;
 const outDir = resolve(__dirname, 'dist');
 const pluginsDir = resolve(__dirname, PLUGINS_PATH, PLUGIN_NAME);
 
-// Never deleted from the plugin folder: user settings (fs mode) and the local data package.
-const KEEP_IN_PLUGIN = new Set(['data', 'elaina-theme-data']);
-// Release artifact, not needed by Pengu.
-const SKIP_DEPLOY = new Set(['ElainaV4.zip']);
-
 /**
  * Mirrors src into dest, writing only files whose content changed and removing stale ones.
  * Unchanged files are never touched, so files the running client holds open (the playing
  * music) don't fail the deploy. Returns how many files couldn't be written or removed.
  */
-async function syncDir(src: string, dest: string, top = true): Promise<number> {
-    let failed = 0;
-    const warn = (what: string, path: string, err: any) => {
-        failed++;
+async function syncDir(src: string, dest: string): Promise<number> {
+    return syncDeployment(src, dest, (what: string, path: string, err: any) => {
         console.warn(chalk.yellow(`Couldn't ${what} ${path} (${err.code ?? err}). Pause the music or close the client and build again.`));
-    };
-    await mkdir(dest, { recursive: true });
-    const names = (await readdir(src)).filter(n => !(top && SKIP_DEPLOY.has(n)));
-
-    for (const name of await readdir(dest)) {
-        if (names.includes(name) || (top && KEEP_IN_PLUGIN.has(name))) continue;
-        await rm(join(dest, name), { recursive: true }).catch(err => warn('remove', join(dest, name), err));
-    }
-
-    for (const name of names) {
-        const s = join(src, name), d = join(dest, name);
-        if ((await stat(s)).isDirectory()) {
-            failed += await syncDir(s, d, false);
-            continue;
-        }
-        const old = await stat(d).catch(() => null);
-        if (old?.isFile() && old.size === (await stat(s)).size
-            && (await readFile(s)).equals(await readFile(d))) continue;
-        await copyFile(s, d).catch(err => warn('update', d, err));
-    }
-    return failed;
+    });
 }
 
 export default defineConfig((config) => ({
@@ -100,6 +74,11 @@ export default defineConfig((config) => ({
     publicDir: false,
     plugins: [
         mkcert(),
+        {
+            name: 'elaina-mcp-package',
+            apply: 'build',
+            async buildStart() { await buildMcpPackage(); },
+        },
         // {
         //     // Because vite doesn't allow minifying of ESM, we have to do it manually
         //     name: 'minify',
@@ -120,7 +99,12 @@ export default defineConfig((config) => ({
             name: 'pengu-serve',
             apply: 'serve',
             enforce: 'post',
-            configureServer(server) {
+            async configureServer(server) {
+                await buildMcpPackage();
+                const mcpStaging = resolve(__dirname, 'node_modules/.cache/elaina-mcp-package');
+                await packageMcp(mcpStaging);
+                const failed = await syncDeployment(mcpStaging, join(pluginsDir, 'mcp-server'), undefined, 'mcp-server');
+                if (failed) throw new Error(`Could not deploy ${failed} MCP package files.`);
                 server.httpServer!.once('listening', async () => {
                     // @ts-ignore
                     port = server.httpServer.address()['port'];
@@ -181,6 +165,7 @@ export default defineConfig((config) => ({
                 }
             
                 await prependCommentToFile(indexJs, Author, 1);
+                await packageMcp(join(outDir, 'mcp-server'));
             
                 // Copy assets and config folders
                 const copyTask = async (src: string, dest: string | URL, taskName: string) => {
@@ -188,7 +173,9 @@ export default defineConfig((config) => ({
                     const interval = setInterval(() => count += 100, 100);
             
                     try {
-                        await cp(resolve(__dirname, src), dest, { recursive: true });
+                        await cp(resolve(__dirname, src), dest, { recursive: true,
+                            filter: source => !source.split(/[\\/]/).some(segment => ['.git', '.agents', '.codex'].includes(segment)),
+                        });
                         console.log(chalk.green(`✔ ${taskName} completed! (in ${count / 1000}s)`));
                     } catch (err) {
                         console.error(chalk.red(`Error in ${taskName}:`), err);
@@ -215,38 +202,43 @@ export default defineConfig((config) => ({
                     const output = fs.createWriteStream(join(outDir, `${pkg.folderName}.zip`));
                     const archive = archiver('zip', { zlib: { level: 9 } });
             
-                    archive.on('error', (err) => {
-                        throw err;
-                    });
-            
-                    output.on('close', () => {
-                        console.log(chalk.cyan(`${archive.pointer()} total bytes`));
+                    const completed = new Promise<void>((resolve, reject) => {
+                        archive.on('error', reject);
+                        archive.on('warning', reject);
+                        output.on('error', reject);
+                        output.on('close', () => { console.log(chalk.cyan(`${archive.pointer()} total bytes`)); resolve(); });
                     });
             
                     archive.pipe(output);
                     archive.directory(join(outDir, 'assets'), "assets");
                     archive.directory(join(outDir, 'config'), "config");
                     archive.directory(join(outDir, 'locales'), 'locales');
+                    archive.directory(join(outDir, 'mcp-server'), 'mcp-server');
+                    if (existsSync(join(outDir, 'index.css'))) archive.file(join(outDir, 'index.css'), { name: 'index.css' });
                     archive.file(indexJs, { name: basename(indexJs) });
             
-                    await archive.finalize();
+                    await Promise.all([archive.finalize(), completed]);
                     console.log(chalk.green(`✔ Zipping completed successfully! (in ${count / 1000}s)`));
                 } catch (err) {
-                    console.error(chalk.red('Error while zipping:'), err);
+                    throw new Error('Could not package Elainatheme release.', { cause: err });
                 } finally {
                     clearInterval(interval);
                     count = 0;
                 }
             
                 // Copy output to Pengu directory
+                if (process.env.ELAINA_SKIP_DEPLOY === '1') {
+                    console.log(chalk.cyan('Release package built; Pengu deployment skipped.'));
+                    return;
+                }
                 count = 0;
                 const penguInterval = setInterval(() => count += 100, 100);
                 try {
                     const failed = await syncDir(outDir, pluginsDir);
-                    if (failed) console.error(chalk.red(`✖ Copy output to pengu dir: ${failed} file(s) not updated, see above.`));
+                    if (failed) throw new Error(`Copy output to Pengu directory failed: ${failed} file(s) not updated.`);
                     else console.log(chalk.green(`✔ Copy output to pengu dir completed! (in ${count / 1000}s)`));
                 } catch (err) {
-                    console.error(chalk.red('Error while copying to Pengu directory:'), err);
+                    throw new Error('Could not deploy Elainatheme to the Pengu plugin directory.', { cause: err });
                 } finally {
                     clearInterval(penguInterval);
                     count = 0;

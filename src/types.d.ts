@@ -148,6 +148,7 @@ interface elainaData {
     setAll: (data: Record<string, any>) => void;
     getStorageMode: () => 'fs' | 'datastore';
     flush: (options?: { throwOnError?: boolean }) => Promise<void>;
+    subscribe: (listener: (keys: string[]) => void) => () => void;
 }
 
 interface ThemeApiPlayer {

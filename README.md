@@ -59,6 +59,8 @@
  - [Pengu Loader v1.1.0 or later](https://github.com/PenguLoader/PenguLoader/releases)
  - A good-enough PC/Laptop
 
+Developer MCP integration is available in Dev-mode for Codex, Claude, Gemini and other MCP clients. Open its folder from Plugins Settings and run start.bat (Windows) or sh start.sh (macOS). Requires Node.js 20+. See [MCP setup and tools](src/src/plugins/mcp-server/README.md) for HTTP/stdio configuration and Pengu version support.
+
 > Minimum: Windows 10/11, Intel Core I5 2400 // 8gb ram // NVIDIA GT630
 
 > Recommended: Windows 10/11, Intel Core I5 9400 // 16gb ram // NVIDIA GTX1050 Ti and Higher

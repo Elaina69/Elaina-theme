@@ -5,6 +5,7 @@ import { coreSection } from "./_core.ts"
 // import { queueSection } from "./_queue.ts"
 import { pluginsProfileSection } from "./_profile.ts"
 import { developerSection } from "./_developer.ts"
+import { mcpSection } from "./_mcp.ts"
 
 async function pluginsSettings(panel: Element) {
     const loading = UI.createRow("loading", [
@@ -13,6 +14,7 @@ async function pluginsSettings(panel: Element) {
     panel.appendChild(loading);
 
     try {
+        const mcp = await mcpSection()
         panel.prepend(
             UI.createRow("plugins-settings-root", [
                 ...await pluginsInfoSection(),
@@ -20,6 +22,7 @@ async function pluginsSettings(panel: Element) {
                 // await queueSection(),
                 await pluginsProfileSection(),
                 await developerSection(),
+                ...(mcp ? [mcp] : []),
             ])
         )
 

@@ -117,6 +117,7 @@ interface ElainaDataClass extends FSDataMgr, DatastoreMgr {}
 class ElainaDataClass extends FSDataMgr {
     private initialized = false;
     private initPromiseResolve: (() => void) | null = null;
+    private changeListeners = new Set<(keys: string[]) => void>();
 
     /** A promise that resolves once ElainaData has been fully initialized. */
     readonly ready: Promise<void>;
@@ -128,6 +129,19 @@ class ElainaDataClass extends FSDataMgr {
         this.ready = new Promise<void>((resolve) => {
             this.initPromiseResolve = resolve;
         });
+    }
+
+    /** Observe committed in-memory changes without polling or extra datastore writes. */
+    subscribe(listener: (keys: string[]) => void): () => void {
+        this.changeListeners.add(listener);
+        return () => this.changeListeners.delete(listener);
+    }
+
+    private notify(keys: string[]): void {
+        for (const listener of this.changeListeners) {
+            try { listener(keys); }
+            catch (reason) { error('ElainaData change listener failed:', reason); }
+        }
     }
 
     /**
@@ -228,9 +242,12 @@ class ElainaDataClass extends FSDataMgr {
         if (this.storageMode === 'fs') {
             this.cache[key] = value;
             this.queuePersist();
+            this.notify([key]);
             return true;
         }
-        return this.datastoreMgr.set(key, value);
+        const success = this.datastoreMgr.set(key, value);
+        if (success) this.notify([key]);
+        return success;
     }
 
     /**
@@ -265,23 +282,28 @@ class ElainaDataClass extends FSDataMgr {
             if (this.cache.hasOwnProperty(key)) {
                 delete this.cache[key];
                 this.queuePersist();
+                this.notify([key]);
                 return true;
             }
             return false;
         }
-        return this.datastoreMgr.remove(key);
+        const success = this.datastoreMgr.remove(key);
+        if (success) this.notify([key]);
+        return success;
     }
 
     /**
      * Restores the default values of the theme in the datastore.
      */
     restoreDefaults(): void {
+        const keys = Object.keys(this.getAll());
         if (this.storageMode === 'fs') {
             this.cache = {};
             this.queuePersist();
         } else {
             window.DataStore.set("ElainaTheme", {});
         }
+        this.notify(keys);
         window.reloadClient();
     }
 
@@ -300,12 +322,14 @@ class ElainaDataClass extends FSDataMgr {
      * @param data The full data object to set.
      */
     setAll(data: Record<string, any>): void {
+        const keys = Array.from(new Set([...Object.keys(this.getAll()), ...Object.keys(data)]));
         if (this.storageMode === 'fs') {
             this.cache = { ...data };
             this.queuePersist();
         } else {
             window.DataStore.set("ElainaTheme", data);
         }
+        this.notify(keys);
     }
 
     /** Returns the current storage mode. */
