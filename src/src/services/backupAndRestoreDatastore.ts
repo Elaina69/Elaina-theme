@@ -1,5 +1,6 @@
 import utils from "../utils/utils.ts"
 import { log, error } from '../utils/themeLog.ts';
+import { themeToast } from '../utils/themeToast.ts';
 
 let datastore_list = (await import(utils.assets.url("config/datastoreDefault.js"))).default
 
@@ -21,7 +22,7 @@ export class BackupRestoreData {
 			let errorMsg = "Can't load default datastore from local: "
 			clearTimeout(timeoutId);
 			error(errorMsg, err);
-			window.Toast.error(errorMsg);
+			themeToast.error(errorMsg, 'elaina-default-datastore');
 		}
 	};
 
@@ -52,11 +53,11 @@ export class BackupRestoreData {
 				},5000)
 			})
 			
-			window.Toast.promise(restoreData, {
+			themeToast.promise(restoreData, {
 				loading: 'Restoring default Elaina theme data...',
 				success: 'Restore complete!',
 				error: ''
-			})
+			}, 'elaina-default-restore')
 		}
 	}
 }

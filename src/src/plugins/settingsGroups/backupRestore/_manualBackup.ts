@@ -1,7 +1,6 @@
 import { UI } from "../settingsUI.ts"
-import utils from "../../../utils/utils.ts"
-import { log } from "../../../utils/themeLog.ts"
-import { setDefaultData } from "../../../services/backupAndRestoreDatastore.ts"
+import { backupActions } from "../../penguSettingsGroups/actions.ts"
+import { themeToast } from "../../../utils/themeToast.ts"
 
 export async function manualBackupSection(): Promise<HTMLElement[]> {
     return [
@@ -10,25 +9,7 @@ export async function manualBackupSection(): Promise<HTMLElement[]> {
         UI.createRow("manualRestoreBackupSystemInfo", [
             UI.createRow("manualRestoreBackup", [
                 UI.createButton(await getString("backup-restore.backup-data"), "ManualBackup", async () => {
-                    let datastore_list = (await import(utils.assets.url("config/datastoreDefault.js"))).default
-
-                    ElainaData.set("last-backup-time", new Date())
-
-                    let sumID = await utils.getSummonerID()
-                    let keys = Object.keys(datastore_list)
-                    let mirage = datastore_list
-
-                    keys.forEach(key => {
-                        mirage[key] = ElainaData.get(key)
-                    })
-
-                    let blob = new Blob([JSON.stringify(mirage)], { type: 'application/json' })
-                    let a: any = document.getElementById("downloadBackup")
-                    
-                    a.href = URL.createObjectURL(blob)
-                    a.download = `ElainaTheme-${sumID}.json`
-                    a.click()
-                    a.href = ""
+                    await backupActions.exportBackupFile()
                 }),
                 document.createElement('br'),
                 UI.createRow("RestoreRow", [
@@ -49,26 +30,14 @@ export async function manualBackupSection(): Promise<HTMLElement[]> {
                             text.style.color = "#e4c2b3"
                             
                             try {
-                                const json = JSON.parse(e.target.result);
-                                let restoreData = new Promise<void>((resolve, reject) => {
-                                    setTimeout(async () => {
-                                        try { 
-                                            await setDefaultData(json, true)
-                                            resolve()
-                                            window.setTimeout(()=>window.restartClient(),2000)
-                                        }
-                                        catch {
-                                            reject()
-                                            log(`Datastore file not found, avoid restoring`)
-                                        }
-                                    },5000)
-                                })
-                                
-                                window.Toast.promise(restoreData, {
+                                JSON.parse(e.target.result);
+                                const restoreData = backupActions.restoreBackupFile(file)
+                                themeToast.promise(restoreData, {
                                     loading: 'Restoring Datastore...',
                                     success: 'Restore complete!',
                                     error: 'Error while restoring data, check console for more info!'
-                                })
+                                }, 'elaina-manual-restore')
+                                await restoreData
                             } 
                             catch {
                                 text.textContent = await getString("backup-restore.invalid-json")
@@ -82,8 +51,7 @@ export async function manualBackupSection(): Promise<HTMLElement[]> {
                         text.textContent = await getString("backup-restore.json-file-only")
                         text.style.color = "red"
                     }
-                }),
-                UI.createLink("", ``, ()=> {}, "downloadBackup")
+                })
             ]),
             UI.createRow("currentSystemInfo", [
                 UI.createLabel(ElainaData.get("Dev-mode") 

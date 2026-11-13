@@ -1,7 +1,6 @@
 import { UI } from "../settingsUI.ts"
-import utils from "../../../utils/utils.ts"
-import { log, warn, error as logError } from "../../../utils/themeLog.ts"
-import { setDefaultData } from "../../../services/backupAndRestoreDatastore.ts"
+import { log, warn } from "../../../utils/themeLog.ts"
+import { backupActions } from "../../penguSettingsGroups/actions.ts"
 
 const getSystemInfo = async () => {
     if (ElainaData.get("Dev-mode")) {
@@ -73,7 +72,6 @@ async function CheckBackupFile() {
 }
 
 export async function cloudBackupSection(): Promise<{ elements: HTMLElement[], postSetup: () => Promise<void> }> {
-    const summonerID = await utils.getSummonerID()
     await getSystemInfo()
 
     const elements: HTMLElement[] = [
@@ -88,36 +86,14 @@ export async function cloudBackupSection(): Promise<{ elements: HTMLElement[], p
         document.createElement('br'),
         UI.createRow("restoreAndDeleteData", [
             UI.createButton(`${await getString("backup-restore.restore-data")}`, "restore-data-button", () => {
-                let restoreData = new Promise<void>(async (resolve, reject) => {
-                    try { 
-                        let cloud: any = await window.elainathemeApi.readBackup(ElainaData.get("ElainaTheme-Token"), summonerID)
-                        if (cloud.success) {
-                            await setDefaultData(cloud.data, true)
-                            resolve()
-                            window.setTimeout(()=>window.restartClient(),2000)
-                        }
-                    }
-                    catch {
-                        reject()
-                        log(`Datastore file not found, avoid restoring`)
-                    }
-                })
-                
-                window.Toast.promise(restoreData, {
-                    loading: 'Restoring Datastore...',
-                    success: 'Restore complete!',
-                    error: 'Error while restoring data, check console for more info!'
-                })
+                void backupActions.restoreCloudBackup().catch(() => log('Datastore file not found, avoid restoring'))
             }),
             UI.createButton(`${await getString("backup-restore.delete-data")}`, "delete-data-button",async () => {
                 try {
-                    await window.elainathemeApi.deleteBackup(ElainaData.get("ElainaTheme-Token"), summonerID)
-                    log("Datastore file deleted from cloud")
+                    await backupActions.deleteCloudBackup(false)
                     await new Promise((r) => setTimeout(r, 1000));
                 }
-                catch (err: any) {
-                    logError("Error deleting datastore file from cloud:", err)
-                }
+                catch (err: any) { log('Error deleting datastore file from cloud:', err) }
                 finally { await CheckBackupFile() }
             }),
         ], true),

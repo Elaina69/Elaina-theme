@@ -2,6 +2,7 @@ import LocalKey from "./updateKeyLocal.ts"
 import { cdnImport } from "../otherThings.ts"
 import { log, warn, error } from "../utils/themeLog.ts"
 import utils from "../utils/utils.ts"
+import { themeToast } from "../utils/themeToast.ts"
 
 interface UpdateData {
 	version: string
@@ -280,11 +281,11 @@ export class CheckUpdate {
 					if (ElainaData.get("changelog-shown-version") === cdn.version) {
 						log(`%cChangelog already shown for v${cdn.version}`, 'color: #e4c2b3')
 
-						window.Toast.success('Latest release now')
+						themeToast.success('Latest release now', 'elaina-update-status')
 						return
 					}
 
-					window.Toast.success(`New changelog available: v${cdn.version}`)
+					themeToast.success(`New changelog available: v${cdn.version}`, 'elaina-update-status')
 
 					window.addEventListener("load", async () => {
 						await this.showChangelogDialog(cdn, action === "changelog-new")
@@ -304,7 +305,7 @@ export class CheckUpdate {
 						return
 					}
 
-					window.Toast.error('New theme manual update available')
+					themeToast.error('New theme manual update available', 'elaina-update-status')
 
 					window.addEventListener("load", async () => {
 						await this.showForceUpdateDialog(cdn)
@@ -321,11 +322,11 @@ export class CheckUpdate {
 						setTimeout(() => resolve(), 2000)
 					})
 
-					window.Toast.promise(checkVersion, {
+					themeToast.promise(checkVersion, {
 						loading: 'Checking theme version...',
 						success: 'Latest release now',
 						error: 'Version check failed'
-					})
+					}, 'elaina-update-status')
 					break
 				}
 			}
