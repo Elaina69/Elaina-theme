@@ -1,118 +1,116 @@
 import { UI } from "../settingsUI.ts"
 import { log, warn } from "../../../utils/themeLog.ts"
-import { backupActions } from "../../penguSettingsGroups/actions.ts"
-
-const getSystemInfo = async () => {
-    if (ElainaData.get("Dev-mode")) {
-        let systemInfo: any = await ((await fetch("/performance/v1/system-info")).json())
-        ElainaData.set("System-Info", systemInfo)
-    }
-}
-
-async function CheckBackupFile() {
-    const restoreButton = document.querySelector(".restore-data-button") as HTMLElement
-    const deleteButton = document.querySelector(".delete-data-button") as HTMLElement
-    const checkText = document.getElementById("datastore-cloud-checking") as HTMLElement
-    const backupInfo = document.getElementById("backupInfo") as HTMLElement
-
-    const lastbackup = document.querySelector("#backupSystemInfo > #systemInfo-LastBackup") as HTMLElement
-    const os = document.querySelector("#backupSystemInfo > #systemInfo-Os") as HTMLElement
-    const cpu = document.querySelector("#backupSystemInfo > #systemInfo-Cpu") as HTMLElement
-    const core = document.querySelector("#backupSystemInfo > #systemInfo-Core") as HTMLElement
-    const mem = document.querySelector("#backupSystemInfo > #systemInfo-Mem") as HTMLElement
-    const gpu = document.querySelector("#backupSystemInfo > #systemInfo-Gpu") as HTMLElement
-    const vram = document.querySelector("#backupSystemInfo > #systemInfo-Vram") as HTMLElement
-
-    try {
-        checkText.textContent = `${await getString("backup-restore.loading")}...`
-        checkText.style.color = "#a09b8c"
-
-        let checkFile: any = await window.elainathemeApi.readBackup(ElainaData.get("ElainaTheme-Token"), ElainaData.get("Summoner-ID"))
-        if (checkFile.data != null && Object.keys(checkFile.data).length > 0 && checkFile.success) {
-            log("You have backup file on cloud, ready to restore it.")
-            restoreButton.style.visibility = "visible"
-            deleteButton.style.visibility = "visible"
-            checkText.style.color = "green"
-            checkText.textContent = `${await getString("backup-restore.check-backup-success")}`
-            backupInfo.style.visibility = "visible"
-
-            let backupData = typeof checkFile.data === 'string' ? JSON.parse(checkFile.data) : checkFile.data
-            lastbackup.textContent = `${await getString("backup-restore.last-backup")}: ${backupData["last-backup-time"]}`
-            if (ElainaData.get("Dev-mode")) {
-                try {
-                    os.textContent = `${await getString("backup-restore.os")}: ${backupData["System-Info"]["OSVersion"]}`
-                    cpu.textContent = `${await getString("backup-restore.cpu")}: ${backupData["System-Info"]["CPUName"]}`
-                    core.textContent = `${await getString("backup-restore.core")}: ${backupData["System-Info"]["CoreCount"]}`
-                    mem.textContent = `${await getString("backup-restore.ram")}: ${Math.round(backupData["System-Info"]["PhysicalMemory"] / (1024 ** 3))} GB`
-                    gpu.textContent = `${await getString("backup-restore.gpu")}: ${backupData["System-Info"]["GPUName"]}`
-                    vram.textContent = `${await getString("backup-restore.vram")}: ${Math.round(backupData["System-Info"]["GPUMemory"] / (1024 ** 3))} GB`
-                }
-                catch (err: any) {
-                    warn("Error while getting system data:", err)
-                }
-            }
-        }
-        else {
-            log("You don't have backup file on cloud yet.")
-            restoreButton.style.visibility = "hidden"
-            deleteButton.style.visibility = "hidden"
-            checkText.style.color = "yellow"
-            checkText.textContent = `${await getString("backup-restore.check-backup-error")}`
-            backupInfo.style.visibility = "hidden"
-        }
-    }
-    catch (err: any) { 
-        log("Cloud server is sleep, try backup/restore later. Detail:", err)
-        restoreButton.style.visibility = "hidden"
-        deleteButton.style.visibility = "hidden"
-        checkText.style.color = "red"
-        checkText.textContent = `${await getString("backup-restore.check-backup-servererror")}`
-        backupInfo.style.visibility = "hidden"
-    }
-}
+import { backupActions, backupErrorMessage } from "./backupActions.ts"
 
 export async function cloudBackupSection(): Promise<{ elements: HTMLElement[], postSetup: () => Promise<void> }> {
-    await getSystemInfo()
+    const checkText = UI.createLabel("", "datastore-cloud-checking")
+    const lastBackup = UI.createLabel("", "systemInfo-LastBackup")
+    const fields = [
+        ["os", "OSVersion", "Os"], ["cpu", "CPUName", "Cpu"], ["core", "CoreCount", "Core"],
+        ["ram", "PhysicalMemory", "Mem"], ["gpu", "GPUName", "Gpu"], ["vram", "GPUMemory", "Vram"],
+    ].map(([key, property, id]) => ({ key, property, label: UI.createLabel("", "systemInfo-" + id) }))
+    const backupInfo = UI.createRow("backupInfo", [
+        UI.createLabel(await getString("backup-restore.backupinfo")),
+        UI.createRow("backupSystemInfo", [lastBackup, ...fields.map(field => field.label)]),
+    ])
+    let revision = 0
+    let busy = false
+    let hasBackup = false
 
-    const elements: HTMLElement[] = [
-        UI.createCheckBox(
-            `${await getString("backup-restore.backup-datastore")}`,'bakdata', 'bakdatabox', async ()=>{
-                if (ElainaData.get("backup-datastore")) {
-                    await CheckBackupFile()
-                }
-            }, true, "backup-datastore"
-        ),
-        UI.createLabel(`${await getString("backup-restore.loading")}...`, "datastore-cloud-checking"),
-        document.createElement('br'),
-        UI.createRow("restoreAndDeleteData", [
-            UI.createButton(`${await getString("backup-restore.restore-data")}`, "restore-data-button", () => {
-                void backupActions.restoreCloudBackup().catch(() => log('Datastore file not found, avoid restoring'))
-            }),
-            UI.createButton(`${await getString("backup-restore.delete-data")}`, "delete-data-button",async () => {
-                try {
-                    await backupActions.deleteCloudBackup(false)
-                    await new Promise((r) => setTimeout(r, 1000));
-                }
-                catch (err: any) { log('Error deleting datastore file from cloud:', err) }
-                finally { await CheckBackupFile() }
-            }),
-        ], true),
-        UI.createRow("backupInfo", [
-            UI.createLabel(await getString("backup-restore.backupinfo"), ""),
-            UI.createRow("backupSystemInfo", [
-                UI.createLabel("", "systemInfo-LastBackup"),
-                UI.createLabel("", "systemInfo-Os"),
-                UI.createLabel("", "systemInfo-Cpu"),
-                UI.createLabel("", "systemInfo-Core"),
-                UI.createLabel("", "systemInfo-Mem"),
-                UI.createLabel("", "systemInfo-Gpu"),
-                UI.createLabel("", "systemInfo-Vram"),
-            ])
-        ]),
-    ]
+    const restoreButton = UI.createButton(await getString("backup-restore.restore-data"), "restore-data-button", async () => {
+        if (busy || !hasBackup) return
+        busy = true
+        updateButtons()
+        try { await backupActions.restoreCloudBackup() }
+        catch (reason) { warn("Could not restore cloud backup:", reason) }
+        finally { busy = false; updateButtons() }
+    })
+    const deleteButton = UI.createButton(await getString("backup-restore.delete-data"), "delete-data-button", async () => {
+        if (busy || !hasBackup) return
+        busy = true
+        updateButtons()
+        try {
+            await backupActions.deleteCloudBackup()
+            // The server has confirmed deletion: no delay or extra GET is needed.
+            const request = ++revision
+            hasBackup = false
+            backupInfo.style.visibility = "hidden"
+            const enabled = ElainaData.get("backup-datastore") === true
+            const message = await getString("backup-restore." + (enabled ? "check-backup-error" : "cloud-disabled"))
+            if (request !== revision) return
+            checkText.textContent = message
+            checkText.style.color = enabled ? "yellow" : "#a09b8c"
+        } catch (reason) { warn("Could not delete cloud backup:", reason) }
+        finally { busy = false; updateButtons() }
+    })
 
+    function updateButtons() {
+        restoreButton.style.visibility = hasBackup ? "visible" : "hidden"
+        deleteButton.style.visibility = hasBackup ? "visible" : "hidden"
+        for (const button of [restoreButton, deleteButton]) {
+            if (busy) button.setAttribute("disabled", "true")
+            else button.removeAttribute("disabled")
+        }
+    }
+
+    async function checkBackupFile(): Promise<void> {
+        const request = ++revision
+        hasBackup = false
+        updateButtons()
+        backupInfo.style.visibility = "hidden"
+        checkText.style.color = "#a09b8c"
+        if (ElainaData.get("backup-datastore") !== true) {
+            const message = await getString("backup-restore.cloud-disabled")
+            if (request === revision) checkText.textContent = message
+            return
+        }
+        const loading = await getString("backup-restore.loading")
+        if (request !== revision) return
+        checkText.textContent = loading + "..."
+        try {
+            const data = await backupActions.readCloudBackup()
+            const message = await getString("backup-restore." + (data ? "check-backup-success" : "check-backup-error"))
+            const lastBackupLabel = await getString("backup-restore.last-backup")
+            const system = data?.["System-Info"] as Record<string, unknown> | undefined
+            const systemLabels = await Promise.all(fields.map(async ({ key, property }) => {
+                const value = system && typeof system === "object" ? system[property] : undefined
+                if (!ElainaData.get("Dev-mode") || value == null) return ""
+                const formatted = ["ram", "vram"].includes(key) && typeof value === "number"
+                    ? Math.round(value / 1024 ** 3) + " GB" : String(value)
+                return await getString("backup-restore." + key) + ": " + formatted
+            }))
+            // Use this section's elements and discard stale results after toggles;
+            // never update another tab through global document selectors.
+            if (request !== revision || ElainaData.get("backup-datastore") !== true) return
+            hasBackup = data !== null
+            checkText.textContent = message
+            checkText.style.color = hasBackup ? "green" : "yellow"
+            backupInfo.style.visibility = hasBackup ? "visible" : "hidden"
+            lastBackup.textContent = lastBackupLabel + ": " + (data?.["last-backup-time"] || "—")
+            fields.forEach((field, index) => { field.label.textContent = systemLabels[index] })
+            updateButtons()
+            log(message)
+        } catch (reason) {
+            const message = await getString("backup-restore.check-backup-servererror")
+            if (request !== revision || ElainaData.get("backup-datastore") !== true) return
+            checkText.style.color = "red"
+            checkText.textContent = backupErrorMessage(reason, message)
+            warn("Could not check cloud backup:", reason)
+        }
+    }
+
+    updateButtons()
+    backupInfo.style.visibility = "hidden"
     return {
-        elements,
-        postSetup: () => CheckBackupFile(),
+        elements: [
+            UI.createCheckBox(await getString("backup-restore.backup-datastore"), "bakdata", "bakdatabox",
+                () => { void checkBackupFile().catch(reason => warn("Could not update cloud backup status:", reason)) },
+                true, "backup-datastore"),
+            checkText,
+            document.createElement("br"),
+            UI.createRow("restoreAndDeleteData", [restoreButton, deleteButton]),
+            backupInfo,
+        ],
+        postSetup: checkBackupFile,
     }
 }

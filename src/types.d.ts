@@ -147,14 +147,31 @@ interface elainaData {
     getAll: () => Record<string, any>;
     setAll: (data: Record<string, any>) => void;
     getStorageMode: () => 'fs' | 'datastore';
-    flush: () => Promise<void>;
+    flush: (options?: { throwOnError?: boolean }) => Promise<void>;
+}
+
+interface ThemeApiPlayer {
+    summonerId: number | string;
+    gameName?: string;
+    displayName?: string;
+    tagLine?: string;
+}
+
+interface ThemeBackupResponse {
+    success: boolean;
+    data?: unknown;
+    message?: string;
+    error?: string;
 }
 
 interface elainathemeApi {
-    login: (userId: number, username: string) => Promise<{ token: string }>;
-    writeBackup: (token: string, userId: number, data: Object) => Promise<void>;
-    readBackup: (token: string, userId: number) => Promise<void>;
-    deleteBackup: (token: string, userId: number) => Promise<void>;
+    baseUrl?: () => string;
+    allowed?: (feature: string) => boolean;
+    ensureCurrentSession?: (feature?: string | null) => Promise<ThemeApiPlayer>;
+    login: (userId: number | string, username: string) => Promise<{ token: string }>;
+    writeBackup: (token: string, userId: number | string, data: Record<string, unknown>) => Promise<ThemeBackupResponse>;
+    readBackup: (token: string, userId: number | string) => Promise<ThemeBackupResponse>;
+    deleteBackup: (token: string, userId: number | string) => Promise<ThemeBackupResponse>;
     uploadImage: (token: string, userId: number, type: string, file: File) => Promise<void>;
     getImage: (userId: number, type: string) => Promise<string>;
     getImageHash: (userId: number, type: string) => Promise<string | null>;

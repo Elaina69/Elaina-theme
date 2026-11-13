@@ -7,7 +7,7 @@ import { settingsUtils } from "../utils/settingsUtils.ts"
 
 import { themeSettings } from "./settingsGroups/themeSettings/themeSettings.ts"
 import { pluginsSettings } from "./settingsGroups/pluginsSettings/pluginsSettings.ts"
-import { backuprestoretab } from "./settingsGroups/backupRestore/backupRestore.ts"
+import { backupActions, backuprestoretab } from "./settingsGroups/backupRestore/backupActions.ts"
 import { aboutustab } from "./settingsGroups/aboutUs/aboutUs.ts"
 
 const datapath = `${utils.assets.url()}/`
@@ -136,15 +136,21 @@ async function restartAfterChange(el: string, data: string) {
         b.textContent = await getString("settings.restart-client")
         b.id = "restartAfterChange"
 
-        b.addEventListener("click",() => {
-            if (ElainaData.get("backup-datastore")) {
-                try { writeBackupData() }
-                catch (err: any) { error("Server is down rightnow", err)}
-                window.setTimeout(()=>{
-                    window.restartClient()
-                }, 3000)
+        let restarting = false
+        b.addEventListener("click", async () => {
+            if (restarting) return
+            restarting = true
+            b.setAttribute("disabled", "true")
+            try {
+                if (ElainaData.get("backup-datastore")) await writeBackupData()
+                await ElainaData.flush({ throwOnError: true })
+                window.restartClient()
+            } catch (reason) {
+                // Do not close the client while an upload failed or is unfinished.
+                error("Could not back up settings before restart:", reason)
+                restarting = false
+                b.removeAttribute("disabled")
             }
-            else window.restartClient()
         })
 
         target?.append(a)
@@ -155,25 +161,15 @@ async function restartAfterChange(el: string, data: string) {
     }
 }
 
-async function writeBackupData() {
-    let datastore_list = (await import(`${datapath}config/datastoreDefault.js`)).default
+const writeBackupData = backupActions.writeCloudBackup
 
-    ElainaData.set("last-backup-time", new Date())
-
-    let keys = Object.keys(datastore_list)
-    let mirage = datastore_list
-    keys.forEach(key => {
-        mirage[key] = ElainaData.get(key)
-    })
-    await window.elainathemeApi.writeBackup(ElainaData.get("ElainaTheme-Token"), ElainaData.get("Summoner-ID"), mirage)
-}
-    
 window.addEventListener('load', async () => {
-    // Add a listener to the close button to write backup data if Dev mode is enabled
+    // Best-effort backup on exit; surface failures without an unhandled rejection.
     upl.observer.subscribeToElementCreation(".app-controls-button.app-controls-close", (element) => {
         element.addEventListener("click", async () => {
             if (ElainaData.get("backup-datastore")) {
-                await writeBackupData()
+                try { await writeBackupData() }
+                catch (reason) { error("Could not back up settings before exit:", reason) }
             }
         })
     })

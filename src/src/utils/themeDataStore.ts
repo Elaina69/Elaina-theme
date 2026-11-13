@@ -313,9 +313,12 @@ class ElainaDataClass extends FSDataMgr {
         return this.storageMode;
     }
 
-    /** Force an immediate flush of cache to file (fs mode only). */
-    async flush(): Promise<void> {
-        await this.queuePersist();
+    /** Flush the cache; restore/restart callers can require confirmed persistence. */
+    async flush({ throwOnError = false }: { throwOnError?: boolean } = {}): Promise<void> {
+        const success = await this.queuePersist();
+        if (throwOnError && this.storageMode === 'fs' && !success) {
+            throw new Error('Could not persist Elaina theme settings to disk.');
+        }
     }
 }
 
