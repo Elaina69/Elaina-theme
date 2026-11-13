@@ -40,6 +40,14 @@
 ## Features
 
  - **Customizable icon, wallpaper and background music**
+    - Default wallpaper:
+        - Elaina1.webm: By -夜莺Night ([Source](https://steamcommunity.com/sharedfiles/filedetails/?id=3660962877))
+        - Elaina2.webm: By 灰发的伊蕾娜 ([Source](https://steamcommunity.com/sharedfiles/filedetails/?id=2830662101))
+        - Elaina3.webp: By Yuuki ([Source](https://www.pixiv.net/en/artworks/95706917))
+    - Default music : 
+        - Laur - Fragments of a Gentle Memory.opus ([Source]())
+        - Laur - Mellifluous.opus ([Source]())
+        - Laur - その花は世界を紡ぐ.opus ([Source]())
  
  - **Addon plugins**
  
@@ -87,12 +95,12 @@
 
 ## Star History
 
-<a href="https://star-history.com/?repos=journey-ad/Moe-Counter&type=Date#Elaina69/Elaina-V4&Date">
-   <picture>
-       <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=Elaina69/Elaina-V4&type=Date&theme=dark" />
-       <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=Elaina69/Elaina-V4&type=Date" />
-       <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=Elaina69/Elaina-V4&type=Date" />
-   </picture>
+<a href="https://www.star-history.com/?repos=Elaina69%2FElaina-theme&type=date&legend=top-left">
+    <picture>
+        <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=Elaina69/Elaina-theme&type=date&theme=dark&legend=top-left&sealed_token=2E2H8LAgc3e6Ylb9UjtV0p6xEdLfgKY4AdeuT_ITVGoblwY_s_2EhfsqlM9wr9Sdtxo3FYug90jbzNLqOFZC1CmSAQLcsS2tQt8qyJvVBW1o0DVdzI9F4O9rRjzT_4j3ZnW9pS1k1EfR49qkCpvLkMmp1N3Hw6KBOkREDr-Oehc6eNhWi95BWNQbEFge" />
+        <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=Elaina69/Elaina-theme&type=date&legend=top-left&sealed_token=2E2H8LAgc3e6Ylb9UjtV0p6xEdLfgKY4AdeuT_ITVGoblwY_s_2EhfsqlM9wr9Sdtxo3FYug90jbzNLqOFZC1CmSAQLcsS2tQt8qyJvVBW1o0DVdzI9F4O9rRjzT_4j3ZnW9pS1k1EfR49qkCpvLkMmp1N3Hw6KBOkREDr-Oehc6eNhWi95BWNQbEFge" />
+        <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=Elaina69/Elaina-theme&type=date&legend=top-left&sealed_token=2E2H8LAgc3e6Ylb9UjtV0p6xEdLfgKY4AdeuT_ITVGoblwY_s_2EhfsqlM9wr9Sdtxo3FYug90jbzNLqOFZC1CmSAQLcsS2tQt8qyJvVBW1o0DVdzI9F4O9rRjzT_4j3ZnW9pS1k1EfR49qkCpvLkMmp1N3Hw6KBOkREDr-Oehc6eNhWi95BWNQbEFge" />
+    </picture>
 </a>
 
 <hr>
