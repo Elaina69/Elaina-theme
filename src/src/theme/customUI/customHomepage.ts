@@ -3,6 +3,8 @@ import { log, warn, error } from "../../utils/themeLog.ts";
 import * as upl from 'pengu-upl';
 import utils from '../../utils/utils.ts';
 import { setDefaultData } from "../../services/backupAndRestoreDatastore.ts";
+import { PlaybackProgress, HOME_SCREENS, CHROME_SCREENS } from './playbackProgress.ts';
+import { ClientPageObserver } from './clientPageObserver.ts';
 const iconFolder: string = `${utils.assets.icon()}/`;
 const mediaControllerIconFolder: string = `${iconFolder}plugins-icons/mediaControllers/`;
 
@@ -10,6 +12,7 @@ let addedBackgrounds = false
 let navbarContentList: any[] = [];
 let haveNewContent = 0
 let cdnServer = (await import(utils.assets.url("config/cdnServer.js"))).default
+const playbackProgress = new PlaybackProgress(ElainaData);
 
 // Set default data
 const defaultData = {
@@ -306,18 +309,9 @@ class AudioController {
 
     toggleAudioLoop = () => {
         const audio: any = document.getElementById("bg-audio");
-
-        function handleAudioEnded() {
-            audio.pause();
-            audio.load();
-        }
-
-        if (ElainaData.get('audio-loop')) {
-            audio.removeEventListener("ended", this.nextSong);
-            audio.addEventListener("ended", handleAudioEnded);
-        }
-        else {
-            audio.removeEventListener("ended", handleAudioEnded);
+        audio.loop = ElainaData.get('audio-loop') === true;
+        audio.removeEventListener("ended", this.nextSong);
+        if (!audio.loop) {
             audio.addEventListener("ended", this.nextSong);
             this.changeSongName()
         }
@@ -370,6 +364,8 @@ const audioController = new AudioController()
 // Create controllers
 class MainController {
     private backgroundControllerClickHandler: ((e: Event) => void) | null = null;
+    private controllerAbort: AbortController | null = null;
+    private introTimer: number | null = null;
 
     createElementWithClass = (tag, className) => {
         const element = document.createElement(tag);
@@ -460,6 +456,10 @@ class MainController {
 
     // Delete controllers
     deleteController = () => {
+        this.controllerAbort?.abort();
+        this.controllerAbort = null;
+        if (this.introTimer !== null) window.clearTimeout(this.introTimer);
+        this.introTimer = null;
         // Remove document-level listener to prevent accumulation
         if (this.backgroundControllerClickHandler) {
             document.removeEventListener('click', this.backgroundControllerClickHandler);
@@ -472,6 +472,9 @@ class MainController {
     };
 
     createMainController = () => {
+        this.controllerAbort?.abort();
+        this.controllerAbort = new AbortController();
+        const controllerSignal = this.controllerAbort.signal;
         const container = this.createElementWithClass("div", "webm-bottom-buttons-container");
 
         if (ElainaData.get("disable-theme-audio")) container.style.display = "none"
@@ -506,6 +509,7 @@ class MainController {
         const prevBgIcon = this.createIcon("prev-bg-icon", `${mediaControllerIconFolder}prev_button.webp`);
 
         const bgDropdown = this.createElementWithId("lol-uikit-framed-dropdown", "bgdropdown");
+        bgDropdown.addEventListener('mousedown', () => { void window.refreshLists?.(); });
 
 
         // Create audio progress bar
@@ -667,7 +671,7 @@ class MainController {
             progress.style.width = audio && audio.duration ? `${(audio.currentTime / audio.duration) * 100 + 1}%` : '0%';
             audio.addEventListener('timeupdate', () => {
                 progress.style.width = audio.duration ? `${(audio.currentTime / audio.duration) * 100 + 1}%` : '0%';
-            });
+            }, { signal: controllerSignal });
         }
 
         // Event delegation for dynamically created elements
@@ -722,6 +726,18 @@ class MainController {
             wallpaperControls.style.transform = `translateX(212px)`;
         }
     };
+
+    showIntro = () => {
+        const container = document.querySelector('.webm-bottom-buttons-container');
+        if (!container) return;
+        if (this.introTimer !== null) window.clearTimeout(this.introTimer);
+        // Keep the positioning class throughout the intro so navbar toggles always find it.
+        container.classList.add('webm-bottom-buttons-container-hovered');
+        this.introTimer = window.setTimeout(() => {
+            this.introTimer = null;
+            if (container.isConnected) container.classList.remove('webm-bottom-buttons-container-hovered');
+        }, 6000);
+    };
 }
 const mainController = new MainController()
 
@@ -730,6 +746,8 @@ class HideNavbarButton {
     checkNewContent = () => {
         if (!ElainaData.has("navbar-content")) ElainaData.set("navbar-content", [])
         let navbarContent = document.querySelectorAll<HTMLElement>(".activity-center__tab_content");
+        navbarContentList = [];
+        haveNewContent = 0;
 
         navbarContent.forEach((element) => {
             const labelElement = element.querySelector<HTMLElement>(".activity-center__tab_label_display");
@@ -852,6 +870,7 @@ class HideNavbarButton {
             this.checkNewContent()
             this.createHideButton()
             this.hideShowNavBar()
+            this.changeHomePageStyle()
         })
 
         upl.observer.subscribeToElementCreation("#activity-center > main div", (element: any) => {
@@ -1008,16 +1027,8 @@ class WallpaperAndAudio {
     private videoAbortController: AbortController | null = null;
     private audioAbortController: AbortController | null = null;
 
-    // Save the resume position only on pause or page close. Every ElainaData.set rewrites
-    // Pengu's whole shared datastore file, and saving during playback (about 1.5 times a
-    // second) made a mid-write client kill likely, which wipes every setting on next start.
     private keepPosition(el: HTMLMediaElement, key: string, signal: AbortSignal) {
-        const save = () => {
-            const time = Math.floor(el.currentTime);
-            if (time !== ElainaData.get(key)) ElainaData.set(key, time);
-        };
-        el.addEventListener("pause", save, { signal });
-        window.addEventListener("pagehide", save, { signal });
+        playbackProgress.track(el, key as 'Audio-currentTime' | 'Wallpaper-currentTime', signal);
     }
 
     // Add Wallpaper and Audio to client
@@ -1062,13 +1073,13 @@ class WallpaperAndAudio {
             video.autoplay = true;
             video.volume = ElainaData.get("wallpaper-volume");
             video.muted = ElainaData.get("mute-audio");
-            video.currentTime = ElainaData.get("Wallpaper-currentTime");
             video.src = utils.assets.background("wallpapers", ElainaData.get("Wallpaper-list")[ElainaData.get('wallpaper-index')]);
             video.playbackRate = ElainaData.get("Playback-speed") / 100;
             video.preload = "metadata";
             video.setAttribute("disablePictureInPicture", "");
 
             this.keepPosition(video, "Wallpaper-currentTime", videoSignal);
+            playbackProgress.restore(video, 'Wallpaper-currentTime', videoSignal);
 
             if (ElainaData.get("wallpaper-slideshow")) {
                 video.loop = false
@@ -1108,10 +1119,10 @@ class WallpaperAndAudio {
             audio.src = utils.assets.background("audio", ElainaData.get("Audio-list")[ElainaData.get('audio-index')]);
             audio.volume = ElainaData.get("audio-volume");
             audio.muted = ElainaData.get("mute-audio");
-            audio.currentTime = ElainaData.get("Audio-currentTime");
             audio.preload = "metadata";
 
             this.keepPosition(audio, "Audio-currentTime", audioSignal);
+            playbackProgress.restore(audio, 'Audio-currentTime', audioSignal);
 
             audioController.toggleAudioLoop();
 
@@ -1166,8 +1177,13 @@ class WallpaperAndAudio {
 
 const wallpaperAndAudio = new WallpaperAndAudio()
 
-class AddHomePage {
+/** Apply homepage controls and ambience settings when the visible League page changes. */
+export class AddHomePage {
+    private activityCenterMusicEnabled: boolean | null = null;
+
     setActivityCenterMusicStatus = async (bool: boolean) => {
+        if (this.activityCenterMusicEnabled === bool) return;
+        this.activityCenterMusicEnabled = bool;
         let body = {
             "schemaVersion": 5,
             "data": {
@@ -1175,24 +1191,27 @@ class AddHomePage {
             }
         }
 
-        await fetch("/lol-settings/v1/local/lol-audio", {
-            method: "PATCH",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(body)
-        })
+        let applied = false;
+        try {
+            const response = await fetch("/lol-settings/v1/local/lol-audio", {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(body)
+            });
+            applied = response.ok;
+        } finally {
+            // A failed request must remain retryable without clearing a newer page's state.
+            if (!applied && this.activityCenterMusicEnabled === bool) this.activityCenterMusicEnabled = null;
+        }
     }
 
     pageListenner = async (node: any) => {
         const pagename = node.getAttribute("data-screen-name");
-        const isOtherPage = ![
-            "rcp-fe-lol-home-main",
-            "window-controls",
-            "rcp-fe-lol-navigation-screen",
-            "social",
-            "rcp-fe-lol-activity-center-main"
-        ].includes(pagename);
+        if (!pagename || CHROME_SCREENS.has(pagename)) return;
+        playbackProgress.pageChanged(pagename);
+        const isOtherPage = !HOME_SCREENS.has(pagename);
 
         if (!isOtherPage) {
             if (!addedBackgrounds) {
@@ -1208,10 +1227,7 @@ class AddHomePage {
             if (!document.querySelector(".webm-bottom-buttons-container") && !document.querySelector(".webm-bottom-buttons-container-hovered")) {
                 mainController.deleteController();
                 mainController.createMainController();
-                document.querySelector(".webm-bottom-buttons-container")?.setAttribute("class", "webm-bottom-buttons-container-hovered")
-                window.setTimeout(() => {
-                    document.querySelector(".webm-bottom-buttons-container-hovered")?.setAttribute("class", "webm-bottom-buttons-container")
-                }, 6000)
+                mainController.showIntro();
 
                 hideNavbarButton.hideShowNavBar();
                 hideNavbarButton.changeHomePageStyle()
@@ -1219,18 +1235,16 @@ class AddHomePage {
 
             changeHomePageTabs.deleteNavbarTab();
         }
-        else if (isOtherPage && document.querySelector(".webm-bottom-buttons-container") && pagename != "rcp-fe-lol-info-hub") {
+        else if (document.querySelector(".webm-bottom-buttons-container, .webm-bottom-buttons-container-hovered") && pagename != "rcp-fe-lol-info-hub") {
             mainController.deleteController();
-            this.setActivityCenterMusicStatus(true)
         }
 
-        if (!isOtherPage || pagename === "rcp-fe-lol-postgame" || pagename === "rcp-fe-lol-info-hub") {
-            this.setActivityCenterMusicStatus(false)
-        }
+        await this.setActivityCenterMusicStatus(isOtherPage && pagename !== 'rcp-fe-lol-postgame' && pagename !== 'rcp-fe-lol-info-hub');
     };
 }
 
 const addHomePage = new AddHomePage()
+const clientPageObserver = new ClientPageObserver(addHomePage.pageListenner);
 
 type WindowEffectName = "transparent" | "blurbehind" | "acrylic" | "unified" | "mica" | "vibrancy";
 
@@ -1310,6 +1324,7 @@ const windowEffects = new WindowEffects()
 /** Manages the custom homepage including wallpapers, audio, navbar buttons, and page listeners. */
 export class HomePage {
     main = () => {
+        if (ElainaData.get('Dev-mode') === true) window.__elainaPlaybackProgress = playbackProgress;
         initHomepageData()
         windowEffects.applyWindowEffect()
         window.setTimeout(updateSummonerIdentity, 7000)
@@ -1319,7 +1334,14 @@ export class HomePage {
         wallpaperAndAudio.addImageWallpaperElement()
         wallpaperAndAudio.addAudioElement()
 
-        utils.mutationObserverAddCallback(addHomePage.pageListenner, ["screen-root"])
+        utils.mutationObserverAddCallback((node: HTMLElement) => clientPageObserver.observeScreen(node), ["screen-root"])
+        clientPageObserver.start();
+        window.addEventListener('pagehide', () => {
+            playbackProgress.save('pagehide');
+            clientPageObserver.stop();
+            mainController.deleteController();
+            playbackProgress.stop();
+        }, { once: true });
         hideNavbarButton.addHideButton()
         if (ElainaData.get("enable-hide-top-navbar-friendlist-button")) {
             hideTopNavbarButton.addHideButton()
