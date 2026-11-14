@@ -43,7 +43,14 @@ function resolveSyncedUserTargetByDisplayName(name: string): UserIconTarget | nu
 }
 
 /** Handles custom icon upload, cache, and peer sync. */
-class SyncUserIcons {
+export class SyncUserIcons {
+    private pendingSync: Promise<void> | null = null;
+
+    private allowed(feature: 'sync-user-icons' | 'upload-user-icons'): boolean {
+        const api = window.elainathemeApi;
+        return !!api && (typeof api.allowed === 'function' ? api.allowed(feature) : ElainaData.get(feature) === true);
+    }
+
     getIconFolder() { return iconFolder; }
     getIconData() { return icdata; }
 
@@ -52,7 +59,7 @@ class SyncUserIcons {
         return [
             { url: iconUrl(icdata["Avatar"]), type: "avatar" },
             { url: iconUrl(icdata["Border"]), type: "border" },
-            { url: iconUrl("Regalia-Banners", currentBanner), type: "banner" },
+            { url: iconUrl("regalia-banners", currentBanner), type: "banner" },
             { url: iconUrl(icdata["Hover-card"]), type: "hoverCardBackdrop" },
             { url: iconUrl(icdata["Honor"]), type: "emblem" },
             { url: iconUrl(icdata["Rank-icon"]), type: "rankIcon" },
@@ -313,19 +320,22 @@ class SyncUserIcons {
     }
 
     async uploadIcon(icon: string, iconType: string): Promise<void> {
-        const response = await fetch(icon);
-        if (!response.ok) error(`Failed to fetch icon: ${icon}`);
-
-        const blob = await response.blob();
-        const mimeToExt: Record<string, string> = {
-            "image/png": ".png", "image/jpeg": ".jpg",
-            "image/webp": ".webp", "image/gif": ".gif"
-        };
-        log("Uploading " + icon);
-        const ext = mimeToExt[blob.type] || ".png";
-        const file = new File([blob], iconType + ext, { type: blob.type });
-
+        if (!this.allowed('upload-user-icons')) return;
         try {
+            const response = await fetch(icon);
+            if (!response.ok) throw new Error(`Failed to fetch icon (${response.status}): ${icon}`);
+
+            const blob = await response.blob();
+            const mimeToExt: Record<string, string> = {
+                "image/png": ".png", "image/jpeg": ".jpg",
+                "image/webp": ".webp", "image/gif": ".gif"
+            };
+            log("Uploading " + icon);
+            const ext = mimeToExt[blob.type] || ".png";
+            const file = new File([blob], iconType + ext, { type: blob.type });
+
+            // Consent can change while the local file is loading.
+            if (!this.allowed('upload-user-icons')) return;
             await window.elainathemeApi.uploadImage(
                 ElainaData.get("ElainaTheme-Token"),
                 ElainaData.get("Summoner-ID"), iconType, file
@@ -336,6 +346,7 @@ class SyncUserIcons {
     }
 
     private async syncOwnIcons(summonerID: number): Promise<void> {
+        if (!this.allowed('upload-user-icons')) return;
         const iconMap = this.getOwnIconMap();
 
         if (typeof window.elainathemeApi.getImageHashes !== 'function') {
@@ -576,6 +587,7 @@ class SyncUserIcons {
     }
 
     async getFriendsIcons(): Promise<void> {
+        if (!this.allowed('sync-user-icons')) return;
         const totalStart = performance.now();
         const targetListStart = performance.now();
         const targets = await this.collectSyncTargets();
@@ -609,7 +621,7 @@ class SyncUserIcons {
     }
 
     async requestUserIconSync(targets: UserIconTarget[], reason = "visible-user"): Promise<void> {
-        if (!ElainaData.get("sync-user-icons")) return;
+        if (!this.allowed('sync-user-icons')) return;
         if (!window.elainathemeApi || !Array.isArray(targets) || targets.length === 0) return;
 
         const deduped = new Map<string, UserIconTarget>();
@@ -672,24 +684,26 @@ class SyncUserIcons {
      * Download friend icons and upload own icons with hash comparison.
      */
     async syncIconsWithHashCheck(): Promise<void> {
-        if (!ElainaData.get("sync-user-icons")) return;
+        const download = this.allowed('sync-user-icons');
+        const upload = this.allowed('upload-user-icons');
+        if (!download && !upload) return;
 
         const summonerID = ElainaData.get("Summoner-ID");
         const token = ElainaData.get("ElainaTheme-Token");
 
-        if (!summonerID || !token) {
+        if (!summonerID || (upload && !token)) {
             error("Missing summonerID or token, skipping icon sync");
             return;
         }
 
         // Sync visible users' icons
-        await themeToast.promise(this.getFriendsIcons(), {
+        if (download) await themeToast.promise(this.getFriendsIcons(), {
             loading: 'Syncing user icons...',
             success: 'Sync complete!',
             error: 'Error while syncing user icons, check console for more info!'
         }, 'elaina-sync-user-icons');
 
-        await this.syncOwnIcons(summonerID);
+        if (this.allowed('upload-user-icons')) await this.syncOwnIcons(summonerID);
 
         // Update avatar on conversations
         const conversationChat = document.querySelectorAll(".conversation.chat");
@@ -709,7 +723,10 @@ class SyncUserIcons {
     }
 
     async main(): Promise<void> {
-        await this.syncIconsWithHashCheck();
+        if (!this.pendingSync) {
+            this.pendingSync = this.syncIconsWithHashCheck().finally(() => { this.pendingSync = null; });
+        }
+        await this.pendingSync;
     }
 }
 
