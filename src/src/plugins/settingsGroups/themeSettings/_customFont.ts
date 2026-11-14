@@ -6,8 +6,7 @@ import { addCss } from '../../../theme/loadCustomCss';
  * Đồng bộ chế độ font (local/google) - chỉ cho phép 1 chế độ hoạt động
  */
 function syncExclusiveFontMode(mode: "local" | "google") {
-    ElainaData.set("Custom-Font-Local", mode === "local");
-    ElainaData.set("Custom-Font-Google", mode === "google");
+    ElainaData.setMany({ "Custom-Font-Local": mode === "local", "Custom-Font-Google": mode === "google" });
 
     const localBox = document.getElementById("cusfontlocalbox") as HTMLInputElement | null;
     const googleBox = document.getElementById("cusfontgooglebox") as HTMLInputElement | null;

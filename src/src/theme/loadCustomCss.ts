@@ -1,4 +1,5 @@
 import utils from "../utils/utils.ts"
+import { applyCustomFont } from '../utils/customFont.ts';
 
 let icdata: Object = (await import(utils.assets.url("config/icons.js"))).default;
 
@@ -43,8 +44,9 @@ class AddCss {
 	}
 
 	mainThemeCss = () => {
+		const stylesheet = utils.assets.url('assets/styles/themes/elaina.css') + '?elaina=' + process.env.ELAINA_CSS_REVISION;
 		utils.addStyleNode(`
-			@import ${cssAssetUrl("assets/styles/themes/elaina.css")};
+			@import ${utils.cssUrl(stylesheet)};
 			@font-face {
 				font-family: 'Elaina';
 				src: ${cssAssetUrl("assets/fonts/beaufortforlol-bold.ttf")}
@@ -156,29 +158,7 @@ class AddCss {
 		utils.addStyleNode(cssImports);
 	};
 
-	customFont = () => {
-		document.getElementById("Custom-font")?.remove();
-
-		if (!ElainaData.get("Custom-Font")) {
-			return;
-		}
-
-		if (ElainaData.get("Custom-Font-Google")) {
-			const googleFont = utils.getSafeGoogleFont(ElainaData.get("Google-Font-Url"));
-			if (!googleFont) return;
-
-			utils.addStyleNodeWithID("Custom-font", /*css*/`
-				@import url("${utils.escapeCssString(googleFont.url.toString())}");
-				:root {
-					--font-display: "${utils.escapeCssString(googleFont.family)}", 'LoL Display', 'Elaina', 'Times New Roman', Times, Baskerville, Georgia, serif !important;
-					--font-body: "${utils.escapeCssString(googleFont.family)}", 'LoL Body', 'Elaina', Arial, 'Helvetica Neue', Helvetica, sans-serif !important;
-				}
-			`)
-			return;
-		}
-
-		utils.addFont(utils.assets.url("assets/fonts", ElainaData.get("CurrentFont")),"Custom-font","Custom")
-	}
+	customFont = applyCustomFont;
 
 	customCursor = () => {
 		utils.CustomCursor(cssIconUrl(icdata["Mouse-cursor"]),`@import ${cssAssetUrl("assets/styles/components/cursor.css")}`)
