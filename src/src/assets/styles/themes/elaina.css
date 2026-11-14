@@ -82,7 +82,7 @@ html {
     background-image: none !important;
 }
 
-div > div > .rcp-fe-lol-tft-application-background {
+div > div > .rcp-fe-lol-tft-application-background:not(.tft-troves-v2-background) {
 	background-image: none !important; 
 }
 
@@ -139,7 +139,6 @@ lol-uikit-navigation-item > .section::after {
 
 /* Loading screen */
 .lol-loading-screen-container.lol-loading-screen-default-state {
-	backdrop-filter: blur(20px) brightness(0.7);
 	background: #0000004f !important;
 }
 
@@ -152,4 +151,4 @@ lol-uikit-navigation-item > .section::after {
 	display: none !important;
 }
 /*_________________________________________________________________________________________________________________________________*/
-/* End */	
+/* End */

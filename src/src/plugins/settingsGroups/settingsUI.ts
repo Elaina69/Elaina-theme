@@ -220,6 +220,7 @@ class ui {
         btn.onclick = onClick
         btn.style.cssText = "display: flex;" + style
         btn.setAttribute('class', cls)
+        btn.classList.add('elaina-theme-settings-button')
         btn.id = id
 
         return btn
@@ -279,6 +280,7 @@ class ui {
     createCheckBox = (text: string, id: string, boxID: string, check: any, show: boolean, Datastore: string) => {
         const container = document.createElement("div")
         container.style.width = "fit-content"
+        if (show) container.classList.add('elaina-theme-settings-checkbox')
 
         const origin = document.createElement("lol-uikit-flat-checkbox")
         origin.id = id

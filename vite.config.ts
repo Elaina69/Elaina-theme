@@ -7,6 +7,7 @@ import fs from 'node:fs';
 import archiver from "archiver"
 import chalk from 'chalk';
 import { buildMcpPackage, packageMcp, syncDeployment } from './scripts/mcp-package.mjs';
+import { themeCssRevision, versionThemeCssImports } from './scripts/theme-css.mjs';
 
 import pkg from './package.json';
 const PLUGINS_PATH = pkg.config.pluginsPath;
@@ -29,6 +30,7 @@ const getIndexCode = (port: number) => (
 let port: number;
 const outDir = resolve(__dirname, 'dist');
 const pluginsDir = resolve(__dirname, PLUGINS_PATH, PLUGIN_NAME);
+const cssRevision = await themeCssRevision(resolve(__dirname, 'src/src/assets/styles'));
 
 /**
  * Mirrors src into dest, writing only files whose content changed and removing stale ones.
@@ -46,6 +48,7 @@ export default defineConfig((config) => ({
         'process.env.ENV': config.command == 'build' ? '"production"' : '"development"',
         'process.env.PROD': config.command == 'build' ? 'true' : 'false',
         'process.env.DEV': config.command == 'build' ? 'false' : 'true',
+        'process.env.ELAINA_CSS_REVISION': JSON.stringify(cssRevision),
     },
     build: {
         target: 'esnext',
@@ -186,6 +189,7 @@ export default defineConfig((config) => ({
                 };
             
                 await copyTask('src/src/assets', join(outDir, 'assets'), 'Copying assets folder to /dist');
+                await versionThemeCssImports(join(outDir, 'assets/styles'), cssRevision);
                 await copyTask('src/src/config', join(outDir, 'config'), 'Copying config folder to /dist');
                 await copyTask('src/src/locales', join(outDir, 'locales'), 'Copying locales folder to /dist');
             

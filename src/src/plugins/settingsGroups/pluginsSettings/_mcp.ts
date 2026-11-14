@@ -41,12 +41,15 @@ export async function mcpSection(): Promise<HTMLElement | null> {
         if (!Number.isInteger(value) || value < 256 || value > 65536) { payload.input.value = String(ElainaData.get('MCP-max-payload-bytes', 65536)); return; }
         ElainaData.set('MCP-max-payload-bytes', value);
     };
-    children.push(entries.row, payload.row, status, error,
+    const actions = UI.createRow('mcp-actions', [
         UI.createButton(await text('open-folder'), 'mcp-open-folder', () => {
             if (ElainaData.get('Dev-mode') === true) window.openPluginsFolder(pluginPath('mcp-server'));
         }),
         UI.createButton(await text('reconnect'), 'mcp-reconnect', () => runtime?.reconnect()),
         UI.createButton(await text('clear'), 'mcp-clear', () => runtime?.clear()),
+    ]);
+    actions.classList.add('elaina-theme-settings-actions');
+    children.push(entries.row, payload.row, status, error, actions,
         UI.createLabel(await text('start-note')),
     );
     const strings = Object.fromEntries(await Promise.all(['disabled', 'configuration', 'connecting', 'connected', 'reconnecting', 'error', 'restart-server', 'saved'].map(async key => [key, await text(key)])));
@@ -74,10 +77,13 @@ export async function mcpSection(): Promise<HTMLElement | null> {
             } catch (reason) { error.textContent = reason instanceof Error ? reason.message : String(reason); }
             finally { save.removeAttribute('disabled'); }
         });
-        children.push(UI.createRow('plugins-settings-mcp-file', [
-            port.row, token.row, directory.row,
+        const fileActions = UI.createRow('mcp-file-actions', [
             UI.createButton(await text('generate-token'), 'mcp-generate-token', () => { if (loaded) token.input.value = randomToken(); }),
-            save, UI.createButton(await text('read-file'), 'mcp-read-file', load), UI.createLabel(strings['restart-server']),
+            save, UI.createButton(await text('read-file'), 'mcp-read-file', load),
+        ]);
+        fileActions.classList.add('elaina-theme-settings-actions');
+        children.push(UI.createRow('plugins-settings-mcp-file', [
+            port.row, token.row, directory.row, fileActions, UI.createLabel(strings['restart-server']),
         ]));
         void load();
     } else children.push(UI.createLabel(await text('legacy-note')));

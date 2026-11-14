@@ -66,6 +66,45 @@
 	margin-left: 25px !important;
 }
 
+.elaina-theme-settings-checkbox {
+    max-width: 100%;
+    margin-bottom: 14px;
+}
+
+.elaina-theme-settings-checkbox:last-child {
+    margin-bottom: 0;
+}
+
+.elaina-theme-settings-checkbox + br {
+    display: none;
+}
+
+.elaina-theme-settings-button {
+    margin-bottom: 10px;
+}
+
+.elaina-theme-settings-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: flex-start;
+}
+
+.elaina-theme-settings-actions > .elaina-theme-settings-button {
+    margin: 0;
+}
+
+#theme-settings-root .Dropdown-div {
+    display: flow-root;
+    margin-bottom: 20px;
+}
+
+#theme-settings-root .Dropdown-div > lol-uikit-framed-dropdown {
+    display: block;
+    min-height: 32px;
+    max-width: 100%;
+}
+
 .theme-settings-message {
 	color: #f0e6d2 !important;
 	font-size: 14px !important;
