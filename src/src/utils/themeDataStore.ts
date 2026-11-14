@@ -39,9 +39,9 @@ class FSDataMgr {
     /**
      * Queue a persist operation; coalesces multiple rapid writes into one.
      */
-    queuePersist(): Promise<boolean> {
+    queuePersist(markDirty = true): Promise<boolean> {
         if (this.pendingPersist) {
-            this.persistAgain = true;
+            if (markDirty) this.persistAgain = true;
             return this.pendingPersist;
         }
 
@@ -250,6 +250,25 @@ class ElainaDataClass extends FSDataMgr {
         return success;
     }
 
+    /** Commit related values together, with one save and one change notification. */
+    setMany(patch: Record<string, any>): boolean {
+        if (!this.initialized) {
+            error('ElainaData.setMany called before ElainaData.init()');
+            return false;
+        }
+        const keys = Object.keys(patch).filter(key => !this.has(key) || !Object.is(this.get(key), patch[key]));
+        if (!keys.length) return true;
+        const changed = Object.fromEntries(keys.map(key => [key, patch[key]]));
+        if (this.storageMode === 'fs') {
+            Object.assign(this.cache, changed);
+            void this.queuePersist();
+        } else if (window.DataStore.set('ElainaTheme', { ...this.getAll(), ...changed }) === false) {
+            return false;
+        }
+        this.notify(keys);
+        return true;
+    }
+
     /**
      * Checks if a key exists in the datastore.
      * @param key The key to check for existence.
@@ -339,7 +358,7 @@ class ElainaDataClass extends FSDataMgr {
 
     /** Flush the cache; restore/restart callers can require confirmed persistence. */
     async flush({ throwOnError = false }: { throwOnError?: boolean } = {}): Promise<void> {
-        const success = await this.queuePersist();
+        const success = await this.queuePersist(false);
         if (throwOnError && this.storageMode === 'fs' && !success) {
             throw new Error('Could not persist Elaina theme settings to disk.');
         }

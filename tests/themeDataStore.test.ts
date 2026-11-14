@@ -156,3 +156,21 @@ describe('ElainaData on Pengu with PluginFS (fs mode)', () => {
         expect(ElainaData.get('a')).toBe('from-datastore');
     });
 });
+
+
+describe.each(['legacy', 'pluginfs'] as const)('ElainaData.setMany (%s)', flavour => {
+    it('commits both playback values in one backend write and one notification', async () => {
+        const { ElainaData, context, dataStore, fs } = await boot(flavour, { ElainaTheme: { keep: true, 'Audio-currentTime': 5 } });
+        await ElainaData.init(context); await ElainaData.flush();
+        const before = flavour === 'legacy' ? dataStore.writes : fs.writes;
+        const listener = vi.fn(); ElainaData.subscribe(listener);
+        expect(ElainaData.setMany({ 'Audio-currentTime': 20, 'Wallpaper-currentTime': 8 })).toBe(true);
+        await ElainaData.flush();
+        expect((flavour === 'legacy' ? dataStore.writes : fs.writes) - before).toBe(1);
+        expect(listener).toHaveBeenCalledExactlyOnceWith(['Audio-currentTime', 'Wallpaper-currentTime']);
+        expect(ElainaData.get('keep')).toBe(true);
+        const after = flavour === 'legacy' ? dataStore.writes : fs.writes;
+        ElainaData.setMany({ 'Audio-currentTime': 20, 'Wallpaper-currentTime': 8 });
+        expect(flavour === 'legacy' ? dataStore.writes : fs.writes).toBe(after);
+    });
+});
