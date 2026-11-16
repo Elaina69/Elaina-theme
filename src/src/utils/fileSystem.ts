@@ -2,13 +2,11 @@ import { log, error } from './themeLog';
 import { fileRegex } from './fileRegex';
 import { del_webm_buttons, create_webm_buttons } from '../theme/customUI/customHomepage';
 
-class FileSystem {
+/** Access PluginFS and refresh asset lists only at startup or on user demand. */
+export class FileSystem {
     isContextFSExist = true;
     private context: any = null;
-    private currentWallpaperList: string[] = [];
-    private currentAudioList: string[] = []
-    private currentBannerList: string[] = [];
-    private currentFontList: string[] = [];
+    private pendingRefresh: Promise<void> | null = null;
 
     read = async (path: string): Promise<string | undefined> => {
         return await this.context?.fs.read(path);
@@ -77,45 +75,38 @@ class FileSystem {
         window.refreshLists = globalRefreshLists;
 
         window.isContextFSExist = this.isContextFSExist;
+        await this.refreshLists();
     }
 
-    refreshLists = async () => {
-        const wallpaper = await this.ls('./assets/backgrounds/wallpapers') ?? [];
-        const audio = await this.ls('./assets/backgrounds/audio') ?? [];
-        const banner = await this.ls('./assets/icon/regalia-banners') ?? [];
-        const font = await this.ls('./assets/fonts') ?? [];
+    /** Refresh on startup or user demand; concurrent requests share one directory scan. */
+    refreshLists = (): Promise<void> => {
+        if (!this.context?.fs) return Promise.resolve();
+        if (this.pendingRefresh) return this.pendingRefresh;
+        this.pendingRefresh = this.scanLists().catch(reason => error('Could not refresh asset lists:', reason))
+            .finally(() => { this.pendingRefresh = null; });
+        return this.pendingRefresh;
+    }
 
-        const dataLists = {
-            Wallpaper: wallpaper,
-            Audio: audio,
-            Banner: banner,
-            Font: font,
-        };
-
-        const filteredLists = Object.keys(fileRegex).reduce((acc, key) => {
-            acc[key] = dataLists[key].filter(file => fileRegex  [key].test(file));
-            return acc;
-        }, {} as Record<string, string[]>);
-
-        Object.entries(filteredLists).forEach(([key, list]) => {
-            const prevList = key === 'Wallpaper' ? this.currentWallpaperList
-                : key === 'Audio' ? this.currentAudioList
-                    : key === 'Banner' ? this.currentBannerList
-                        : key === 'Font' ? this.currentFontList
-                            : [];
-
-            if (ElainaData && JSON.stringify(prevList) !== JSON.stringify(list)) {
-                log(`List changed for ${key}`);
-                ElainaData.set(`${key}-list`, list);
-                del_webm_buttons();
-                create_webm_buttons();
-            }
-
-            if (key === 'Audio') this.currentAudioList = list;
-            else if (key === 'Wallpaper') this.currentWallpaperList = list;
-            else if (key === 'Banner') this.currentBannerList = list;
-            else if (key === 'Font') this.currentFontList = list;
-        });
+    private async scanLists(): Promise<void> {
+        const folders = { Wallpaper: './assets/backgrounds/wallpapers', Audio: './assets/backgrounds/audio', Banner: './assets/icon/regalia-banners', Font: './assets/fonts' };
+        const results = await Promise.all(Object.entries(folders).map(async ([key, path]) => [key, await this.ls(path)] as const));
+        const patch: Record<string, string[]> = {};
+        for (const [key, files] of results) {
+            // A failed listing must not erase a working list or its selected media.
+            if (!Array.isArray(files)) continue;
+            const list = files.filter(file => fileRegex[key].test(file)).sort();
+            const previous: string[] = ElainaData.get(`${key}-list`, []);
+            if (JSON.stringify([...previous].sort()) === JSON.stringify(list)) continue;
+            // Preserve existing indices when the directory order changes or a file is added.
+            patch[`${key}-list`] = [...previous.filter(file => list.includes(file)), ...list.filter(file => !previous.includes(file))];
+            log(`List changed for ${key}`);
+        }
+        if (!Object.keys(patch).length) return;
+        ElainaData.setMany(patch);
+        if ((patch['Wallpaper-list'] || patch['Audio-list']) && document.querySelector('.webm-bottom-buttons-container, .webm-bottom-buttons-container-hovered')) {
+            del_webm_buttons();
+            create_webm_buttons();
+        }
     }
 }
 
