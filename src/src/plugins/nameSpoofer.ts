@@ -42,13 +42,18 @@ const SELECTORS = `
  * @settings Name-Spoofer, Spoof-name
  */
 export class NameSpoofer {
-    updateNames(root = document) {
+    private observers = new Map<ParentNode, MutationObserver>();
+    private lifecycle: AbortController | null = null;
+    private frame: HTMLIFrameElement | null = null;
+    private unsubscribe: (() => void) | null = null;
+
+    updateNames(root: ParentNode = document) {
         const Name = ElainaData.get("Spoof-name");
         const spoof = ElainaData.get("Name-Spoofer");
         
         if (!spoof) return;
         
-        const elements = root.querySelectorAll(SELECTORS);
+        const elements = root.querySelectorAll(SELECTORS.replace(/\.system-message,\s*/, ''));
         elements.forEach((element: any) => {
             if (element.textContent !== Name) {
                 element.textContent = Name;
@@ -63,27 +68,74 @@ export class NameSpoofer {
         });
     }
     
-    observeChanges(target: any) {
-        new MutationObserver(() => this.updateNames(target)).observe(target, {
+    observeChanges(target: ParentNode) {
+        if (this.observers.has(target)) return;
+        const observer = new MutationObserver(() => {
+            this.updateNames(target);
+            this.watchMessageFrame();
+        });
+        observer.observe(target as Node, {
             childList: true,
+            characterData: true,
             subtree: true,
         });
+        this.observers.set(target, observer);
+        this.updateNames(target);
     }
 
+    private watchMessageFrame = () => {
+        if (!this.lifecycle) return;
+        const frame = document.getElementById('embedded-messages-frame') as HTMLIFrameElement | null;
+        if (frame !== this.frame) {
+            this.frame?.removeEventListener('load', this.watchMessageFrame);
+            this.frame = frame;
+            frame?.addEventListener('load', this.watchMessageFrame);
+        }
+        let frameDocument: Document | null = null;
+        try { frameDocument = frame?.contentDocument ?? null; } catch { /* Other-origin frames are unavailable. */ }
+        for (const [target, observer] of this.observers) {
+            if ((target as Node).nodeType === 9 && target !== frameDocument) {
+                observer.disconnect();
+                this.observers.delete(target);
+            }
+        }
+        if (frameDocument) this.observeChanges(frameDocument);
+    };
+
+    private stopObservers(): void {
+        this.lifecycle?.abort();
+        this.lifecycle = null;
+        this.frame?.removeEventListener('load', this.watchMessageFrame);
+        this.frame = null;
+        for (const observer of this.observers.values()) observer.disconnect();
+        this.observers.clear();
+    }
+
+    private reconcile = () => {
+        if (ElainaData.get('Name-Spoofer') !== true) {
+            this.stopObservers();
+            return;
+        }
+        if (!this.lifecycle) {
+            this.lifecycle = new AbortController();
+            this.observeChanges(document.getElementById('rcp-fe-viewport-root') ?? document.body);
+            window.addEventListener('pagehide', () => this.stop(), { signal: this.lifecycle.signal });
+        } else {
+            for (const target of this.observers.keys()) this.updateNames(target);
+        }
+        this.watchMessageFrame();
+    };
+
     main = () => {
-        const manager = document.getElementById("rcp-fe-viewport-root");
-        
-        if (manager) {
-            this.observeChanges(manager);
-        }
-    
-        const myMessageBox: any = document.getElementById("embedded-messages-frame");
-        if (myMessageBox && myMessageBox.contentDocument) {
-            this.observeChanges(myMessageBox.contentDocument);
-        }
-    
-        // Initial update
-        // Periodically check for new elements (consider removing if performance is an issue)
-        setInterval(this.updateNames, 100);
+        this.unsubscribe ??= ElainaData.subscribe(keys => {
+            if (keys.includes('Name-Spoofer') || keys.includes('Spoof-name')) this.reconcile();
+        });
+        this.reconcile();
+    }
+
+    stop(): void {
+        this.stopObservers();
+        this.unsubscribe?.();
+        this.unsubscribe = null;
     }
 }
