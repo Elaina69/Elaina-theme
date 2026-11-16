@@ -24,33 +24,35 @@
     "home": {
         "introduction": "Elaina Theme is a Pengu Loader theme for the League Client. It changes the client visuals, adds custom assets, provides wallpaper/audio controls, and includes optional quality-of-life plugins.",
         "features": [
-            "Custom homepage wallpaper with image/video support.",
-            "Custom background audio with volume, loop, mute, and in-game pause controls.",
-            "Custom font, profile banner, avatar, border, currency icons, rank icons, rune backgrounds, and other client UI assets.",
-            "Interface toggles for transparency, hidden client sections, game tab visibility, profile layout, and nickname styling.",
-            "Optional plugins for queue automation, auto accept, loot helper, invite all friends, profile spoofing, custom status, custom BE/RP, and developer tools.",
-            "Manual JSON backup/restore and optional cloud backup/restore."
+            "Image/video wallpaper and background audio with Home media controls.",
+            "Local/Google fonts, custom avatar/border/banner/currency/rank/rune/champion art and layout controls.",
+            "Active optional helpers: Auto Accept toolbar, Loot Helper, Invite all friends, profile/status display and Name Spoofer.",
+            "Offline JSON backup/restore and separately consent-gated cloud/icon services.",
+            "Developer MCP integration: 16 upstream tools plus console/network capture, gated by Dev-mode and MCP-enabled.",
+            "Legacy Auto Queue/Dodge/practice/skip-honor code remains in source but is not started by the current entrypoint."
         ],
         "configurationModel": [
-            "On Pengu Loader 1.2.0 and newer, ElainaData stores settings in `./data/ElainaData.json` through PluginFS when `context.fs` is available.",
-            "On older Pengu Loader builds, ElainaData falls back to Pengu DataStore under the `ElainaTheme` key.",
-            "The in-client settings are available from League Client Settings -> Elaina Theme.",
-            "Most visual toggles need a client reload or restart before every affected screen is fully refreshed."
+            "Use League Settings -> Elaina theme -> one of four tabs: Theme Settings, Plugins Settings, Backup & Restore, About Us. With the old loader menu enabled, choose Settings from its quick menu first.",
+            "ElainaData uses ./data/ElainaData.json when context.fs is available; otherwise it uses the ElainaTheme DataStore entry. Version alone does not prove file operations are usable.",
+            "MCP port/token/export configuration lives only in mcp-server/config.local.json; it is separate from theme settings and portable backups.",
+            "Follow specific restart prompts for startup-dependent changes. Font mode, volume, activity-center positioning, capture settings and PluginFS list discovery can apply without a restart.",
+            "This documentation was checked against source and the Pengu 1.1.6 renderer on 2026-11-15; PluginFS/macOS capabilities are source-backed."
         ]
     },
     "installation": {
-        "introduction": "Use the instructions that match your Pengu Loader version. The theme supports both older DataStore-only Pengu builds and Pengu Loader 1.2.0+ builds with PluginFS.",
+        "introduction": "Install a built release inside the Pengu plugins directory. Theme settings support both DataStore-only installations and context.fs installations; MCP file editing additionally checks version and usable PluginFS methods.",
         "requirements": [
             "League Client installed and able to launch normally.",
             "Pengu Loader installed.",
             "An Elaina Theme release zip or a local build output from this repository.",
-            "A writable Pengu Loader plugins folder."
+            "A writable Pengu Loader plugins folder.",
+            "Node.js 20+ and npm only if you want the developer MCP service; the normal theme does not launch a Node listener."
         ],
         "quickGuide": {
-            "warning": "Do exactly the guide if you don't know what you gonna do",
+            "warning": "Install the built plugin folder with index.js at its root; do not copy the TypeScript source checkout as a release.",
             "steps": [
                 {
-                    "title": "Active Pengu Loader",
+                    "title": "Enable Pengu Loader for League Client",
                     "images": [
                         {
                             "alt": "Active Pengu Loader",
@@ -59,7 +61,7 @@
                     ]
                 },
                 {
-                    "title": "Download theme [here](https://github.com/Elaina69/Elaina-theme/releases)",
+                    "title": "Download the built theme from [releases](https://github.com/Elaina69/Elaina-V4/releases)",
                     "images": [
                         {
                             "alt": "Download theme release",
@@ -68,7 +70,7 @@
                     ]
                 },
                 {
-                    "title": "Extract theme (Choose \"Extract to...\")",
+                    "title": "Extract the release ZIP into a theme folder",
                     "images": [
                         {
                             "alt": "Extract theme",
@@ -77,7 +79,7 @@
                     ]
                 },
                 {
-                    "title": "Open Plugin folder",
+                    "title": "Open the Pengu plugins folder",
                     "images": [
                         {
                             "alt": "Open Plugin folder from Pengu Loader",
@@ -90,7 +92,7 @@
                     ]
                 },
                 {
-                    "title": "Copy extracted folder to Pengu Loader `plugins` folder",
+                    "title": "Copy the extracted theme folder into the plugins directory (an @scope is supported)",
                     "images": [
                         {
                             "alt": "Copy Elaina Theme folder to plugins folder",
@@ -99,176 +101,396 @@
                     ]
                 },
                 {
-                    "title": "Done"
+                    "title": "Start League and open the Elaina theme Settings group"
                 }
             ],
-            "treeIntro": "So...It must be like this",
-            "tree": ".\n├── plugins/                                # Pengu plugins folder\n│   └── Elaina-theme/                       # Ur theme here\n│       ├── assets/\n│       ├── config/\n│       ├── locales/\n│       └── index.js\n├── ...\n\n└──"
+            "treeIntro": "A release can use a plain theme folder or an optional scope; keep its contents together.",
+            "tree": "plugins/\n└── [optional @scope]/\n    └── elaina-theme/\n        ├── index.js\n        ├── assets/\n        ├── config/\n        ├── locales/\n        └── mcp-server/\n            ├── package.json, package-lock.json\n            ├── dist/server/main.js\n            ├── dist/server/stdio.js\n            ├── config.example.json\n            ├── start.bat\n            └── start.sh"
         },
         "folderLayout": [
-            "The theme folder should be placed inside the Pengu Loader plugins directory.",
-            "The folder must contain the built `index.js`, `assets`, `config`, `locales`, and related theme files.",
-            "Do not move files out of the theme folder after installation; relative asset paths depend on that layout."
+            "The theme root contains built index.js, assets, config, locales and the independent mcp-server package.",
+            "The local helper package elaina-theme-data may also be included by a local build; normal mode selects the configured CDN, Dev-mode selects local helpers.",
+            "Use the in-theme Open folder actions so scoped/renamed folders resolve correctly.",
+            "MCP config.local.json and installed node_modules are created locally and excluded from the release. Source deployment preserves those and data/, but can replace/delete custom files placed only in installed assets."
         ],
         "afterInstall": [
-            "Open League Client Settings.",
-            "Scroll to Elaina Theme.",
-            "Review Theme Settings, Plugins Settings, and Backup & Restore.",
-            "Reload or restart the client when the UI asks for it."
+            "Open the League settings gear. If Elaina quick settings appears first, choose Settings to open the full dialog.",
+            "Find Elaina theme; review Theme Settings, Plugins Settings, Backup & Restore and About Us.",
+            "Configure fonts/media/layout and follow only the restart prompts associated with changes.",
+            "For MCP, unlock developer tools with 20 logo clicks, enable Dev-mode, reopen Settings, open its server folder, run the launcher and enable MCP separately."
         ]
     },
     "themeCustomization": {
-        "introduction": "Theme customization is split into asset management, visual/theme settings, and optional plugin settings.",
+        "introduction": "Theme Settings and Plugins Settings follow the current in-client section order. Native labels follow Theme-language with English fallback. Stored keys can outlive controls; legacy keys are documented separately.",
         "assets": {
-            "introduction": "Custom assets must be placed in the correct folder. Pengu Loader 1.2.0+ can scan these folders through PluginFS; older Pengu builds require manual filename registration.",
+            "introduction": "Place files in the installed theme asset folders. File discovery is on demand with usable PluginFS; without it, register basenames manually. No permanent background scan or directory watcher is currently active.",
             "items": [
                 {
                     "name": "Wallpaper",
                     "folder": "assets/backgrounds/wallpapers",
-                    "formats": [".png", ".jpg", ".jpeg", ".gif", ".bmp", ".webp", ".ico", ".mp4", ".webm", ".mkv", ".mov", ".avi", ".wmv", ".3gp", ".m4v"],
+                    "formats": [
+                        ".png",
+                        ".jpg",
+                        ".jpeg",
+                        ".gif",
+                        ".bmp",
+                        ".webp",
+                        ".ico",
+                        ".mp4",
+                        ".webm",
+                        ".mkv",
+                        ".mov",
+                        ".avi",
+                        ".wmv",
+                        ".3gp",
+                        ".m4v"
+                    ],
                     "listKey": "Wallpaper-list",
                     "description": "Home page background image or video."
                 },
                 {
                     "name": "Audio",
                     "folder": "assets/backgrounds/audio",
-                    "formats": [".mp3", ".flac", ".ogg", ".wav", ".aac", ".opus", ".webm"],
+                    "formats": [
+                        ".mp3",
+                        ".flac",
+                        ".ogg",
+                        ".wav",
+                        ".aac",
+                        ".opus",
+                        ".webm"
+                    ],
                     "listKey": "Audio-list",
                     "description": "Theme background music or ambient audio."
                 },
                 {
                     "name": "Banner",
                     "folder": "assets/icon/regalia-banners",
-                    "formats": [".png", ".jpg", ".jpeg", ".gif", ".bmp", ".webp", ".ico"],
+                    "formats": [
+                        ".png",
+                        ".jpg",
+                        ".jpeg",
+                        ".gif",
+                        ".bmp",
+                        ".webp",
+                        ".ico"
+                    ],
                     "listKey": "Banner-list",
                     "description": "Profile regalia banner image."
                 },
                 {
                     "name": "Font",
                     "folder": "assets/fonts",
-                    "formats": [".ttf", ".otf", ".woff", ".woff2"],
+                    "formats": [
+                        ".ttf",
+                        ".otf",
+                        ".woff",
+                        ".woff2"
+                    ],
                     "listKey": "Font-list",
                     "description": "Custom client font."
                 }
             ],
             "legacySteps": [
-                "Copy the file into the matching folder.",
-                "Open League Client Settings -> Elaina Theme -> Theme Settings -> Asset library.",
-                "Enter the exact filename in the correct field, for example `my-wallpaper.webm`.",
-                "Use Add/Delete to update the stored list.",
-                "Reload the client if the current page does not refresh immediately."
+                "Copy the file into the matching installed theme folder, preserving basename and lowercase extension.",
+                "Open Elaina theme -> Theme Settings -> Asset library and expand the row.",
+                "Enter the exact basename including extension, such as my-wallpaper.webm, and use Add.",
+                "Delete removes a filename from the list, not the physical file.",
+                "If Home controls were already built, leave/return Home or reload to rebuild them. Restart does not replace manual filename registration."
             ],
             "pluginFsSteps": [
-                "Copy the file into the matching folder.",
-                "Keep the League Client open or restart it.",
-                "The theme scans the asset folders and updates the matching list automatically.",
-                "Use the wallpaper/audio controls on the homepage, or choose font/banner from Theme Settings.",
-                "Custom Font supports either a local file from `assets/fonts` or a Google Fonts CSS link. Google Fonts links must use `https://fonts.googleapis.com/css` or `https://fonts.googleapis.com/css2`."
+                "Copy the file into the correct installed asset folder. Developers who rebuild should keep the custom file in source assets too.",
+                "Open or reopen Theme Settings; its builder awaits refreshLists before rendering.",
+                "Alternatively press the Home wallpaper dropdown; its mouse handler scans all four asset lists, including audio.",
+                "Choose new wallpaper/audio with Home controls, or banner/font in Settings. Changed media lists rebuild visible controls once.",
+                "No client restart is needed for this discovery path; if Settings stayed open, reopen it to rebuild existing labels/options."
             ],
             "rules": [
-                "Use only the supported extensions listed in the table.",
-                "Keep filenames unique inside each asset folder.",
-                "Avoid very large videos if the client becomes slow.",
-                "If a file does not appear, verify the folder, extension, and exact filename."
+                "Current fileRegex checks lowercase extensions. An accepted extension still needs a renderer-supported codec.",
+                "Use unique basenames, not full paths, for manual registration.",
+                "No 1-second polling, 30-second polling or filesystem watcher is present; refresh is triggered by startup and relevant UI interaction.",
+                "Parallel directory listings and concurrent refresh requests share work; failed reads preserve existing lists.",
+                "Do not overwrite local configuration or media when extracting a release. A source deploy preserves runtime data/MCP config/dependencies, but installed-only assets may be removed.",
+                "Google Fonts uses HTTPS fonts.googleapis.com/css or /css2 links. Local/Google modes are exclusive and switching updates the owned font stylesheet immediately."
             ]
         },
-        "themeSettingsIntroduction": "Theme Settings control the visual theme, asset behavior, homepage media, profile identity visuals, interface layout, and game tab visibility.",
+        "themeSettingsIntroduction": "Current order: General, Asset library, Wallpaper, Audio, Updates and notifications, Custom assets, Interface and layout, Profile and identity, Game tabs and content. Playback saves changed positions on navigation/pause/pagehide; WallpaperAudio-timeUpdate remains a visible legacy input with no scheduling effect.",
         "themeSettingGroups": [
             {
-                "title": "General",
-                "description": "Base theme behavior and language.",
-                "keys": ["Elaina-Plugins", "Theme-language", "prevent-manual-update", "holiday-message", "Merry-Christmas", "NSFW-Content"]
+                "title": "General and language",
+                "description": "Header tracking switch and Theme-language. Consent/API prerequisites are described in FAQ; there is no Setup/privacy tab in this build.",
+                "keys": [
+                    "Theme-language",
+                    "AllowTrackingData"
+                ]
             },
             {
-                "title": "Wallpaper and audio",
-                "description": "Homepage background, media playback, slideshow, and window effects.",
-                "keys": ["manual-wallpaper-name", "manual-audio-name", "wallpaper-volume", "WallpaperAudio-timeUpdate", "Playback-speed", "wallpaper-slideshow", "wallpaper-change-slide-time", "disable-theme-wallpaper", "window-effect-name", "window-effect-color-base", "window-effect-alpha", "window-effect-color", "window-effect-material", "audio-volume", "audio-loop", "turnoff-audio-ingame", "disable-theme-audio", "pause-audio", "pause-wallpaper", "mute-audio"]
+                "title": "Asset library",
+                "description": "Manual registration shown without PluginFS. Runtime media lists are not part of the root-default portable backup.",
+                "keys": [
+                    "manual-wallpaper-name",
+                    "Wallpaper-list",
+                    "manual-audio-name",
+                    "Audio-list",
+                    "manual-banner-name",
+                    "Banner-list",
+                    "manual-font-name",
+                    "Font-list"
+                ]
+            },
+            {
+                "title": "Wallpaper",
+                "description": "Volume, speed, old controls, slideshow, disable and window effects. Window effects are shown when theme wallpaper is disabled and require supported Pengu/OS APIs.",
+                "keys": [
+                    "WallpaperAudio-timeUpdate",
+                    "wallpaper-volume",
+                    "Playback-speed",
+                    "old-prev/next-button",
+                    "wallpaper-slideshow",
+                    "wallpaper-change-slide-time",
+                    "disable-theme-wallpaper",
+                    "window-effect-name",
+                    "window-effect-color-base",
+                    "window-effect-alpha",
+                    "window-effect-color",
+                    "window-effect-material"
+                ]
+            },
+            {
+                "title": "Audio and media state",
+                "description": "Settings contains volume, pause-in-game and disable. Home holds loop/pause/mute/previous/next/progress. Odd pause counters mean paused; even means playing. In-game behavior pauses both audio/video.",
+                "keys": [
+                    "audio-volume",
+                    "turnoff-audio-ingame",
+                    "disable-theme-audio",
+                    "audio-loop",
+                    "pause-audio",
+                    "pause-wallpaper",
+                    "mute-audio",
+                    "Audio-currentTime",
+                    "Wallpaper-currentTime",
+                    "audio-index",
+                    "wallpaper-index"
+                ]
+            },
+            {
+                "title": "Updates and notifications",
+                "keys": [
+                    "prevent-manual-update",
+                    "holiday-message"
+                ]
             },
             {
                 "title": "Custom assets",
-                "description": "Enable or disable bundled/custom asset replacement, including synced profile icons such as rank icon and Clash banner.",
-                "keys": ["sync-user-icons", "Custom-Icon", "Custom-Loading-Icon", "Custom-Avatar", "Custom-Border", "Custom-Regalia-Banner", "CurrentBanner", "manual-banner-name", "Banner-list", "Custom-Hover-card-backdrop", "Custom-RP-Icon", "Custom-BE-Icon", "Custom-Rank-Icon", "Custom-Emblem", "Custom-Clash-banner", "Custom-Trophy", "Custom-Gamemode-Icon", "Custom-Ticker", "Custom-Cursor", "Runes-BG", "custom-champs-image", "animate-loading"]
+                "description": "Local replacement and peer download are separate from own-icon upload consent. Expand Custom Icon for its nested switches.",
+                "keys": [
+                    "sync-user-icons",
+                    "Custom-Icon",
+                    "Custom-Loading-Icon",
+                    "Custom-Avatar",
+                    "Custom-Border",
+                    "Custom-Regalia-Banner",
+                    "CurrentBanner",
+                    "Custom-Hover-card-backdrop",
+                    "Custom-RP-Icon",
+                    "Custom-BE-Icon",
+                    "Custom-Rank-Icon",
+                    "Custom-Emblem",
+                    "Custom-Clash-banner",
+                    "Custom-Trophy",
+                    "Custom-Gamemode-Icon",
+                    "Custom-Ticker",
+                    "animate-loading",
+                    "Runes-BG",
+                    "custom-champs-image"
+                ]
             },
             {
                 "title": "Interface and layout",
-                "description": "Client layout visibility and transparency controls.",
-                "keys": ["hide-homepage-navbar", "old-prev/next-button", "enable-hide-top-navbar-friendlist-button", "change-sidebar-color", "lobby-transparent-filter", "hide-profile-background", "hide-champions-splash-art", "hide-vertical-lines", "custom-navbar-css", "navbar-content"]
+                "keys": [
+                    "hide-homepage-navbar",
+                    "enable-hide-top-navbar-friendlist-button",
+                    "change-sidebar-color",
+                    "sidebar-color",
+                    "sidebar-opacity",
+                    "sidebar-color-with-opacity",
+                    "lobby-transparent-filter",
+                    "hide-profile-background",
+                    "hide-champions-splash-art",
+                    "hide-vertical-lines"
+                ]
             },
             {
                 "title": "Profile and identity",
-                "description": "Local visual changes for the player's profile and identity text.",
-                "keys": ["custom-rp", "RP-data", "custom-be", "BE", "custom-summoner-lv", "custom-summoner-lv-number", "custom-rank-name", "Rank-line1", "Rank-line2", "Custom-Font", "Custom-Font-Local", "Custom-Font-Google", "Google-Font-Url", "CurrentFont", "manual-font-name", "Font-list", "change-nickname-color", "nickname-color", "nickname-opacity", "nickname-color-with-opacity", "hide-theme-usage-time"]
+                "description": "Local display values do not grant currency/levels/rank. Custom font is immediate; other startup features may show restart prompts.",
+                "keys": [
+                    "custom-rp",
+                    "RP-data",
+                    "custom-be",
+                    "BE",
+                    "custom-summoner-lv",
+                    "custom-summoner-lv-number",
+                    "custom-rank-name",
+                    "Rank-line1",
+                    "Rank-line2",
+                    "Custom-Font",
+                    "Custom-Font-Local",
+                    "Custom-Font-Google",
+                    "Google-Font-Url",
+                    "CurrentFont",
+                    "change-nickname-color",
+                    "nickname-color",
+                    "nickname-opacity",
+                    "nickname-color-with-opacity",
+                    "hide-theme-usage-time"
+                ]
             },
             {
-                "title": "Game tabs",
-                "description": "Hide or show queue/game sections in the play page.",
-                "keys": ["hide-summoner-rift-5v5", "hide-aram", "hide-arena", "hide-custom-game-section", "hide-tft", "hide-tft-match-history", "hide-tft-news", "hide-tft-rotational-shop", "hide-tft-troves", "hide-tft-battle-pass", "hide-tft-home"]
+                "title": "Game tabs and content",
+                "description": "These switches only affect matching League renderer elements. Legacy TFT subpages may be absent when TFT uses a separate client.",
+                "keys": [
+                    "hide-summoner-rift-5v5",
+                    "hide-aram",
+                    "hide-arena",
+                    "hide-custom-game-section",
+                    "hide-tft",
+                    "hide-tft-match-history",
+                    "hide-tft-news",
+                    "hide-tft-rotational-shop",
+                    "hide-tft-troves",
+                    "hide-tft-battle-pass",
+                    "hide-tft-home",
+                    "NSFW-Content"
+                ]
             }
         ],
-        "pluginSettingsIntroduction": "Plugins Settings controls optional client behavior. Some plugin settings apply immediately; queue/profile features commonly require reload or restart.",
+        "pluginSettingsIntroduction": "Current Plugins Settings contains core, profile/identity, unlocked developer tools and Dev-mode-only MCP. Queue automation is commented out and not a current UI section. Expand profile rows for details.",
         "pluginSettingGroups": [
             {
                 "title": "Core plugins",
-                "description": "General plugin toggles and commonly used client helpers.",
-                "keys": ["Old-League-Loader-Settings", "loot-helper", "auto_accept_button", "auto_accept", "auto_accept_delay", "dodge-button", "Enable-Invite-Fr"]
+                "keys": [
+                    "Old-League-Loader-Settings",
+                    "loot-helper",
+                    "auto_accept_button",
+                    "Enable-Invite-Fr"
+                ]
             },
             {
-                "title": "Queue automation",
-                "description": "Automatic lobby creation and match search behavior.",
-                "keys": ["Auto-Find-Queue", "Gamemode", "Create-Delay", "Find-Delay", "aram-only"]
+                "title": "Auto Accept matchmaking controls",
+                "description": "Activity switch and delay are in the ready-check/matchmaking toolbar; they do not auto-create queues.",
+                "keys": [
+                    "auto_accept",
+                    "auto_accept_delay"
+                ]
             },
             {
                 "title": "Profile and identity plugins",
-                "description": "Local profile hover card, rank, challenge, status, and name display changes.",
-                "keys": ["Custom-profile-hover", "Custom-mastery-score", "Mastery-Score", "Custom-rank", "Ranked Queue ID", "Ranked Tier ID", "Ranked Division ID", "Custom-challenge-crystal", "Challenge-Points", "challengeCrystalLevel", "Custom-Status", "Custom-Status-Local", "status-delay", "Name-Spoofer", "Spoof-name"]
+                "description": "Includes Classic rank controls. Custom Status without Local updates LCU chat and may be visible to friends.",
+                "keys": [
+                    "invisible_banner",
+                    "Custom-profile-hover",
+                    "Custom-mastery-score",
+                    "Mastery-Score",
+                    "Custom-rank",
+                    "Ranked Queue ID",
+                    "Ranked Tier ID",
+                    "Ranked Division ID",
+                    "classic-ranked-tier-id",
+                    "classic-ranked-division-id",
+                    "Custom-challenge-crystal",
+                    "Challenge-Points",
+                    "challengeCrystalLevel",
+                    "Custom-Status",
+                    "Custom-Status-Local",
+                    "status-delay",
+                    "Name-Spoofer",
+                    "Spoof-name"
+                ]
             },
             {
                 "title": "Developer tools",
-                "description": "Debug and developer-only controls. Keep these disabled unless you are debugging the theme.",
-                "keys": ["Debug-mode", "Dev-mode", "Active-dev-button", "Dev-button"]
+                "description": "20 logo clicks unlock Dev-button; reopen the panel, enable Dev-mode separately and follow its restart prompt.",
+                "keys": [
+                    "Debug-mode",
+                    "Dev-mode",
+                    "Active-dev-button",
+                    "Dev-button"
+                ]
+            },
+            {
+                "title": "Developer MCP server",
+                "description": "Visible only when Dev-mode is true. Enable defaults off. Open server folder, run start.bat or sh start.sh with Node 20+, and keep it running. Port/token/export live only in config.local.json; Pengu 1.1.6 reads it on disk, usable PluginFS also offers Settings read/write controls.",
+                "keys": [
+                    "MCP-enabled",
+                    "MCP-console-capture",
+                    "MCP-network-capture",
+                    "MCP-payload-capture",
+                    "MCP-max-entries",
+                    "MCP-max-payload-bytes"
+                ]
+            },
+            {
+                "title": "Retained legacy/background keys",
+                "description": "Reference only, not current Settings controls. Auto Queue/Dodge are not started; other keys are retained internal or compatibility flags.",
+                "keys": [
+                    "Auto-Find-Queue",
+                    "Gamemode",
+                    "Create-Delay",
+                    "Find-Delay",
+                    "dodge-button",
+                    "aram-only",
+                    "Custom-Cursor",
+                    "custom-navbar-css",
+                    "navbar-content",
+                    "Elaina-Plugins",
+                    "Merry-Christmas"
+                ]
             }
         ]
     },
     "backupRestore": {
-        "introduction": "Backup/Restore lets you export settings to a local JSON file, restore from a JSON file, or use the theme cloud backup service.",
+        "introduction": "The Elaina Backup & Restore tab contains offline JSON controls first, then a separate cloud switch/status panel. Portable snapshots contain root-default keys, not arbitrary full datastore dumps.",
         "storageModes": [
-            "Pengu Loader before 1.2.0: settings are stored in Pengu DataStore under `ElainaTheme`.",
-            "Pengu Loader 1.2.0+: settings are stored through PluginFS in `./data/ElainaData.json` when `context.fs` is available.",
-            "Manual backup exports the current ElainaData values regardless of the active storage mode.",
-            "Cloud backup uses the current summoner ID and Elaina Theme API token."
+            "Without context.fs, ElainaData uses Pengu DataStore (ElainaTheme). With context.fs, it uses ./data/ElainaData.json.",
+            "Offline export/restore works without cloud access in either storage mode.",
+            "Only datastoreDefault.js keys are portable. API identity/tokens, caches, file-based MCP settings and runtime-only media lists/indices/progress are excluded.",
+            "MCP capture preferences are default-known keys and are included; config.local.json is not. Media files must be backed up separately."
         ],
-        "settingKeys": ["backup-datastore", "System-Info", "last-backup-time"],
+        "settingKeys": [
+            "backup-datastore",
+            "System-Info",
+            "last-backup-time"
+        ],
         "manualBackup": [
-            "Open League Client Settings -> Elaina Theme -> Backup & Restore.",
-            "Click Backup.",
-            "Save the generated `ElainaTheme-<summonerId>.json` file.",
-            "Keep the JSON file somewhere safe before reinstalling or updating the theme."
+            "Open Elaina theme -> Backup & Restore (not another plugin with the same tab title).",
+            "Click Backup/Sao lưu in the manual section.",
+            "Save ElainaTheme-<summonerId>.json, or ElainaTheme-local.json when no usable ID exists.",
+            "Keep a separate copy of custom media files and local server configuration if you intend to reinstall."
         ],
         "manualRestore": [
-            "Open League Client Settings -> Elaina Theme -> Backup & Restore.",
-            "Click Restore in the manual backup/restore section.",
-            "Select a valid JSON backup file.",
-            "Wait for the restore toast to complete.",
-            "The client restarts automatically after restore."
+            "Open the manual section and click Restore/Khôi phục.",
+            "Select a .json backup. It is read/parsed once and filtered to recognized default keys.",
+            "Invalid/empty/non-object files do not partially apply. Credentials/current identity are preserved.",
+            "After values are applied and persistence confirmed, the client restarts after approximately two seconds. Wait until outside an active game before using restore."
         ],
         "cloudBackup": [
-            "Enable `backup-datastore` in Backup & Restore.",
-            "The theme checks whether cloud data exists for your summoner ID.",
-            "When backup is enabled, the theme can write datastore values to the Elaina Theme cloud service.",
-            "Use manual backup as a fallback if the cloud service is unavailable."
+            "Cloud requires internet, current-account authentication, an available API and allowed backup-datastore consent.",
+            "Enable cloud backup only through available consent/settings UI; do not set consent flags to bypass a missing UI.",
+            "The panel reads existing cloud data when enabled. Theme close/restart hooks attempt uploads; crashes/force kills cannot guarantee a backup.",
+            "The live documentation survey returned HTTP 403; local JSON controls remained available. Use offline backup when the online path fails."
         ],
         "cloudRestore": [
-            "Open Backup & Restore.",
-            "If cloud data exists, Restore and Delete file buttons become visible.",
-            "Click Restore to load cloud data into ElainaData.",
-            "Click Delete file to remove the cloud backup.",
-            "Restart the client after restore if a screen does not update immediately."
+            "Open Backup & Restore with cloud enabled and permitted.",
+            "Restore/Delete file are shown only after an existing backup is confirmed.",
+            "Restore applies recognized keys, flushes and schedules a restart; errors keep the current settings.",
+            "Delete removes the remote backup only after a confirmed API response. The underlying explicit-delete action can remain available after automatic uploads are disabled, but the current panel hides its buttons when cloud data is not loaded."
         ],
         "notes": [
-            "Cloud backup requires internet access and the Elaina Theme API service to be available.",
-            "Developer mode may show extra system information in the backup panel.",
-            "Do not edit a backup JSON file unless you know the setting keys and value types.",
-            "If restore fails, check the console and try manual restore with a known valid JSON backup."
+            "System information is optional and fetched for the panel in Dev-mode; it must not block offline controls.",
+            "Portable backup filtering is key-based; do not treat it as complete per-key value/type validation.",
+            "The local helper requires privacy-consent-version and per-feature flags. It mentions Setup/privacy, but the current four-tab UI does not expose that tab or an own-icon upload switch.",
+            "Cloud/API consent is independent of Dev-mode/MCP. MCP disable does not stop the external Node service.",
+            "Request errors (including 401/403) are not proof that no backup exists; do not delete/reset data as a diagnostic."
         ]
     },
     "faq": {
@@ -286,19 +508,18 @@
             {
                 "question": "My wallpaper or audio file does not show up.",
                 "answer": [
-                    "For Pengu Loader 1.2.0+, verify the file is in the correct asset folder and has a supported extension.",
-                    "For older Pengu builds, add the exact filename manually in Theme Settings -> Asset library.",
-                    "Reload the client if the asset list was changed while the client was already open.",
-                    "Avoid unsupported extensions or filenames that differ only by case."
+                    "Verify the installed theme folder, basename and lowercase extension; accepted filenames still require a supported media codec.",
+                    "With PluginFS, open/reopen Theme Settings or press the Home wallpaper dropdown. refreshLists scans all four lists; no always-running scan is active.",
+                    "Without PluginFS, register the exact filename manually in Asset library, then leave/return Home to rebuild existing controls if necessary.",
+                    "Restart is not required for PluginFS discovery and does not replace manual registration on legacy Pengu."
                 ]
             },
             {
                 "question": "Settings are not saving.",
                 "answer": [
-                    "On Pengu Loader 1.2.0+, check whether PluginFS can write `./data/ElainaData.json`.",
-                    "On older Pengu builds, settings are stored in Pengu DataStore.",
-                    "Try changing one simple setting, reload the client, and check whether it persists.",
-                    "Export a manual backup before deleting or resetting data."
+                    "Check ElainaData storage mode rather than version alone. With PluginFS, verify read/write results for data/ElainaData.json; otherwise inspect the ElainaTheme DataStore entry.",
+                    "Related values use setMany; flush confirms writes before restore/restart. Preserve a local backup before changing data files.",
+                    "An MCP port/token save goes to config.local.json, not theme datastore or portable backups."
                 ]
             },
             {
@@ -329,22 +550,100 @@
             {
                 "question": "How do I reset the theme?",
                 "answer": [
-                    "Use the theme restore/default flow if available.",
-                    "Export a manual backup first if you want to keep a copy.",
-                    "On PluginFS builds, removing the theme data file resets file-backed settings.",
-                    "On older builds, clearing the Pengu DataStore entry for `ElainaTheme` resets stored settings."
+                    "Export a local backup and preserve media/configuration first.",
+                    "A missing/empty PluginFS settings file can reimport legacy DataStore values, so deleting only that file may not create a clean reset.",
+                    "Use a reviewed reset flow for the active backend; do not delete configuration or data simply to diagnose a network error."
                 ]
             },
             {
                 "question": "Should I enable Developer mode?",
                 "answer": [
-                    "Keep Developer mode disabled unless you are debugging or contributing to the theme.",
-                    "Developer mode exposes debug tools and extra system information.",
-                    "Some developer-only behavior can make the theme noisier or less stable for normal use."
+                    "Keep it off for normal use. It selects local helper files and exposes diagnostics; those files must exist.",
+                    "20 Plugins logo clicks unlock the developer controls, then Dev-mode is enabled separately.",
+                    "MCP still defaults off and needs both Dev-mode and MCP-enabled. Turning either off disconnects/cancels capture and previews, but does not stop Node."
+                ]
+            },
+            {
+                "question": "Does the Wallpaper/Audio save interval field still control playback writes?",
+                "answer": [
+                    "No. WallpaperAudio-timeUpdate remains visible with a runtime default of 3000 ms, but the code saves changed progress on page transition, pause and pagehide.",
+                    "Audio/video share one setMany commit. There are no timeupdate/timer progress writes."
+                ]
+            },
+            {
+                "question": "How do I connect Codex, Gemini or Claude to the developer MCP?",
+                "answer": [
+                    "Enable Dev-mode, open the MCP folder from Plugins Settings, run start.bat (Windows) or sh start.sh (macOS) with Node 20+, and enable MCP separately.",
+                    "Use Streamable HTTP at http://127.0.0.1:8080/mcp with the local bearer token, or node with mcp-server/dist/server/stdio.js. The adapter connects to the shared service.",
+                    "Port/token/export live only in config.local.json. Restart Node after port/token changes; reconnect rereads the file.",
+                    "The full package guide is in src/src/plugins/mcp-server/README.md in the source repository."
+                ]
+            },
+            {
+                "question": "What is penguPluginsPath for?",
+                "answer": [
+                    "It is only the destination for export_plugin_to_pengu to save a live preview as a separate plugin.",
+                    "An empty value disables export; DOM/log/click/screenshot access still works. It is not the theme source folder."
+                ]
+            },
+            {
+                "question": "The API says to enable a feature in Setup / privacy, but that tab is missing.",
+                "answer": [
+                    "The current local helper requires per-feature consent plus privacy-consent-version; tracking also requires a reviewed-journal version.",
+                    "The current settingsStructure.ts and surveyed UI register four Elaina tabs without Setup/privacy or an upload switch. This is a source/UI mismatch, not an instruction to bypass consent.",
+                    "Use offline backup/local assets, record the helper/theme versions and update to a build with the corresponding consent UI when available. Download/upload icon permissions are independent."
+                ]
+            },
+            {
+                "question": "Why do old Auto Queue/Dodge/TFT controls not appear or affect the current client?",
+                "answer": [
+                    "Auto Queue/Dodge/practice/skip-honor startup calls and the queue Settings section are commented out; stored keys are compatibility references.",
+                    "TFT switches only target matching League renderer components. A separate TFT client launched from newer rcp-fe-tft is outside this theme renderer."
+                ]
+            },
+            {
+                "question": "Do custom fonts need a client restart?",
+                "answer": [
+                    "Custom font local/Google modes are exclusive. Selecting a file, switching Google back to local or toggling custom font replaces the owned stylesheet immediately.",
+                    "Verify the local filename or accepted Google CSS URL; follow restart prompts for other startup-dependent settings rather than applying a blanket restart rule."
                 ]
             }
         ]
     },
-    "runtimeSettingKeys": ["WallpaperAudio-timeUpdate", "Playback-speed"],
-    "internalSettingKeys": ["queueList", "frGroupName", "friendslist", "grouplist", "ElainaTheme-Token", "Summoner-ID", "settingsChangenumber"]
+    "runtimeSettingKeys": [
+        "WallpaperAudio-timeUpdate",
+        "Playback-speed",
+        "Wallpaper-list",
+        "Audio-list",
+        "audio-index",
+        "wallpaper-index",
+        "Audio-currentTime",
+        "Wallpaper-currentTime",
+        "AllowTrackingData",
+        "invisible_banner",
+        "upload-user-icons",
+        "privacy-consent-version",
+        "privacy-journal-reviewed-version"
+    ],
+    "internalSettingKeys": [
+        "queueList",
+        "frGroupName",
+        "friendslist",
+        "grouplist",
+        "ElainaTheme-Token",
+        "Summoner-ID",
+        "settingsChangenumber",
+        "Theme-version",
+        "Cdn-version",
+        "changelog-shown-version",
+        "seconds1",
+        "minutes1",
+        "hours1",
+        "NextBg_Count",
+        "new-gamesearch-queue",
+        "navbar-content",
+        "System-Info",
+        "last-backup-time",
+        "Active-dev-button"
+    ]
 }

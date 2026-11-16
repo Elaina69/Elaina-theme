@@ -141,6 +141,7 @@ interface elainaData {
     init: (context: any) => Promise<void>;
     get: (key: string, fallback?: any) => any;
     set: (key: string, value: any) => boolean;
+    setMany: (patch: Record<string, any>) => boolean;
     has: (key: string) => boolean;
     remove: (key: string) => boolean;
     restoreDefaults: () => void;
@@ -299,6 +300,10 @@ declare interface Window {
     isContextFSExist: boolean;
     writeBackupData: () => Promise<void>;
     __elainaPenguSettingsSync?: number;
+    __elainaPlaybackProgress?: {
+        stats: () => { startedAt: number; pageChanges: number; saves: number; keyWrites: number; audioWrites: number; wallpaperWrites: number; lastReason: string | null };
+        resetStats: () => void;
+    };
 };
 
 declare function getString(param: string): Promise<string>;

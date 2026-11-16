@@ -157,8 +157,6 @@ class ElainaTheme {
             // Custom Summoner Level
             if (ElainaData.get("custom-summoner-lv")) customSummonerLv.main()
 
-            // Check list change
-            window.refreshLists()
         }, 1000);
     }
 }

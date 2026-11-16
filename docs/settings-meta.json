@@ -1,5 +1,5 @@
 {
-    "$comment": "Settings documentation metadata for wiki generation. Add descriptions for each setting key from datastoreDefault.js here. The wiki generator uses these to produce the Settings Reference page.",
+    "$comment": "Wiki setting metadata. localeKey uses the real default-locale label; label is an explicit reference label where the key has no dedicated UI caption. Runtime-only defaults must include defaultSource and do not change theme datastore defaults.",
     "categories": {
         "theme-core": {
             "name": "Core Theme",
@@ -35,16 +35,47 @@
         }
     },
     "settings": {
-        "MCP-enabled": { "category": "plugins", "description": "Enable the developer MCP bridge. Dev-mode must also be enabled.", "type": "boolean" },
-        "MCP-console-capture": { "category": "plugins", "description": "Capture console messages, browser errors and unhandled rejections while MCP is enabled.", "type": "boolean" },
-        "MCP-network-capture": { "category": "plugins", "description": "Monitor renderer fetch/XHR, WebSockets, LCU events and asset timing.", "type": "boolean" },
-        "MCP-payload-capture": { "category": "plugins", "description": "Capture bounded request, response and WebSocket payloads.", "type": "boolean" },
-        "MCP-max-entries": { "category": "plugins", "description": "Maximum entries per MCP capture buffer, from 1 to 500.", "type": "number" },
-        "MCP-max-payload-bytes": { "category": "plugins", "description": "Maximum bytes per captured payload, from 256 to 65536.", "type": "number" },
+        "MCP-enabled": {
+            "category": "plugins",
+            "description": "Start browser capture/bridge attempts only when Dev-mode is also true. Defaults off; external Node service is launched separately.",
+            "type": "boolean",
+            "localeKey": "mcp.enabled"
+        },
+        "MCP-console-capture": {
+            "category": "plugins",
+            "description": "Capture console messages, browser errors and unhandled rejections while MCP is enabled.",
+            "type": "boolean",
+            "localeKey": "mcp.console-capture"
+        },
+        "MCP-network-capture": {
+            "category": "plugins",
+            "description": "Bounded renderer fetch/XHR/WebSocket/LCU-event/resource-timing capture; other processes are outside scope.",
+            "type": "boolean",
+            "localeKey": "mcp.network-capture"
+        },
+        "MCP-payload-capture": {
+            "category": "plugins",
+            "description": "Capture bounded bodies/messages by default, report truncation/omission, mask credentials and exclude MCP transport/configuration traffic.",
+            "type": "boolean",
+            "localeKey": "mcp.payload-capture"
+        },
+        "MCP-max-entries": {
+            "category": "plugins",
+            "description": "Maximum entries per MCP capture buffer, from 1 to 500.",
+            "type": "number",
+            "localeKey": "mcp.max-entries"
+        },
+        "MCP-max-payload-bytes": {
+            "category": "plugins",
+            "description": "Maximum bytes per captured payload, from 256 to 65536.",
+            "type": "number",
+            "localeKey": "mcp.max-payload"
+        },
         "Elaina-Plugins": {
             "category": "theme-core",
-            "description": "Master toggle to enable or disable all Elaina Theme plugins.",
-            "type": "boolean"
+            "description": "Retained theme marker/default; current entrypoint does not use it as a master gate for every plugin.",
+            "type": "boolean",
+            "label": "Retained theme marker"
         },
         "Theme-language": {
             "category": "theme-core",
@@ -68,8 +99,9 @@
         },
         "backup-datastore": {
             "category": "backup",
-            "description": "Enable automatic cloud backup of your settings when closing the client.",
-            "type": "boolean"
+            "description": "Enable optional cloud backup reads/uploads through available consent and account session. Close/restart hooks attempt uploads; crashes are not guaranteed.",
+            "type": "boolean",
+            "localeKey": "backup-restore.backup-datastore"
         },
         "seconds1": {
             "category": "theme-core",
@@ -88,18 +120,21 @@
         },
         "pause-audio": {
             "category": "wallpaper-audio",
-            "description": "Pause state for background audio (1 = paused).",
-            "type": "number"
+            "description": "Audio pause counter: odd values are paused, even values play. Home controls increment it.",
+            "type": "number",
+            "label": "Audio pause state"
         },
         "pause-wallpaper": {
             "category": "wallpaper-audio",
-            "description": "Pause state for wallpaper video playback (1 = paused).",
-            "type": "number"
+            "description": "Wallpaper pause counter: odd values are paused, even values play.",
+            "type": "number",
+            "label": "Wallpaper pause state"
         },
         "mute-audio": {
             "category": "wallpaper-audio",
-            "description": "Mute the background audio.",
-            "type": "boolean"
+            "description": "Mute state applied to both theme audio and wallpaper video.",
+            "type": "boolean",
+            "label": "Mute theme media"
         },
         "NextBg_Count": {
             "category": "wallpaper-audio",
@@ -109,22 +144,26 @@
         "wallpaper-volume": {
             "category": "wallpaper-audio",
             "description": "Volume level for wallpaper video audio (0.0 to 1.0).",
-            "type": "number"
+            "type": "number",
+            "localeKey": "theme-settings.wallpaper-volume"
         },
         "audio-volume": {
             "category": "wallpaper-audio",
             "description": "Volume level for background audio (0.0 to 1.0).",
-            "type": "number"
+            "type": "number",
+            "localeKey": "theme-settings.music-volume"
         },
         "audio-loop": {
             "category": "wallpaper-audio",
             "description": "Loop background audio when it finishes playing.",
-            "type": "boolean"
+            "type": "boolean",
+            "label": "Loop audio"
         },
         "Merry-Christmas": {
             "category": "theme-core",
-            "description": "Enable Christmas holiday special effects.",
-            "type": "boolean"
+            "description": "Christmas-specific gate checked by the helper holiday module in addition to the general holiday behavior; retained without a separate current Settings checkbox.",
+            "type": "boolean",
+            "label": "Retained Christmas flag"
         },
         "new-gamesearch-queue": {
             "category": "theme-visual",
@@ -133,33 +172,38 @@
         },
         "custom-navbar-css": {
             "category": "theme-visual",
-            "description": "Apply custom CSS to the navigation bar.",
+            "description": "Background activity-center stylesheet flag; retained setting without a current dedicated checkbox.",
             "type": "boolean"
         },
         "navbar-content": {
             "category": "theme-visual",
             "description": "Custom content items for the navigation bar.",
-            "type": "array"
+            "type": "array",
+            "label": "Stored activity-center content"
         },
         "manual-wallpaper-name": {
             "category": "wallpaper-audio",
             "description": "Manually specify a wallpaper filename to add.",
-            "type": "string"
+            "type": "string",
+            "label": "Wallpaper filename to register"
         },
         "manual-audio-name": {
             "category": "wallpaper-audio",
             "description": "Manually specify an audio filename to add.",
-            "type": "string"
+            "type": "string",
+            "label": "Audio filename to register"
         },
         "manual-banner-name": {
             "category": "custom-assets",
             "description": "Manually specify a banner filename to add.",
-            "type": "string"
+            "type": "string",
+            "label": "Banner filename to register"
         },
         "manual-font-name": {
             "category": "theme-visual",
             "description": "Manually specify a font filename to add.",
-            "type": "string"
+            "type": "string",
+            "label": "Font filename to register"
         },
         "wallpaper-slideshow": {
             "category": "wallpaper-audio",
@@ -169,17 +213,24 @@
         "wallpaper-change-slide-time": {
             "category": "wallpaper-audio",
             "description": "Time between wallpaper changes in slideshow mode (milliseconds).",
-            "type": "number"
+            "type": "number",
+            "localeKey": "theme-settings.change-slide-delay"
         },
         "WallpaperAudio-timeUpdate": {
             "category": "wallpaper-audio",
-            "description": "Interval for saving wallpaper/audio playback progress to ElainaData (milliseconds).",
-            "type": "number"
+            "description": "Legacy input still shown in Wallpaper Settings, but it no longer schedules progress writes. Actual saves occur on page transition, pause and pagehide.",
+            "type": "number",
+            "localeKey": "theme-settings.wallpaperaudio-timeupdate",
+            "default": 3000,
+            "defaultSource": "src/src/theme/customUI/customHomepage.ts"
         },
         "Playback-speed": {
             "category": "wallpaper-audio",
-            "description": "Wallpaper video playback speed as a percentage.",
-            "type": "number"
+            "description": "Wallpaper playback speed as a percentage, accepted range 6.25–300; applied to the current video.",
+            "type": "number",
+            "label": "Wallpaper playback speed",
+            "default": 100,
+            "defaultSource": "src/src/theme/customUI/customHomepage.ts"
         },
         "disable-theme-wallpaper": {
             "category": "wallpaper-audio",
@@ -194,12 +245,14 @@
         "window-effect-color-base": {
             "category": "wallpaper-audio",
             "description": "Base color used by the selected window effect before alpha is applied.",
-            "type": "string"
+            "type": "string",
+            "label": "Window effect base color"
         },
         "window-effect-alpha": {
             "category": "wallpaper-audio",
             "description": "Alpha component appended to the window effect color.",
-            "type": "string"
+            "type": "string",
+            "label": "Window effect alpha"
         },
         "window-effect-color": {
             "category": "wallpaper-audio",
@@ -213,8 +266,9 @@
         },
         "turnoff-audio-ingame": {
             "category": "wallpaper-audio",
-            "description": "Automatically mute theme audio when in a game.",
-            "type": "boolean"
+            "description": "Pause both wallpaper video and audio at GameStart/InProgress, then reapply selected playback states outside those phases.",
+            "type": "boolean",
+            "localeKey": "theme-settings.turnoff-audio-ingame"
         },
         "disable-theme-audio": {
             "category": "wallpaper-audio",
@@ -233,8 +287,9 @@
         },
         "sync-user-icons": {
             "category": "custom-assets",
-            "description": "Sync custom user icons across sessions, including avatar, border, banner, honor emblem, rank icon, and Clash banner.",
-            "type": "boolean"
+            "description": "Download/cache custom icons for visible Elaina users. Independent from own-icon upload consent and does not require an upload token.",
+            "type": "boolean",
+            "localeKey": "theme-settings.sync-user-icons"
         },
         "hide-homepage-navbar": {
             "category": "theme-visual",
@@ -279,62 +334,74 @@
         "custom-rp": {
             "category": "plugins",
             "description": "Display a custom RP (Riot Points) amount.",
-            "type": "boolean"
+            "type": "boolean",
+            "localeKey": "theme-settings.custom-rp"
         },
         "RP-data": {
             "category": "plugins",
             "description": "The custom RP number to display.",
-            "type": "string"
+            "type": "string",
+            "label": "Displayed RP value"
         },
         "custom-be": {
             "category": "plugins",
             "description": "Display a custom BE (Blue Essence) amount.",
-            "type": "boolean"
+            "type": "boolean",
+            "localeKey": "theme-settings.custom-be"
         },
         "BE": {
             "category": "plugins",
             "description": "The custom BE number to display.",
-            "type": "string"
+            "type": "string",
+            "label": "Displayed BE value"
         },
         "custom-summoner-lv": {
             "category": "plugins",
             "description": "Display a custom summoner level.",
-            "type": "boolean"
+            "type": "boolean",
+            "localeKey": "theme-settings.custom-summoner-lv"
         },
         "custom-summoner-lv-number": {
             "category": "plugins",
             "description": "The custom summoner level to display.",
-            "type": "string"
+            "type": "string",
+            "label": "Displayed summoner level"
         },
         "custom-rank-name": {
             "category": "plugins",
             "description": "Display a custom rank name on your profile.",
-            "type": "boolean"
+            "type": "boolean",
+            "localeKey": "theme-settings.custom-rank-name"
         },
         "Rank-line1": {
             "category": "plugins",
             "description": "First line of the custom rank name.",
-            "type": "string"
+            "type": "string",
+            "label": "Rank name first line"
         },
         "Rank-line2": {
             "category": "plugins",
             "description": "Second line of the custom rank name.",
-            "type": "string"
+            "type": "string",
+            "label": "Rank name second line"
         },
         "Custom-Font": {
             "category": "theme-visual",
-            "description": "Enable custom font for the client UI.",
-            "type": "boolean"
+            "description": "Enable the single owned custom-font stylesheet. Disable/enable applies immediately.",
+            "type": "boolean",
+            "localeKey": "theme-settings.custom-font"
         },
         "Custom-Font-Local": {
             "category": "theme-visual",
-            "description": "Use a font file from the local theme assets/fonts folder.",
-            "type": "boolean"
+            "description": "Choose a local font; mutually exclusive with Google mode and replaces stale Google imports/variables immediately.",
+            "type": "boolean",
+            "localeKey": "theme-settings.custom-font-local"
         },
         "Custom-Font-Google": {
             "category": "theme-visual",
-            "description": "Use a Google Font CSS URL instead of a local font file.",
-            "type": "boolean"
+            "description": "Choose an accepted Google Fonts CSS URL; mutually exclusive with local mode.",
+            "type": "boolean",
+            "localeKey": "theme-settings.custom-font-google"
         },
         "Google-Font-Url": {
             "category": "theme-visual",
@@ -344,12 +411,14 @@
         "CurrentFont": {
             "category": "theme-visual",
             "description": "The currently selected font filename.",
-            "type": "string"
+            "type": "string",
+            "label": "Selected local font"
         },
         "Font-list": {
             "category": "theme-visual",
             "description": "List of available font filenames.",
-            "type": "array"
+            "type": "array",
+            "label": "Font filenames"
         },
         "change-nickname-color": {
             "category": "theme-visual",
@@ -359,17 +428,20 @@
         "nickname-color": {
             "category": "theme-visual",
             "description": "Hex color code for your nickname.",
-            "type": "string"
+            "type": "string",
+            "label": "Nickname color"
         },
         "nickname-opacity": {
             "category": "theme-visual",
             "description": "Opacity (alpha) hex for the nickname color (00-ff).",
-            "type": "string"
+            "type": "string",
+            "label": "Nickname opacity"
         },
         "nickname-color-with-opacity": {
             "category": "theme-visual",
             "description": "Full hex color with opacity for the nickname (auto-computed).",
-            "type": "string"
+            "type": "string",
+            "label": "Computed nickname color"
         },
         "animate-loading": {
             "category": "theme-visual",
@@ -399,12 +471,14 @@
         "CurrentBanner": {
             "category": "custom-assets",
             "description": "The currently selected banner filename.",
-            "type": "string"
+            "type": "string",
+            "localeKey": "theme-settings.custom-regalia-banner"
         },
         "Banner-list": {
             "category": "custom-assets",
             "description": "List of available banner filenames.",
-            "type": "array"
+            "type": "array",
+            "label": "Banner filenames"
         },
         "Custom-Hover-card-backdrop": {
             "category": "custom-assets",
@@ -458,13 +532,14 @@
         },
         "Custom-Cursor": {
             "category": "custom-assets",
-            "description": "Use a custom mouse cursor in the client.",
+            "description": "Retained cursor replacement setting; no current Custom Assets Settings checkbox. Startup behavior still reads this key.",
             "type": "boolean"
         },
         "Runes-BG": {
             "category": "custom-assets",
             "description": "Use custom rune page backgrounds.",
-            "type": "boolean"
+            "type": "boolean",
+            "localeKey": "theme-settings.custom-runes-bg"
         },
         "custom-champs-image": {
             "category": "custom-assets",
@@ -503,32 +578,32 @@
         },
         "hide-tft-match-history": {
             "category": "tft",
-            "description": "Hide TFT match history section.",
+            "description": "Hide TFT match history section. Only affects matching League renderer elements; legacy TFT pages may be absent with a separate TFT client.",
             "type": "boolean"
         },
         "hide-tft-news": {
             "category": "tft",
-            "description": "Hide TFT news section.",
+            "description": "Hide TFT news section. Only affects matching League renderer elements; legacy TFT pages may be absent with a separate TFT client.",
             "type": "boolean"
         },
         "hide-tft-rotational-shop": {
             "category": "tft",
-            "description": "Hide TFT rotational shop.",
+            "description": "Hide TFT rotational shop. Only affects matching League renderer elements; legacy TFT pages may be absent with a separate TFT client.",
             "type": "boolean"
         },
         "hide-tft-troves": {
             "category": "tft",
-            "description": "Hide TFT Troves section.",
+            "description": "Hide TFT Troves section. Only affects matching League renderer elements; legacy TFT pages may be absent with a separate TFT client.",
             "type": "boolean"
         },
         "hide-tft-battle-pass": {
             "category": "tft",
-            "description": "Hide TFT battle pass section.",
+            "description": "Hide TFT battle pass section. Only affects matching League renderer elements; legacy TFT pages may be absent with a separate TFT client.",
             "type": "boolean"
         },
         "hide-tft-home": {
             "category": "tft",
-            "description": "Hide TFT home tab entirely.",
+            "description": "Hide TFT home tab entirely. Only affects matching League renderer elements; legacy TFT pages may be absent with a separate TFT client.",
             "type": "boolean"
         },
         "NSFW-Content": {
@@ -539,7 +614,8 @@
         "Old-League-Loader-Settings": {
             "category": "plugins",
             "description": "Show old-style League Loader settings layout.",
-            "type": "boolean"
+            "type": "boolean",
+            "localeKey": "plugins-settings.old-ll-settings"
         },
         "loot-helper": {
             "category": "plugins",
@@ -558,13 +634,14 @@
         },
         "auto_accept_delay": {
             "category": "plugins",
-            "description": "Delay before auto-accepting a ready check (milliseconds).",
+            "description": "Ready-check delay in milliseconds, clamped to 0–15000. Pending accept is cancelled after decline or when ReadyCheck ends.",
             "type": "number"
         },
         "dodge-button": {
-            "category": "plugins",
-            "description": "Show a dodge button in champion select to leave the queue.",
-            "type": "boolean"
+            "category": "deprecated",
+            "description": "Inactive legacy setting: current entrypoint/queue Settings startup is commented out. Show a dodge button in champion select to leave the queue.",
+            "type": "boolean",
+            "label": "Legacy dodge button"
         },
         "Enable-Invite-Fr": {
             "category": "plugins",
@@ -572,29 +649,34 @@
             "type": "boolean"
         },
         "aram-only": {
-            "category": "plugins",
-            "description": "Restrict auto-queue to ARAM mode only.",
-            "type": "boolean"
+            "category": "deprecated",
+            "description": "Inactive legacy setting: current entrypoint/queue Settings startup is commented out. Restrict auto-queue to ARAM mode only.",
+            "type": "boolean",
+            "label": "Legacy ARAM mode"
         },
         "Auto-Find-Queue": {
-            "category": "plugins",
-            "description": "Automatically search for a new game queue.",
-            "type": "boolean"
+            "category": "deprecated",
+            "description": "Inactive legacy setting: current entrypoint/queue Settings startup is commented out. Automatically search for a new game queue.",
+            "type": "boolean",
+            "label": "Legacy auto queue"
         },
         "Gamemode": {
-            "category": "plugins",
-            "description": "Game mode queue ID for auto-queue (e.g., 450 = ARAM).",
-            "type": "number"
+            "category": "deprecated",
+            "description": "Inactive legacy setting: current entrypoint/queue Settings startup is commented out. Game mode queue ID for auto-queue (e.g., 450 = ARAM).",
+            "type": "number",
+            "label": "Legacy auto-queue mode"
         },
         "Create-Delay": {
-            "category": "plugins",
-            "description": "Delay before creating a new lobby in auto-queue (milliseconds).",
-            "type": "number"
+            "category": "deprecated",
+            "description": "Inactive legacy setting: current entrypoint/queue Settings startup is commented out. Delay before creating a new lobby in auto-queue (milliseconds).",
+            "type": "number",
+            "label": "Legacy lobby creation delay"
         },
         "Find-Delay": {
-            "category": "plugins",
-            "description": "Delay before searching for a match in auto-queue (milliseconds).",
-            "type": "number"
+            "category": "deprecated",
+            "description": "Inactive legacy setting: current entrypoint/queue Settings startup is commented out. Delay before searching for a match in auto-queue (milliseconds).",
+            "type": "number",
+            "label": "Legacy match search delay"
         },
         "Custom-profile-hover": {
             "category": "plugins",
@@ -609,27 +691,32 @@
         "Mastery-Score": {
             "category": "plugins",
             "description": "The custom mastery score number to display.",
-            "type": "number"
+            "type": "number",
+            "label": "Displayed mastery score"
         },
         "Custom-rank": {
             "category": "plugins",
             "description": "Display a custom rank on your profile.",
-            "type": "boolean"
+            "type": "boolean",
+            "localeKey": "plugins-settings.custom-rank-hover"
         },
         "Ranked Queue ID": {
             "category": "plugins",
             "description": "Queue ID for custom rank display.",
-            "type": "number"
+            "type": "number",
+            "localeKey": "plugins-settings.ranked-queue"
         },
         "Ranked Tier ID": {
             "category": "plugins",
             "description": "Tier ID for custom rank (e.g., 9 = Challenger).",
-            "type": "number"
+            "type": "number",
+            "localeKey": "plugins-settings.ranked-tier"
         },
         "Ranked Division ID": {
             "category": "plugins",
             "description": "Division ID for custom rank display.",
-            "type": "number"
+            "type": "number",
+            "localeKey": "plugins-settings.ranked-division"
         },
         "Custom-challenge-crystal": {
             "category": "plugins",
@@ -639,12 +726,15 @@
         "Challenge-Points": {
             "category": "plugins",
             "description": "Custom challenge point total to display.",
-            "type": "number"
+            "type": "number",
+            "localeKey": "plugins-settings.challenge-point",
+            "label": "Displayed challenge points"
         },
         "challengeCrystalLevel": {
             "category": "plugins",
-            "description": "Custom challenge crystal level (0-9).",
-            "type": "number"
+            "description": "Stored challenge level read by custom profile rendering. The current challenge dropdown writes Ranked Tier ID; do not assume it edits this key.",
+            "type": "number",
+            "label": "Stored challenge level"
         },
         "Custom-Status": {
             "category": "plugins",
@@ -663,13 +753,15 @@
         },
         "Name-Spoofer": {
             "category": "plugins",
-            "description": "Display a custom summoner name (local only).",
-            "type": "boolean"
+            "description": "Local displayed-name replacement. Its setting subscription activates scoped DOM observers on enable and disconnects them on disable; no 100 ms polling.",
+            "type": "boolean",
+            "localeKey": "plugins-settings.name-spoofer"
         },
         "Spoof-name": {
             "category": "plugins",
             "description": "The custom summoner name to display.",
-            "type": "string"
+            "type": "string",
+            "label": "Spoofed display name"
         },
         "Debug-mode": {
             "category": "plugins",
@@ -678,28 +770,33 @@
         },
         "Dev-mode": {
             "category": "plugins",
-            "description": "Enable developer mode features.",
-            "type": "boolean"
+            "description": "Enable developer features/local helper selection; together with MCP-enabled gates bridge/capture. It does not launch Node automatically.",
+            "type": "boolean",
+            "localeKey": "plugins-settings.developer-mode"
         },
         "Active-dev-button": {
             "category": "plugins",
-            "description": "Click counter for developer mode activation (internal).",
-            "type": "number"
+            "description": "Persisted Plugins logo click count used to unlock developer controls.",
+            "type": "number",
+            "label": "Developer unlock click count"
         },
         "Dev-button": {
             "category": "plugins",
-            "description": "Whether the developer mode button is visible.",
-            "type": "boolean"
+            "description": "Developer controls unlocked after 20 Plugins logo clicks. This alone does not expose MCP.",
+            "type": "boolean",
+            "label": "Developer controls unlocked"
         },
         "System-Info": {
             "category": "backup",
-            "description": "System information string for backup metadata.",
-            "type": "string"
+            "description": "Optional system-info object fetched in Dev-mode for backup diagnostics; initial default is an empty string.",
+            "type": "string | object",
+            "label": "Optional system information"
         },
         "last-backup-time": {
             "category": "backup",
-            "description": "Timestamp of the last successful backup.",
-            "type": "string"
+            "description": "ISO timestamp updated after a local export or successful cloud backup.",
+            "type": "string",
+            "localeKey": "backup-restore.last-backup"
         },
         "Force-Update": {
             "category": "deprecated",
@@ -805,6 +902,110 @@
             "category": "internal",
             "description": "Tracks the number of pending settings changes requiring a restart.",
             "hidden": true
+        },
+        "sidebar-color": {
+            "category": "theme-visual",
+            "description": "Sidebar base color applied when Change sidebar color is enabled.",
+            "type": "string",
+            "label": "Sidebar color"
+        },
+        "sidebar-opacity": {
+            "category": "theme-visual",
+            "description": "Sidebar opacity stored as a two-digit hexadecimal alpha component.",
+            "type": "string",
+            "label": "Sidebar opacity"
+        },
+        "sidebar-color-with-opacity": {
+            "category": "theme-visual",
+            "description": "Computed sidebar color plus hexadecimal alpha; used by the owned sidebar stylesheet.",
+            "type": "string",
+            "label": "Computed sidebar color"
+        },
+        "classic-ranked-tier-id": {
+            "category": "plugins",
+            "description": "Classic hover-card rank tier dropdown; expands under Custom profile hover.",
+            "type": "number",
+            "label": "Classic rank tier"
+        },
+        "classic-ranked-division-id": {
+            "category": "plugins",
+            "description": "Classic hover-card rank division dropdown.",
+            "type": "number",
+            "label": "Classic rank division"
+        },
+        "invisible_banner": {
+            "category": "plugins",
+            "description": "Use the invisible/last-season rank banner option. The current UI requests a restart.",
+            "type": "boolean",
+            "localeKey": "plugins-settings.invisible-banner"
+        },
+        "AllowTrackingData": {
+            "category": "theme-core",
+            "description": "Header tracking switch. The local API additionally requires privacy-consent-version and reviewed-journal consent; the current UI lacks that consent panel.",
+            "type": "boolean",
+            "localeKey": "theme-settings.allowtrackingdata"
+        },
+        "upload-user-icons": {
+            "category": "custom-assets",
+            "description": "Own-icon upload permission, independent of peer icon download. Requires API consent/current-account session; not an editable control in the current four-tab UI.",
+            "type": "boolean",
+            "label": "Own-icon upload permission"
+        },
+        "privacy-consent-version": {
+            "category": "theme-core",
+            "description": "Online helper consent version; not portable or user-editable through the current four-tab UI.",
+            "type": "number",
+            "label": "Online consent version"
+        },
+        "privacy-journal-reviewed-version": {
+            "category": "theme-core",
+            "description": "Tracking journal review prerequisite in the online helper; no matching review panel exists in this checkout.",
+            "type": "number",
+            "label": "Tracking journal review version"
+        },
+        "Wallpaper-list": {
+            "category": "wallpaper-audio",
+            "description": "Runtime filename list. PluginFS refreshes on startup/Settings/dropdown; legacy registers names manually. Excluded from default-known portable backup.",
+            "type": "array",
+            "label": "Wallpaper filenames"
+        },
+        "Audio-list": {
+            "category": "wallpaper-audio",
+            "description": "Runtime filename list. PluginFS refreshes on startup/Settings/dropdown; legacy registers names manually. Excluded from default-known portable backup.",
+            "type": "array",
+            "label": "Audio filenames"
+        },
+        "Audio-currentTime": {
+            "category": "wallpaper-audio",
+            "description": "Runtime whole-second playback position saved on changed navigation/pause/pagehide; not on a timer and not included in root-default portable backup.",
+            "type": "number",
+            "label": "Saved audio position",
+            "default": 0,
+            "defaultSource": "src/src/theme/customUI/customHomepage.ts"
+        },
+        "Wallpaper-currentTime": {
+            "category": "wallpaper-audio",
+            "description": "Runtime whole-second playback position saved on changed navigation/pause/pagehide; not on a timer and not included in root-default portable backup.",
+            "type": "number",
+            "label": "Saved video position",
+            "default": 0,
+            "defaultSource": "src/src/theme/customUI/customHomepage.ts"
+        },
+        "audio-index": {
+            "category": "wallpaper-audio",
+            "description": "Runtime index into the media list; excluded from root-default portable backups.",
+            "type": "number",
+            "label": "Selected audio index",
+            "default": 0,
+            "defaultSource": "src/src/theme/customUI/customHomepage.ts"
+        },
+        "wallpaper-index": {
+            "category": "wallpaper-audio",
+            "description": "Runtime index into the media list; excluded from root-default portable backups.",
+            "type": "number",
+            "label": "Selected wallpaper index",
+            "default": 0,
+            "defaultSource": "src/src/theme/customUI/customHomepage.ts"
         }
     }
 }

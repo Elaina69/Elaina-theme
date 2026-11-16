@@ -20,6 +20,7 @@ async function themeSettings(panel: Element) {
     panel.appendChild(loading);
 
     try {
+        await window.refreshLists?.();
         panel.prepend(
             UI.createRow("theme-settings-root", [
                 ...await infoSection(),

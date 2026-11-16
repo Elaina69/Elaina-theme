@@ -81,6 +81,8 @@ function sanitizeLocaleProperty(key) {
 }
 
 function settingLocaleKey(key, settingsMeta) {
+    const documented = settingsMeta.settings?.[key]?.localeKey;
+    if (documented) return documented;
     const explicitKeys = {
         auto_accept: 'auto-accept.auto-accept',
         auto_accept_delay: 'auto-accept.auto-accept-delay',
@@ -105,12 +107,12 @@ function settingLocaleKey(key, settingsMeta) {
 
 function settingLabel(key, locale, settingsMeta) {
     const localeKey = settingLocaleKey(key, settingsMeta);
-    return locale[localeKey] || locale[key] || locale[key.replace(/-/g, '_')] || key;
+    return locale[localeKey] || settingsMeta.settings?.[key]?.label || locale[key] || locale[key.replace(/-/g, '_')] || key;
 }
 
 function settingRow(key, defaults, settingsMeta, locale) {
-    const value = defaults[key];
     const meta = settingsMeta.settings?.[key];
+    const value = Object.hasOwn(defaults, key) ? defaults[key] : meta?.default;
     const type = meta?.type || inferType(value);
     const label = settingLabel(key, locale, settingsMeta);
     const description = meta?.description || label || '_Missing description_';
@@ -244,11 +246,11 @@ ${theme.assets.introduction}
 
 ${renderAssetTable(theme.assets.items)}
 
-### Pengu Loader before 1.2.0
+### Legacy settings without PluginFS
 
 ${renderNumberedList(theme.assets.legacySteps)}
 
-### Pengu Loader 1.2.0 and newer (PluginFS)
+### Pengu with usable PluginFS
 
 ${renderNumberedList(theme.assets.pluginFsSteps)}
 
