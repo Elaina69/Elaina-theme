@@ -15,6 +15,8 @@ import { getPUUID } from './_getPUUID';
 import { subscribe_endpoint } from './_subscribe_endpoint';
 import { routineAddCallback as _routineAddCallback } from './_routineAddCallback';
 import { mutationObserverAddCallback as _mutationObserverAddCallback } from './_mutationObserverAddCallback';
+import { dispatchAddedNode } from './_mutationObserverAddCallback';
+import { observer as uplObserver } from 'pengu-upl';
 import { freezeProperties } from './_freezeProperties';
 import { sanitizeColor, sanitizeFileName, escapeHtml, escapeCssString, cssUrl, getSafeGoogleFont } from './_sanitize';
 import { assets } from './_assets.ts';
@@ -80,23 +82,9 @@ window.addEventListener('load', () => {
         routines.forEach((routine) => routine.callback());
     }, 1000);
 
-    const observer = new MutationObserver((mutationsList: any) => {
-        for (const mutation of mutationsList) {
-            for (const addedNode of mutation.addedNodes) {
-                if (addedNode.nodeType === Node.ELEMENT_NODE && addedNode.classList) {
-                    for (const addedNodeClass of addedNode.classList) {
-                        for (const obj of mutationCallbacks) {
-                            if (obj.target.indexOf(addedNodeClass) !== -1 || obj.target.indexOf("*") !== -1) {
-                                obj.callback(addedNode);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    });
-    
-    observer.observe(document, { attributes: true, childList: true, subtree: true });
+    // Reuse UPL's creation observer, including descendant and shadow-root handling.
+    // This removes the second document-wide observer and its unused attribute traffic.
+    uplObserver.subscribeToElementCreation('*', node => dispatchAddedNode(mutationCallbacks, node));
 });
 
 // Export utility class
